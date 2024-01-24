@@ -19,6 +19,8 @@ AABItemBat::AABItemBat()
 	Effect->SetupAttachment(Trigger);
 
 	Trigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
+	Trigger->SetBoxExtent(FVector(11.0f, 10.0f, 110.0f));
+	Trigger->OnComponentBeginOverlap.AddDynamic(this,&AABItemBat::OnOverlapBegin);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Item/Bat_fin/Geometries/Cylinder001.Cylinder001'"));
 	if (BoxMeshRef.Object) {
@@ -30,5 +32,18 @@ AABItemBat::AABItemBat()
 
 
 
+}
+
+void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+{
+	Mesh->SetHiddenInGame(true);
+	SetActorEnableCollision(false);
+	Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
+
+}
+
+void AABItemBat::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
+{
+	Destroy();
 }
 
