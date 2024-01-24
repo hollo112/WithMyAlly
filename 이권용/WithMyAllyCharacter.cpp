@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Item/ABWeaponItemData.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,6 +53,16 @@ AWithMyAllyCharacter::AWithMyAllyCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+
+
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWithMyAllyCharacter::EquipShort)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWithMyAllyCharacter::EquipDisposable)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWithMyAllyCharacter::EquipLong)));
+
+	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
 }
 
 void AWithMyAllyCharacter::BeginPlay()
@@ -67,6 +78,34 @@ void AWithMyAllyCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void AWithMyAllyCharacter::TakeItem(UABItemData* InItemData)
+{
+
+	if (InItemData) {
+		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
+
+}
+
+void AWithMyAllyCharacter::EquipShort(UABItemData* InItemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+	if (WeaponItemData) {
+		Weapon->SetStaticMesh(WeaponItemData->WeaponMesh);
+	}
+
+}
+
+void AWithMyAllyCharacter::EquipDisposable(UABItemData* InItemData)
+{
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+}
+
+void AWithMyAllyCharacter::EquipLong(UABItemData* InItemData)
+{
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
 //////////////////////////////////////////////////////////////////////////

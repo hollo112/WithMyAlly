@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
 #include "ABItemBat.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "WithMyAlly/Physics/ABCollision.h"
+#include "/Unreal Projects/WithMyAlly/Source/WithMyAlly/Interface/ABCharacterItemInterface.h"
 
 // Sets default values
 AABItemBat::AABItemBat()
@@ -36,6 +38,17 @@ AABItemBat::AABItemBat()
 
 void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
+
+	if (nullptr == Item) {
+		Destroy();
+		return;
+	}
+
+	IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
+	if (OverlappingPawn) {
+		OverlappingPawn->TakeItem(Item);
+	}
+
 	Mesh->SetHiddenInGame(true);
 	SetActorEnableCollision(false);
 	Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
