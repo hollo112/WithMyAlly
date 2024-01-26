@@ -1,0 +1,11 @@
+/UpgradeLog.htm
+/WMA.sln
+/.vs
+/Backup
+/Config
+/DerivedDataCache
+/Intermediate
+/Saved
+/.vsconfig
+*.sln
+*.uasset
