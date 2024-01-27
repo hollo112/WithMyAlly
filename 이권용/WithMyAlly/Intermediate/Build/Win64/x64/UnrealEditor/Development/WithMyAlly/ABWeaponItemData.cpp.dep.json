@@ -1,0 +1,17 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abweaponitemdata.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\withmyallyeditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\withmyally\\definitions.withmyally.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abweaponitemdata.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abitemdata.h",
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abitemdata.generated.h",
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abweaponitemdata.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

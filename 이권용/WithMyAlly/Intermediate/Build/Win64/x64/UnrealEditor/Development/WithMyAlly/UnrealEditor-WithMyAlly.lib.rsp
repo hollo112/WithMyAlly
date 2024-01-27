@@ -1,0 +1,27 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-WithMyAlly.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\WithMyAllyEditor\Development\Engine\SharedPCH.Engine.Cpp20.h.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABCharacterItemInterface.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemBat.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemData.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemFruitSwd.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABWeaponItemData.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAlly.init.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAllyCharacter.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAllyGameMode.gen.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAlly.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAllyCharacter.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\WithMyAllyGameMode.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABCharacterItemInterface.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemBat.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemData.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABItemFruitSwd.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\ABWeaponItemData.cpp.obj"
+"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\Default.rc2.res"
+/OUT:"D:\Unreal Projects\WithMyAlly\Intermediate\Build\Win64\x64\UnrealEditor\Development\WithMyAlly\UnrealEditor-WithMyAlly.lib"

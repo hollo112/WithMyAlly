@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"D:\\Unreal Projects\\WithMyAlly\\Source\\WithMyAlly\\WithMyAlly.Build.cs",
+		"D:\\Unreal Projects\\WithMyAlly\\Source\\WithMyAlly.Target.cs",
+		"D:\\Unreal Projects\\WithMyAlly\\Source\\WithMyAllyEditor.Target.cs"
+	],
+	"EngineVersion": "5.3.2"
+}

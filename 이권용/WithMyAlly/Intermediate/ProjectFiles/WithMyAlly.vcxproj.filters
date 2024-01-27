@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\WithMyAlly.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\WithMyAlly.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\WithMyAllyEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\.vsconfig" />
+    <Filter Include="Config">
+      <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEditorPerProjectUserSettings.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\WithMyAlly">
+      <UniqueIdentifier>{ACBE79A0-8786-3569-BFE8-B9D841861D3F}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\WithMyAlly\WithMyAlly.Build.cs">
+      <Filter>Source\WithMyAlly</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\WithMyAlly\WithMyAlly.cpp">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\WithMyAlly.h">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\WithMyAlly\WithMyAllyCharacter.cpp">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\WithMyAllyCharacter.h">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\WithMyAlly\WithMyAllyGameMode.cpp">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\WithMyAllyGameMode.h">
+      <Filter>Source\WithMyAlly</Filter>
+    </ClInclude>
+    <Filter Include="Source\WithMyAlly\Interface">
+      <UniqueIdentifier>{78891B5F-5061-316C-BC0D-1B6673EB63EF}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\WithMyAlly\Interface\ABCharacterItemInterface.cpp">
+      <Filter>Source\WithMyAlly\Interface</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\Interface\ABCharacterItemInterface.h">
+      <Filter>Source\WithMyAlly\Interface</Filter>
+    </ClInclude>
+    <Filter Include="Source\WithMyAlly\Item">
+      <UniqueIdentifier>{14EE31C3-FDC5-3403-8C94-772C51B7DD4C}</UniqueIdentifier>
+    </Filter>
+    <ClCompile Include="..\..\Source\WithMyAlly\Item\ABItemBat.cpp">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\Item\ABItemBat.h">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\WithMyAlly\Item\ABItemData.cpp">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\Item\ABItemData.h">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\WithMyAlly\Item\ABItemFruitSwd.cpp">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\Item\ABItemFruitSwd.h">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\WithMyAlly\Item\ABWeaponItemData.cpp">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\WithMyAlly\Item\ABWeaponItemData.h">
+      <Filter>Source\WithMyAlly\Item</Filter>
+    </ClInclude>
+    <Filter Include="Source\WithMyAlly\Physics">
+      <UniqueIdentifier>{E98E35CE-3E72-3DA8-B562-880E89E95026}</UniqueIdentifier>
+    </Filter>
+    <ClInclude Include="..\..\Source\WithMyAlly\Physics\ABCollision.h">
+      <Filter>Source\WithMyAlly\Physics</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

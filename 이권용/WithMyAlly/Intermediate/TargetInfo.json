@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "WithMyAlly",
+			"Path": "..\\Source\\WithMyAlly.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "WithMyAllyEditor",
+			"Path": "..\\Source\\WithMyAllyEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

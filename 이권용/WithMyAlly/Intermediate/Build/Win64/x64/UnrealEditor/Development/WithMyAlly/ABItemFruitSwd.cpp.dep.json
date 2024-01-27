@@ -1,0 +1,29 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abitemfruitswd.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\withmyallyeditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\withmyally\\definitions.withmyally.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abitemfruitswd.h",
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abitemfruitswd.generated.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\components\\boxcomponent.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\components\\shapecomponent.h",
+            "d:\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\shapecomponent.generated.h",
+            "d:\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\boxcomponent.generated.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\particles\\particlesystemcomponent.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\particles\\particlesystem.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\particles\\particleperfstats.h",
+            "d:\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\particlesystem.generated.h",
+            "d:\\ue_5.3\\engine\\source\\runtime\\engine\\classes\\particles\\emitter.h",
+            "d:\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\emitter.generated.h",
+            "d:\\ue_5.3\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\particlesystemcomponent.generated.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\physics\\abcollision.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\interface\\abcharacteriteminterface.h",
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abcharacteriteminterface.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

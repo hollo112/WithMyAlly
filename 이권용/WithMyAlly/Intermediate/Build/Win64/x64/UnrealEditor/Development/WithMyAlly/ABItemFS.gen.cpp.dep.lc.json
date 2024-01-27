@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abitemfs.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\withmyallyeditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\withmyally\\definitions.withmyally.h",
+            "d:\\unreal projects\\withmyally\\source\\withmyally\\item\\abitemfs.h",
+            "d:\\unreal projects\\withmyally\\intermediate\\build\\win64\\unrealeditor\\inc\\withmyally\\uht\\abitemfs.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
