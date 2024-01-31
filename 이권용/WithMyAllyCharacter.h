@@ -59,7 +59,6 @@ class AWithMyAllyCharacter : public ACharacter , public IABCharacterItemInterfac
 	UInputAction* LookAction;
 
 
-
 public:
 	AWithMyAllyCharacter();
 	
@@ -72,7 +71,11 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	void ChangeWeapon(const FInputActionValue& Value);
+	void ChangeWeapon_Short();
+
+	void ChangeWeapon_Disposable();
+
+	void ChangeWeapon_Long();
 			
 
 protected:
@@ -84,6 +87,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> Weapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> ShortWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> DisposableWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> LongWeapon;
 
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper>TakeItemActions;

@@ -60,9 +60,14 @@ AWithMyAllyCharacter::AWithMyAllyCharacter()
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWithMyAllyCharacter::EquipDisposable)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWithMyAllyCharacter::EquipLong)));
 
-	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Weapon"));
-	Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
+	ShortWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 
+	DisposableWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisposableWeapon"));
+	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
+	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
+	LongWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 }
 
 void AWithMyAllyCharacter::BeginPlay()
@@ -86,14 +91,17 @@ void AWithMyAllyCharacter::TakeItem(UABItemData* InItemData)
 	if (InItemData) {
 		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
 	}
-
 }
 
 void AWithMyAllyCharacter::EquipShort(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
 	if (WeaponItemData) {
-		Weapon->SetStaticMesh(WeaponItemData->WeaponMesh);
+		ShortWeapon->SetHiddenInGame(false);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+
+		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
 	}
 
 }
@@ -102,14 +110,30 @@ void AWithMyAllyCharacter::EquipDisposable(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
 	if (WeaponItemData) {
-		Weapon->SetStaticMesh(WeaponItemData->WeaponMesh);
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(false);
+		LongWeapon->SetHiddenInGame(true);
+
+		DisposableWeapon->SetStaticMesh(WeaponItemData->DisposableWeaponMesh);
 	}
+
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
 }
 
 void AWithMyAllyCharacter::EquipLong(UABItemData* InItemData)
 {
+
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(false);
+
+		LongWeapon->SetStaticMesh(WeaponItemData->LongWeaponMesh);
+	}
+
+
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
@@ -130,6 +154,14 @@ void AWithMyAllyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWithMyAllyCharacter::Look);
+
+
+		InputComponent->BindAction("ChangeWeapon_Short_1", EInputEvent::IE_Released, this, &AWithMyAllyCharacter::ChangeWeapon_Short);
+
+		InputComponent->BindAction("ChangeWeapon_Disposable_2", EInputEvent::IE_Released, this, &AWithMyAllyCharacter::ChangeWeapon_Disposable);
+
+		InputComponent->BindAction("ChangeWeapon_Long_3", EInputEvent::IE_Released, this, &AWithMyAllyCharacter::ChangeWeapon_Long);
+
 	}
 	else
 	{
@@ -158,6 +190,7 @@ void AWithMyAllyCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+
 }
 
 void AWithMyAllyCharacter::Look(const FInputActionValue& Value)
@@ -173,8 +206,29 @@ void AWithMyAllyCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AWithMyAllyCharacter::ChangeWeapon(const FInputActionValue& Value) {
+void AWithMyAllyCharacter::ChangeWeapon_Short() 
+{
+	ShortWeapon->SetHiddenInGame(false);
+	DisposableWeapon->SetHiddenInGame(true);
+	LongWeapon->SetHiddenInGame(true);
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+}
+
+void AWithMyAllyCharacter::ChangeWeapon_Disposable()
+{
+	ShortWeapon->SetHiddenInGame(true);
+	DisposableWeapon->SetHiddenInGame(false);
+	LongWeapon->SetHiddenInGame(true);
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+}
+
+void AWithMyAllyCharacter::ChangeWeapon_Long()
+{
+	ShortWeapon->SetHiddenInGame(true);
+	DisposableWeapon->SetHiddenInGame(true);
+	LongWeapon->SetHiddenInGame(false);
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
-
 }

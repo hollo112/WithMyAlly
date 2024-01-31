@@ -18,6 +18,11 @@ class WITHMYALLY_API UABWeaponItemData : public UABItemData
 public:
 	UPROPERTY(EditAnywhere,Category = ShortWeapon)
 	//TObjectPtr<USkeletalMesh> WeaponMesh;
-	TObjectPtr<UStaticMesh>WeaponMesh;
+	TObjectPtr<UStaticMesh>ShortWeaponMesh;
 
+	UPROPERTY(EditAnywhere, Category = DisposableWeapon)
+	TObjectPtr<UStaticMesh>DisposableWeaponMesh;
+
+	UPROPERTY(EditAnywhere, Category = LongWeapon)
+	TObjectPtr<UStaticMesh> LongWeaponMesh;
 };
