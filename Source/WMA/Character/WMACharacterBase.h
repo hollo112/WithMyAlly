@@ -5,16 +5,33 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/WMAAnimationCloseAttackInterface.h"
+#include "Interface/ABCharacterItemInterface.h"
 #include "WMACharacterBase.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+
+DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData* /*InItemData*/);
+USTRUCT(BlueprintType)
+struct FTakeItemDelegateWrapper {
+
+	GENERATED_BODY()
+	FTakeItemDelegateWrapper() {}
+	FTakeItemDelegateWrapper(const FOnTakeItemDelegate& InItemDelegate) : ItemDelegate(InItemDelegate) {}
+
+	FOnTakeItemDelegate ItemDelegate;
+
+};
+
 UCLASS()
-class WMA_API AWMACharacterBase : public ACharacter, public IWMAAnimationCloseAttackInterface
+class WMA_API AWMACharacterBase : public ACharacter, public IWMAAnimationCloseAttackInterface, public IABCharacterItemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AWMACharacterBase();
+
+	virtual void PostInitializeComponents() override;
 //
 //protected:
 //	// Called when the game starts or when spawned
@@ -39,4 +56,32 @@ protected:
 
 	virtual void SetDead();
 	void PlayDeadAnimation();
+
+// Stat Section
+protected:
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWMACharacterStatComponent> Stat;
+
+// Item Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> Weapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> ShortWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> DisposableWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> LongWeapon;
+
+	UPROPERTY()
+	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+
+	virtual void TakeItem(class UABItemData* InItemData) override;
+	virtual void EquipShort(class UABItemData* InItemData);
+	virtual void EquipDisposable(class UABItemData* InItemData);
+	virtual void EquipLong(class UABItemData* InItemData);
 };
+

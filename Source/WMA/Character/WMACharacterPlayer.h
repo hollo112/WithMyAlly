@@ -51,6 +51,14 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
+// 무기 교체
+protected:
+	void ChangeWeapon_Short();
+
+	void ChangeWeapon_Disposable();
+
+	void ChangeWeapon_Long();
+
 
 //애니메이션 몽타주 관련 Combo Action Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)

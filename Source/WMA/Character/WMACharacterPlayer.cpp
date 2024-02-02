@@ -79,6 +79,13 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
+
+	// 무기 교체 Input
+	InputComponent->BindAction("ChangeWeapon_Short_1", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Short);
+
+	InputComponent->BindAction("ChangeWeapon_Disposable_2", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Disposable);
+
+	InputComponent->BindAction("ChangeWeapon_Long_3", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Long);
 }
 
 void AWMACharacterPlayer::Move(const FInputActionValue& Value)
@@ -101,6 +108,33 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
+}
+
+void AWMACharacterPlayer::ChangeWeapon_Short()
+{
+	ShortWeapon->SetHiddenInGame(false);
+	DisposableWeapon->SetHiddenInGame(true);
+	LongWeapon->SetHiddenInGame(true);
+
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+}
+
+void AWMACharacterPlayer::ChangeWeapon_Disposable()
+{
+	ShortWeapon->SetHiddenInGame(true);
+	DisposableWeapon->SetHiddenInGame(false);
+	LongWeapon->SetHiddenInGame(true);
+
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+}
+
+void AWMACharacterPlayer::ChangeWeapon_Long()
+{
+	ShortWeapon->SetHiddenInGame(true);
+	DisposableWeapon->SetHiddenInGame(true);
+	LongWeapon->SetHiddenInGame(false);
+
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
 void AWMACharacterPlayer::ProcessComboCommand()

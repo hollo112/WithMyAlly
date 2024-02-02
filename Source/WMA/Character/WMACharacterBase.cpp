@@ -6,6 +6,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Physics/WMACollsion.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/WMACharacterStatComponent.h"
+#include "Item/ABWeaponItemData.h"
+
+DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 // Sets default values
 AWMACharacterBase::AWMACharacterBase()
@@ -50,7 +54,33 @@ AWMACharacterBase::AWMACharacterBase()
 	{
 		DeadMontage = DeadMontageRef.Object;
 	}
+
+	// Stat Component
+	Stat = CreateDefaultSubobject<UWMACharacterStatComponent>(TEXT("Stat"));
+
+	// Item Actions
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipShort)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipDisposable)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipLong)));
+
+	// Weapon Component
+	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
+	ShortWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
+	DisposableWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisposableWeapon"));
+	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
+	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
+	LongWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 }
+
+void AWMACharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &AWMACharacterBase::SetDead);
+}
+
 
 void AWMACharacterBase::CloseAttackHitCheck()
 {
@@ -85,7 +115,9 @@ float AWMACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
+	
+	//SetDead();
 
 	return DamageAmount;
 }
@@ -102,6 +134,59 @@ void AWMACharacterBase::PlayDeadAnimation()
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
+}
+
+void AWMACharacterBase::TakeItem(UABItemData* InItemData)
+{
+	if (InItemData) {
+		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
+}
+
+void AWMACharacterBase::EquipShort(UABItemData* InItemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(false);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+
+		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
+	}
+
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+}
+
+void AWMACharacterBase::EquipDisposable(UABItemData* InItemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(false);
+		LongWeapon->SetHiddenInGame(true);
+
+		DisposableWeapon->SetStaticMesh(WeaponItemData->DisposableWeaponMesh);
+	}
+
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+}
+
+void AWMACharacterBase::EquipLong(UABItemData* InItemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(false);
+
+		LongWeapon->SetStaticMesh(WeaponItemData->LongWeaponMesh);
+	}
+
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
+	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
 //// Called when the game starts or when spawned
