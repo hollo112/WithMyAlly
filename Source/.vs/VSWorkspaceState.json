@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\WMA",
+    "\\WMA\\Animation",
+    "\\WMA\\Character",
+    "\\WMA\\Game",
+    "\\WMA\\Interface",
+    "\\WMA\\Physics"
+  ],
+  "SelectedNode": "\\WMA\\Character\\WMACharacterPlayer.cpp",
+  "PreviewInSolutionExplorer": false
+}
