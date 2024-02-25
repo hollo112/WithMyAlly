@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Interface/WMAAnimationCloseAttackInterface.h"
 #include "Interface/ABCharacterItemInterface.h"
+#include "Item/ABWeaponItemData.h"
 #include "WMACharacterBase.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -62,6 +63,10 @@ protected:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UWMACharacterStatComponent> Stat;
 
+public:
+	int32 GetName();
+	void SetName(int32 InNewName);																			// CharacterStatTable 에서 Name열 넣어 플레이어인지 NPC인지 알려주기
+
 // Item Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
@@ -83,5 +88,8 @@ protected:
 	virtual void EquipShort(class UABItemData* InItemData);
 	virtual void EquipDisposable(class UABItemData* InItemData);
 	virtual void EquipLong(class UABItemData* InItemData);
+	
+	UPROPERTY(VisibleAnywhere, Category = Equipment)
+	EItemType WeaponNow;																						// 어떤 무기를 들고 있는지 확인
 };
 

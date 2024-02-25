@@ -11,8 +11,8 @@ enum class EItemType :uint8 {
 
 	ShortWeapon = 0,
 	DisposableWeapon = 1,
-	LongWeapon = 2
-
+	LongWeapon = 2,
+	NoWeapon = 3
 };
 
 /**
