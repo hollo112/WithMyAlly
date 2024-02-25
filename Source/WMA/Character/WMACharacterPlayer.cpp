@@ -10,6 +10,7 @@
 #include "Animation/AnimMontage.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WMAComboActionData.h"
+#include "CharacterStat/WMACharacterStatComponent.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -66,6 +67,10 @@ void AWMACharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		//Subsystem->RemoveMappingContext(DefaultMappingContext);
 	}
+
+// Stat
+	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
 void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -116,6 +121,8 @@ void AWMACharacterPlayer::ChangeWeapon_Short()
 	DisposableWeapon->SetHiddenInGame(true);
 	LongWeapon->SetHiddenInGame(true);
 
+	WeaponNow = EItemType::ShortWeapon;									// 현재 들고 있는 무기 변경
+
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
 }
 
@@ -125,6 +132,8 @@ void AWMACharacterPlayer::ChangeWeapon_Disposable()
 	DisposableWeapon->SetHiddenInGame(false);
 	LongWeapon->SetHiddenInGame(true);
 
+	WeaponNow = EItemType::DisposableWeapon;							// 현재 들고 있는 무기 변경
+
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
 }
 
@@ -133,6 +142,8 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	ShortWeapon->SetHiddenInGame(true);
 	DisposableWeapon->SetHiddenInGame(true);
 	LongWeapon->SetHiddenInGame(false);
+
+	WeaponNow = EItemType::LongWeapon;									// 현재 들고 있는 무기 변경
 
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
@@ -157,8 +168,13 @@ void AWMACharacterPlayer::ProcessComboCommand()
 
 void AWMACharacterPlayer::Attack()
 {
-	ProcessComboCommand();
-
+	if (!GetMovementComponent()->IsFalling())
+	{
+		if (WeaponNow != EItemType::NoWeapon)
+		{
+			ProcessComboCommand();
+		}
+	}
 }
 
 void AWMACharacterPlayer::ComboActionBegin()
@@ -170,7 +186,7 @@ void AWMACharacterPlayer::ComboActionBegin()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	// Animation Setting
-	const float AttackSpeedRate = 1.0f;
+	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
@@ -194,7 +210,7 @@ void AWMACharacterPlayer::SetComboCheckTimer()
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
-	const float AttackSpeedRate = 1.0f;
+	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
 	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
 
 	if (ComboEffectiveTime > 0.0f)

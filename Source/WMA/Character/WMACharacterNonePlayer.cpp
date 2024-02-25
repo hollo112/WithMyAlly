@@ -2,9 +2,24 @@
 
 
 #include "Character/WMACharacterNonePlayer.h"
+#include "AI/WMAAIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "CharacterStat/WMACharacterStatComponent.h"
+
+void AWMACharacterNonePlayer::BeginPlay()
+{
+	Super::BeginPlay();
+
+// Stat
+	SetName(2);											// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
+	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed; 
+}
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 {
+	AIControllerClass = AWMAAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AWMACharacterNonePlayer::SetDead()
@@ -18,4 +33,32 @@ void AWMACharacterNonePlayer::SetDead()
 			Destroy();
 		}
 	), DeadEventDelayTime, false);
+}
+
+float AWMACharacterNonePlayer::GetAIPatrolRadius()
+{
+	return 800.0f;
+}
+
+float AWMACharacterNonePlayer::GetAIDetectRange()
+{
+	return 400.0f;
+}
+
+float AWMACharacterNonePlayer::GetAIAttackRange()
+{
+	return Stat->GetCharacterStat().ShortWPRange;
+}
+
+float AWMACharacterNonePlayer::GetAITurnSpeed()
+{
+	return 0.0f;
+}
+
+void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
+{
+}
+
+void AWMACharacterNonePlayer::AttackByAI()
+{
 }
