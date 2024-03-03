@@ -72,6 +72,8 @@ AWMACharacterBase::AWMACharacterBase()
 
 	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
 	LongWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
+	WeaponNow = EItemType::NoWeapon;//
 }
 
 void AWMACharacterBase::PostInitializeComponents()
@@ -81,15 +83,32 @@ void AWMACharacterBase::PostInitializeComponents()
 	Stat->OnHpZero.AddUObject(this, &AWMACharacterBase::SetDead);
 }
 
-
 void AWMACharacterBase::CloseAttackHitCheck()
 {
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
-	const float AttackRange = 140.0f;
-	const float AttackRadius = 50.0f;
-	const float AttackDamage = 4.0f;
+	float AttackRange;
+	switch (WeaponNow)//
+	{
+	case EItemType::ShortWeapon:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	case EItemType::DisposableWeapon:
+		AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+		break;
+	case EItemType::LongWeapon:
+		AttackRange = Stat->GetCharacterStat().LongWPRange;
+		break;
+	case EItemType::NoWeapon:
+		AttackRange = 0.0f;
+		break;
+	default:
+		AttackRange = 0.0f;
+		break;
+	}
+	const float AttackRadius = Stat->GetAttackRadius();
+	const float AttackDamage = Stat->GetCharacterStat().Attack;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
@@ -136,6 +155,16 @@ void AWMACharacterBase::PlayDeadAnimation()
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
 }
 
+int32 AWMACharacterBase::GetName()
+{
+	return Stat->GetCurrentName();
+}
+
+void AWMACharacterBase::SetName(int32 InNewName)
+{
+	Stat->SetNameStat(InNewName);
+}
+
 void AWMACharacterBase::TakeItem(UABItemData* InItemData)
 {
 	if (InItemData) {
@@ -152,6 +181,8 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 		LongWeapon->SetHiddenInGame(true);
 
 		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
+
+		WeaponNow = EItemType::ShortWeapon;										// 현재 들고 있는 무기 변경
 	}
 
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
@@ -166,6 +197,8 @@ void AWMACharacterBase::EquipDisposable(UABItemData* InItemData)
 		LongWeapon->SetHiddenInGame(true);
 
 		DisposableWeapon->SetStaticMesh(WeaponItemData->DisposableWeaponMesh);
+
+		WeaponNow = EItemType::DisposableWeapon;								// 현재 들고 있는 무기 변경
 	}
 
 
@@ -182,6 +215,8 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 		LongWeapon->SetHiddenInGame(false);
 
 		LongWeapon->SetStaticMesh(WeaponItemData->LongWeaponMesh);
+
+		WeaponNow = EItemType::LongWeapon;								// 현재 들고 있는 무기 변경
 	}
 
 

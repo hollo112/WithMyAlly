@@ -2,12 +2,14 @@
 
 
 #include "CharacterStat/WMACharacterStatComponent.h"
+#include "GameData/WMAGameSingleton.h"
 
 // Sets default values for this component's properties
 UWMACharacterStatComponent::UWMACharacterStatComponent()
 {
-	MaxHp = 10.0f;
-	CurrentHp = MaxHp;
+	CurrentName = 1;
+
+	AttackRadius = 50.0f;
 }
 
 
@@ -16,8 +18,15 @@ void UWMACharacterStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetHp(MaxHp);
-	
+	SetNameStat(CurrentName);
+	SetHp(CharacterStat.MaxHp);
+}
+
+void UWMACharacterStatComponent::SetNameStat(int32 InNewName)
+{
+	CurrentName = FMath::Clamp(InNewName, 1, UWMAGameSingleton::Get().CharacterMaxLevel);
+	CharacterStat = UWMAGameSingleton::Get().GetCharacterStat(CurrentName);
+	check(CharacterStat.MaxHp > 0.0f);
 }
 
 float UWMACharacterStatComponent::ApplyDamage(float InDamage)
@@ -36,7 +45,7 @@ float UWMACharacterStatComponent::ApplyDamage(float InDamage)
 
 void UWMACharacterStatComponent::SetHp(float NewHp)
 {
-	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, MaxHp);
+	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, CharacterStat.MaxHp);
 
 	OnHpChanged.Broadcast(CurrentHp);
 }
