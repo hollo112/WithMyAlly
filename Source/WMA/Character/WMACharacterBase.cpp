@@ -65,13 +65,13 @@ AWMACharacterBase::AWMACharacterBase()
 
 	// Weapon Component
 	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
-	ShortWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+	ShortWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
 
 	DisposableWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisposableWeapon"));
-	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
 
 	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
-	LongWeapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+	LongWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 }
@@ -88,25 +88,29 @@ void AWMACharacterBase::CloseAttackHitCheck()
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
-	float AttackRange;
-	switch (WeaponNow)//
-	{
-	case EItemType::ShortWeapon:
-		AttackRange = Stat->GetCharacterStat().ShortWPRange;
-		break;
-	case EItemType::DisposableWeapon:
-		AttackRange = Stat->GetCharacterStat().DisposableWPRange;
-		break;
-	case EItemType::LongWeapon:
-		AttackRange = Stat->GetCharacterStat().LongWPRange;
-		break;
-	case EItemType::NoWeapon:
-		AttackRange = 0.0f;
-		break;
-	default:
-		AttackRange = 0.0f;
-		break;
-	}
+
+	//float AttackRange;
+	//switch (WeaponNow)//
+	//{
+	//case EItemType::ShortWeapon:
+	//	AttackRange = Stat->GetCharacterStat().ShortWPRange;
+	//	break;
+	//case EItemType::DisposableWeapon:
+	//	AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+	//	break;
+	//case EItemType::LongWeapon:
+	//	AttackRange = Stat->GetCharacterStat().LongWPRange;
+	//	break;
+	//case EItemType::NoWeapon:
+	//	AttackRange = 0.0f;
+	//	break;
+	//default:
+	//	AttackRange = 0.0f;
+	//	break;
+	//}
+	//
+
+	const float AttackRange = Stat->GetCharacterStat().ShortWPRange;
 	const float AttackRadius = Stat->GetAttackRadius();
 	const float AttackDamage = Stat->GetCharacterStat().Attack;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();

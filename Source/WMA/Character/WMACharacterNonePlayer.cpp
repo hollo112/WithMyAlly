@@ -52,7 +52,7 @@ float AWMACharacterNonePlayer::GetAIAttackRange()
 
 float AWMACharacterNonePlayer::GetAITurnSpeed()
 {
-	return 0.0f;
+	return 2.0f;
 }
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
