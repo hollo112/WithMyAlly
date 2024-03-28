@@ -22,11 +22,20 @@ public:
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
-	
+
+
 private:
 	UPROPERTY()
 	TObjectPtr<class UBlackboardData> BBAsset;
 
 	UPROPERTY()
 	TObjectPtr<class UBehaviorTree> BTAsset;
+
+	UPROPERTY(EditAnywhere,Category = AI)
+	TObjectPtr<UAIPerceptionComponent> AIPerceptionComponent = nullptr;
+	TObjectPtr<class UAISenseConfig_Sight> AISenseConfigSight = nullptr;
+	TObjectPtr<class UAISenseConfig_Hearing> AISenseConfigHearing = nullptr;
+
+
+	void SetPerceptionSystem();
 };

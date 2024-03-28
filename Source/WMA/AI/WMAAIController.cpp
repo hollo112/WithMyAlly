@@ -6,6 +6,10 @@
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "WMAAI.h"
+#include <Perception/AIPerceptionComponent.h>
+#include <Perception/AISenseConfig_Sight.h>
+#include <Perception/AISenseConfig_Hearing.h>
+
 
 AWMAAIController::AWMAAIController()
 {
@@ -20,7 +24,11 @@ AWMAAIController::AWMAAIController()
 	{
 		BTAsset = BTAssetRef.Object;
 	}
+
+	SetPerceptionSystem();
 }
+
+
 
 void AWMAAIController::RunAI()
 {
@@ -43,9 +51,37 @@ void AWMAAIController::StopAI()
 	}
 }
 
+
 void AWMAAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	RunAI();
+
+
+}
+
+void AWMAAIController::SetPerceptionSystem()
+{
+	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>("PerceptionComponent");
+	AISenseConfigSight = CreateDefaultSubobject<UAISenseConfig_Sight>("AI Sight config");
+	AISenseConfigHearing = CreateDefaultSubobject<UAISenseConfig_Hearing>("AI Hearing config");
+
+
+
+
+	AIPerceptionComponent->ComponentTags.Add(TEXT("AI Sight config"));
+
+
+	AIPerceptionComponent->ComponentTags.Add(TEXT("AI Hearing config"));
+
+
+
+	AISenseConfigSight->DetectionByAffiliation.bDetectEnemies = true;
+	AISenseConfigSight->DetectionByAffiliation.bDetectNeutrals = true;
+
+	AIPerceptionComponent->ConfigureSense(*AISenseConfigSight);
+	AIPerceptionComponent->ConfigureSense(*AISenseConfigHearing);
+	AIPerceptionComponent->SetDominantSense(UAISenseConfig_Sight::StaticClass());
+
 }
