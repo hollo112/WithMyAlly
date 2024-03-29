@@ -33,6 +33,9 @@ public:
 	AWMACharacterBase();
 
 	virtual void PostInitializeComponents() override;
+
+	virtual void SetCharacterControlData(const class UWMACharacterControlData* CharacterControlData);
+
 //
 //protected:
 //	// Called when the game starts or when spawned
@@ -44,6 +47,26 @@ public:
 //
 //	// Called to bind functionality to input
 //	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+// 콤보 액션(애니메이션 몽타주) Combo Action Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> ComboActionMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWMAComboActionData> ComboActionData;
+
+	void ProcessComboCommand();
+
+	void ComboActionBegin();
+	void ComboActionEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+	virtual void NotifyComboActionEnd();
+	void SetComboCheckTimer();
+	void ComboCheck();
+
+	int32 CurrentCombo = 0;
+	FTimerHandle ComboTimerHandle;
+	bool HasNextComboCommand = false;
 
 // 근접 공격 Close Attack Hit Section
 protected:

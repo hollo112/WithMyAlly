@@ -57,8 +57,16 @@ float AWMACharacterNonePlayer::GetAITurnSpeed()
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
+	OnAttackFinished = InOnAttackFinished;
 }
 
 void AWMACharacterNonePlayer::AttackByAI()
 {
+	ProcessComboCommand();
+}
+
+void AWMACharacterNonePlayer::NotifyComboActionEnd()
+{
+	Super::NotifyComboActionEnd();
+	OnAttackFinished.ExecuteIfBound();
 }

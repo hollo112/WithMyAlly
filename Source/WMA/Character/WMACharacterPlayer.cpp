@@ -11,6 +11,13 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WMAComboActionData.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
+#include "WMACharacterControlData.h"
+#include "WMA.h"
+#include "Components/CapsuleComponent.h"
+#include "Physics/WMACollsion.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/DamageEvents.h"
+#include "Net/UnrealNetwork.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -55,22 +62,93 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	{
 		AttackAction = InputActionAttackRef.Object;
 	}
+
+	bCanAttack = true;
 }
 
 void AWMACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
 	{
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		EnableInput(PlayerController);
 		//Subsystem->RemoveMappingContext(DefaultMappingContext);
 	}
+
+	SetCharacterControl();
 
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+}
+
+void AWMACharacterPlayer::SetDead()
+{
+	Super::SetDead();
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		DisableInput(PlayerController);
+	}
+}
+
+void AWMACharacterPlayer::PossessedBy(AController* NewController)
+{
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+
+	Super::PossessedBy(NewController);
+
+	OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
+}
+
+void AWMACharacterPlayer::OnRep_Owner()
+{
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
+
+	Super::OnRep_Owner();
+
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
+	}
+	else
+	{
+		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
+	}
+
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
+}
+
+void AWMACharacterPlayer::PostNetInit()
+{
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
+
+	Super::PostNetInit();
+
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
 }
 
 void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -91,6 +169,37 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	InputComponent->BindAction("ChangeWeapon_Disposable_2", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Disposable);
 
 	InputComponent->BindAction("ChangeWeapon_Long_3", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Long);
+}
+
+
+void AWMACharacterPlayer::SetCharacterControl()
+{
+	if (!IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Log, TEXT("clientIn"));
+		return;
+	}
+
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		//Subsystem->RemoveMappingContext(DefaultMappingContext);
+	}
+
+}
+
+void AWMACharacterPlayer::SetCharacterControlData(const UWMACharacterControlData* CharacterControlData)
+{
+	Super::SetCharacterControlData(CharacterControlData);
+
+	CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
+	CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
+	CameraBoom->bUsePawnControlRotation = CharacterControlData->bUsePawnControlRotation;
+	CameraBoom->bInheritPitch = CharacterControlData->bInheritPitch;
+	CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
+	CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
+	CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
 }
 
 void AWMACharacterPlayer::Move(const FInputActionValue& Value)
@@ -115,8 +224,139 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(LookAxisVector.Y);
 }
 
+void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWMACharacterPlayer, bCanAttack);
+}
+
+void AWMACharacterPlayer::Attack()
+{
+	if (!GetMovementComponent()->IsFalling())
+	{
+		if (WeaponNow != EItemType::NoWeapon)
+		{
+			//ProcessComboCommand();
+			if (bCanAttack)
+			{
+				ServerRPCCloseAttack();
+				/*bCanAttack = false;
+				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+				FTimerHandle Handle;
+				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+					{
+						bCanAttack = true;
+						GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+					}
+				), CloseAttackTime, false, -1.0f);
+
+				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+				AnimInstance->Montage_Play(ComboActionMontage);*/
+			}
+		}
+	}
+}
+
+void AWMACharacterPlayer::CloseAttackHitCheck()
+{
+	if (HasAuthority())
+	{
+		FHitResult OutHitResult;
+		FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+
+		float AttackRange;
+		switch (WeaponNow)//
+		{
+		case EItemType::ShortWeapon:
+			AttackRange = Stat->GetCharacterStat().ShortWPRange;
+			break;
+		case EItemType::DisposableWeapon:
+			AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+			break;
+		case EItemType::LongWeapon:
+			AttackRange = Stat->GetCharacterStat().LongWPRange;
+			break;
+		case EItemType::NoWeapon:
+			AttackRange = 0.0f;
+			break;
+		default:
+			AttackRange = 0.0f;
+			break;
+		}
+		const float AttackRadius = Stat->GetAttackRadius();
+		const float AttackDamage = Stat->GetCharacterStat().Attack;
+		const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+		const FVector End = Start + GetActorForwardVector() * AttackRange;
+
+		bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_WMAACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
+
+		if (HitDetected)
+		{
+			FDamageEvent DamageEvent;
+			OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+		}
+
+#if ENABLE_DRAW_DEBUG
+
+		FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+		float CapsuleHalfHeight = AttackRange * 0.5f;
+		FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;	// 충돌하면 녹색, 아니면 적색
+
+		DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f); // 5초동안 그리기
+#endif
+	}
+}
+
+bool AWMACharacterPlayer::ServerRPCCloseAttack_Validate()
+{
+	return true;
+}
+
+void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation()
+{
+	MulticastRPCCloseAttack();
+}
+
+void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
+{
+	if (HasAuthority())
+	{
+		bCanAttack = false;
+		OnRep_CanCloseAttack();
+
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+			{
+				bCanAttack = true;
+				OnRep_CanCloseAttack();
+			}
+		), CloseAttackTime, false, -1.0f);
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Play(ComboActionMontage);
+}
+
+void AWMACharacterPlayer::OnRep_CanCloseAttack()
+{
+	if (!bCanAttack)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+}
+
 void AWMACharacterPlayer::ChangeWeapon_Short()
 {
+	if (WeaponNow == EItemType::NoWeapon) {
+		return;
+	}
+
 	ShortWeapon->SetHiddenInGame(false);
 	DisposableWeapon->SetHiddenInGame(true);
 	LongWeapon->SetHiddenInGame(true);
@@ -128,6 +368,10 @@ void AWMACharacterPlayer::ChangeWeapon_Short()
 
 void AWMACharacterPlayer::ChangeWeapon_Disposable()
 {
+	if (WeaponNow == EItemType::NoWeapon) {
+		return;
+	}
+
 	ShortWeapon->SetHiddenInGame(true);
 	DisposableWeapon->SetHiddenInGame(false);
 	LongWeapon->SetHiddenInGame(true);
@@ -148,88 +392,3 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
-void AWMACharacterPlayer::ProcessComboCommand()
-{
-	if (CurrentCombo == 0)
-	{
-		ComboActionBegin();
-		return;
-	}
-
-	if (!ComboTimerHandle.IsValid())
-	{
-		HasNextComboCommand = false;
-	}
-	else
-	{
-		HasNextComboCommand = true;
-	}
-}
-
-void AWMACharacterPlayer::Attack()
-{
-	if (!GetMovementComponent()->IsFalling())
-	{
-		if (WeaponNow != EItemType::NoWeapon)
-		{
-			ProcessComboCommand();
-		}
-	}
-}
-
-void AWMACharacterPlayer::ComboActionBegin()
-{
-	// Combo Status
-	CurrentCombo = 1;
-
-	// Movement Setting
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-	// Animation Setting
-	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
-
-	FOnMontageEnded EndDelegate;
-	EndDelegate.BindUObject(this, &AWMACharacterPlayer::ComboActionEnd);
-	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
-
-	ComboTimerHandle.Invalidate();
-	SetComboCheckTimer();
-}
-
-void AWMACharacterPlayer::ComboActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
-{
-	ensure(CurrentCombo != 0);
-	CurrentCombo = 0;
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-}
-
-void AWMACharacterPlayer::SetComboCheckTimer()
-{
-	int32 ComboIndex = CurrentCombo - 1;
-	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
-
-	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
-	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
-
-	if (ComboEffectiveTime > 0.0f)
-	{
-		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &AWMACharacterPlayer::ComboCheck, ComboEffectiveTime, false);
-	}
-}
-
-void AWMACharacterPlayer::ComboCheck()
-{
-	ComboTimerHandle.Invalidate();
-	if (HasNextComboCommand)
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
-		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
-		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
-		SetComboCheckTimer();
-		HasNextComboCommand = false;
-	}
-}
