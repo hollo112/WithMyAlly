@@ -3,7 +3,11 @@
 
 #include "AI/WMAEnvQueryContext.h"
 #include "Animation/WMAAnimInstance.h"
-
+#include <Kismet/GameplayStatics.h>
+#include "GameFramework/Character.h"
+#include "Character/WMACharacterPlayer.h"
+#include "Character/WMACharacterNonePlayer.h"
+#include <EnvironmentQuery/Items/EnvQueryItemType_Actor.h>
 
 UWMAEnvQueryContext::UWMAEnvQueryContext()
 {
@@ -15,16 +19,30 @@ void UWMAEnvQueryContext::ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQ
 {
 	Super::ProvideContext(QueryInstance, ContextData);
 
-	
+
+	ProvideSingleActor(ContextData);
+
+	ProvideActorsSet(ContextData);
+
 }
 
-void UWMAEnvQueryContext::ProvideSingleActor(UObject* QuerierObject, AActor* QuerierActor, AActor*& ResultingActor) 
+void UWMAEnvQueryContext::ProvideSingleActor(FEnvQueryContextData& ContextData) const
 {
-	AActor*& RA = ResultingActor;
-	if (RA) {
-		FVector PlayerLocation = RA->GetActorLocation();
+	AActor* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (PlayerCharacter)
+	{
+		UEnvQueryItemType_Actor::SetContextHelper(ContextData, PlayerCharacter);
 	}
 
-	return;
-
 }
+
+void UWMAEnvQueryContext::ProvideActorsSet(FEnvQueryContextData& ContextData) const
+{
+	TArray<AActor*> ActorsOfClass;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWMACharacterPlayer::StaticClass(), ActorsOfClass);
+
+	UEnvQueryItemType_Actor::SetContextHelper(ContextData, ActorsOfClass);
+}
+
+
+

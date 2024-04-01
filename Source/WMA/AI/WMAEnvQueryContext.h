@@ -19,8 +19,8 @@ public:
 
 	virtual void  ProvideContext(FEnvQueryInstance& QueryInstance, FEnvQueryContextData& ContextData) const override;
 
-	virtual void ProvideSingleActor(UObject* QuerierObject, AActor* QuerierActor, AActor*& ResultingActor);
+	void ProvideSingleActor(FEnvQueryContextData& ContextData) const;
 
-
+	void ProvideActorsSet(FEnvQueryContextData& ContextData) const;
 
 };
