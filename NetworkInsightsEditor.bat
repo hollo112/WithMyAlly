@@ -1,0 +1,1 @@
+UnrealEditor.exe %cd%\WMA.uproject -NetTrace=1 -Trace=Net

@@ -18,6 +18,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/GameStateBase.h"
+#include "EngineUtils.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -82,6 +84,7 @@ void AWMACharacterPlayer::BeginPlay()
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -204,6 +207,11 @@ void AWMACharacterPlayer::SetCharacterControlData(const UWMACharacterControlData
 
 void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 {
+	if (!bCanAttack)
+	{
+		return;
+	}
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	const FRotator Rotation = Controller->GetControlRotation();
@@ -239,8 +247,24 @@ void AWMACharacterPlayer::Attack()
 		{
 			//ProcessComboCommand();
 			if (bCanAttack)
-			{
-				ServerRPCCloseAttack();
+			{	
+				if (!HasAuthority())				// 클라에서 동작
+				{
+					bCanAttack = false;
+					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+					FTimerHandle Handle;
+					GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+						{
+							bCanAttack = true;
+							GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+						}
+					), CloseAttackTime, false, -1.0f);
+
+					PlayCloseAttackAnimation();
+				}
+				GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+				ServerRPCCloseAttack(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());			// 서버의 시간 클라에게 넘겨주기
 				/*bCanAttack = false;
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
@@ -259,9 +283,16 @@ void AWMACharacterPlayer::Attack()
 	}
 }
 
+void AWMACharacterPlayer::PlayCloseAttackAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(ComboActionMontage);
+}
+
 void AWMACharacterPlayer::CloseAttackHitCheck()
 {
-	if (HasAuthority())
+	if (IsLocallyControlled())
 	{
 		FHitResult OutHitResult;
 		FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
@@ -287,56 +318,180 @@ void AWMACharacterPlayer::CloseAttackHitCheck()
 		}
 		const float AttackRadius = Stat->GetAttackRadius();
 		const float AttackDamage = Stat->GetCharacterStat().Attack;
-		const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+		const FVector Forward = GetActorForwardVector();
+		const FVector Start = GetActorLocation() + Forward * GetCapsuleComponent()->GetScaledCapsuleRadius();
 		const FVector End = Start + GetActorForwardVector() * AttackRange;
 
 		bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_WMAACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
 
-		if (HitDetected)
+	
+		//if (OutHitResult.GetActor()->IsA(AWMACharacterPlayer::StaticClass()))			//만약 플레이러를 공격했다면 판정X
+		//{
+		//	HitDetected = false;
+		//}
+
+		float HitCheckTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+		if (!HasAuthority())
 		{
-			FDamageEvent DamageEvent;
-			OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+			if (HitDetected)
+			{
+				ServerRPCNotifyHit(OutHitResult, HitCheckTime);
+			}
+			else
+			{
+				ServerRPCNotifyMiss(Start, End, Forward, HitCheckTime);
+			}	
 		}
-
-#if ENABLE_DRAW_DEBUG
-
-		FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-		float CapsuleHalfHeight = AttackRange * 0.5f;
-		FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;	// 충돌하면 녹색, 아니면 적색
-
-		DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f); // 5초동안 그리기
-#endif
+		else
+		{
+			FColor DebugColor = HitDetected ? FColor::Green : FColor::Red;
+			DrawDebugAttackRange(DebugColor, Start, End, Forward);
+			if (HitDetected)
+			{
+				AttackHitConfirm(OutHitResult.GetActor());
+			}		
+		}
 	}
 }
 
-bool AWMACharacterPlayer::ServerRPCCloseAttack_Validate()
+void AWMACharacterPlayer::AttackHitConfirm(AActor* HitActor)
 {
-	return true;
+	if (HasAuthority())
+	{
+		const float AttackDamage = Stat->GetCharacterStat().Attack;
+		FDamageEvent DamageEvent;
+		HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+	}
 }
 
-void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation()
+void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
 {
+#if ENABLE_DRAW_DEBUG
+
+	float AttackRange;
+	switch (WeaponNow)//
+	{
+	case EItemType::ShortWeapon:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	case EItemType::DisposableWeapon:
+		AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+		break;
+	case EItemType::LongWeapon:
+		AttackRange = Stat->GetCharacterStat().LongWPRange;
+		break;
+	case EItemType::NoWeapon:
+		AttackRange = 0.0f;
+		break;
+	default:
+		AttackRange = 0.0f;
+		break;
+	}
+
+	const float AttackRadius = Stat->GetAttackRadius();
+	
+	FVector CapsuleOrigin = TraceStart + (TraceEnd - TraceStart) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+	// 충돌하면 녹색, 아니면 적색
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(Forward).ToQuat(), DrawColor, false, 5.0f); // 5초동안 그리기
+#endif
+}
+
+bool AWMACharacterPlayer::ServerRPCCloseAttack_Validate(float AttackStartTime)
+{
+	if (LastCloseAttackStartTime == 0.0f)
+	{
+		return true;
+	}
+
+	return (AttackStartTime - LastCloseAttackStartTime) > CloseAttackTime;
+}
+
+void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartTime)
+{
+	bCanAttack = false;
+	OnRep_CanCloseAttack();
+
+	float AttackTimeDifference = GetWorld()->GetTimeSeconds() - AttackStartTime;		// 서버의 시간에서 클라가 보낸시간을 뺀다
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			bCanAttack = true;
+			OnRep_CanCloseAttack();
+		}
+	), CloseAttackTime - AttackTimeDifference, false, -1.0f);
+
+	LastCloseAttackStartTime = AttackStartTime;
+
+	PlayCloseAttackAnimation();
+
 	MulticastRPCCloseAttack();
+	//for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+	//{
+	//	if (PlayerController && GetController() != PlayerController)			// 나와 다른 컨트롤러
+	//	{
+	//		if (!PlayerController->IsLocalController())
+	//		{
+	//			// Simulated Proxy로 폰을 재생하는 PlayerController
+	//			AWMACharacterPlayer* OtherPlayer = Cast<AWMACharacterPlayer>(PlayerController->GetPawn());
+	//			if (OtherPlayer)
+	//			{
+	//				OtherPlayer->ClientRPCPlayAnimation(this);
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
 {
-	if (HasAuthority())
+	if (!IsLocallyControlled())
 	{
-		bCanAttack = false;
-		OnRep_CanCloseAttack();
-
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-			{
-				bCanAttack = true;
-				OnRep_CanCloseAttack();
-			}
-		), CloseAttackTime, false, -1.0f);
+		PlayCloseAttackAnimation();
 	}
+}
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->Montage_Play(ComboActionMontage);
+
+bool AWMACharacterPlayer::ServerRPCNotifyHit_Validate(const FHitResult& HitResult, float HitCheckTime)
+{
+	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
+}
+
+void AWMACharacterPlayer::ServerRPCNotifyHit_Implementation(const FHitResult& HitResult, float HitCheckTime)
+{
+	AActor* HitActor = HitResult.GetActor();
+	if (::IsValid(HitActor))
+	{
+		const FVector HitLocation = HitResult.Location;
+		const FBox HitBox = HitActor->GetComponentsBoundingBox();
+		const FVector ActorBoxCenter = (HitBox.Min + HitBox.Max) * 0.5f;
+		if (FVector::DistSquared(HitLocation, ActorBoxCenter) <= AcceptCheckDistance * AcceptCheckDistance)
+		{
+			AttackHitConfirm(HitActor);
+		}
+		else
+		{
+			WMA_LOG(LogWMANetwork, Warning, TEXT("%s"), TEXT("Hit Rejected"));
+		}
+
+#if ENABLE_DRAW_DEBUG
+		DrawDebugPoint(GetWorld(), ActorBoxCenter, 50.0f, FColor::Cyan, false, 5.0f);
+		DrawDebugPoint(GetWorld(), HitLocation, 50.0f, FColor::Magenta, false, 5.0f);
+#endif
+		DrawDebugAttackRange(FColor::Green, HitResult.TraceStart, HitResult.TraceEnd, HitActor->GetActorForwardVector());
+	}
+}
+
+bool AWMACharacterPlayer::ServerRPCNotifyMiss_Validate(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
+{
+	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
+}
+
+void AWMACharacterPlayer::ServerRPCNotifyMiss_Implementation(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
+{
+	DrawDebugAttackRange(FColor::Red, TraceStart, TraceEnd, TraceDir);
 }
 
 void AWMACharacterPlayer::OnRep_CanCloseAttack()
@@ -354,7 +509,7 @@ void AWMACharacterPlayer::OnRep_CanCloseAttack()
 void AWMACharacterPlayer::ChangeWeapon_Short()
 {
 	if (WeaponNow == EItemType::NoWeapon) {
-		return;
+		//return;
 	}
 
 	ShortWeapon->SetHiddenInGame(false);
