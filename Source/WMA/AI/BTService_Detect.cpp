@@ -51,6 +51,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		CollisionQueryParam
 	);
 
+	bool bFoundPlayer = false;
+
 	if (bResult)
 	{
 		for (auto const& OverlapResult : OverlapResults)
@@ -63,11 +65,18 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 				DrawDebugPoint(World, Pawn->GetActorLocation(), 10.0f, FColor::Green, false, 0.2f);
 				DrawDebugLine(World, ControllingPawn->GetActorLocation(), Pawn->GetActorLocation(), FColor::Green, false, 0.27f);
-				return;
+
+				bFoundPlayer = true;
+				break;
 			}
 		}
 	}
 
-	OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);
-	DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
+	if (!bFoundPlayer)
+	{
+		// 감지된 플레이어가 없으니 타겟을 리셋합니다.
+		OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);
+		DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
+	}
+
 }
