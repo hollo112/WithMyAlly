@@ -20,6 +20,8 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/GameStateBase.h"
 #include "EngineUtils.h"
+#include "GameFramework/PlayerState.h"
+#include "Engine/AssetManager.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -66,6 +68,7 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
+
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -100,7 +103,7 @@ void AWMACharacterPlayer::SetDead()
 
 void AWMACharacterPlayer::PossessedBy(AController* NewController)
 {
-	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
+	/*WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor)
 	{
@@ -109,11 +112,11 @@ void AWMACharacterPlayer::PossessedBy(AController* NewController)
 	else
 	{
 		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
-	}
+	}*/
 
 	Super::PossessedBy(NewController);
 
-	OwnerActor = GetOwner();
+	/*OwnerActor = GetOwner();
 	if (OwnerActor)
 	{
 		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
@@ -123,7 +126,8 @@ void AWMACharacterPlayer::PossessedBy(AController* NewController)
 		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
 	}
 
-	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));*/
+	UpdateMeshesFromPlayerState();
 }
 
 void AWMACharacterPlayer::OnRep_Owner()
@@ -546,4 +550,18 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
+
+void AWMACharacterPlayer::UpdateMeshesFromPlayerState()
+{
+	int32 MeshIndex = FMath::Clamp(GetPlayerState()->PlayerId % PlayerMeshes.Num(), 0, PlayerMeshes.Num() - 1);
+	MeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(PlayerMeshes[MeshIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterBase::MeshLoadCompleted));
+}
+
+void AWMACharacterPlayer::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	UpdateMeshesFromPlayerState();
+}
+
 

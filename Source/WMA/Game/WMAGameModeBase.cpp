@@ -4,6 +4,7 @@
 #include "Game/WMAGameModeBase.h"
 #include "WMA.h"
 #include "WMAGameState.h"
+#include "Kismet/GameplayStatics.h"
 
 AWMAGameModeBase::AWMAGameModeBase()
 {
@@ -20,6 +21,16 @@ AWMAGameModeBase::AWMAGameModeBase()
 	}
 
 	GameStateClass = AWMAGameState::StaticClass();
+}
+
+void AWMAGameModeBase::CreateServer()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName("WithMyAlly15F"), true, ((FString)(L"Listen")));
+}
+
+void AWMAGameModeBase::JoinServer()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName("127.0.0.1")); // Level 이름 대신 IP 주소.
 }
 
 //void AWMAGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)

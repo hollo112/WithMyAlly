@@ -63,10 +63,21 @@ void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinish
 void AWMACharacterNonePlayer::AttackByAI()
 {
 	ProcessComboCommand();
+	PlayCloseAttackAnimation();
 }
 
 void AWMACharacterNonePlayer::NotifyComboActionEnd()
 {
 	Super::NotifyComboActionEnd();
 	OnAttackFinished.ExecuteIfBound();
+}
+
+void AWMACharacterNonePlayer::PlayCloseAttackAnimation()
+{
+	if (!HasAuthority())
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
+		AnimInstance->Montage_Play(ComboActionMontage);
+	}
 }

@@ -16,6 +16,9 @@ class WMA_API AWMAGameModeBase : public AGameModeBase
 	
 public:
 	AWMAGameModeBase();
+	void CreateServer();
+	void JoinServer();
+
 
 	//virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;			// 클라의 접속 요청을 처리하는 함수
 	//virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;		// 접속을 허용한 클라에 대응하는 플레이어컨트롤러를 만드는 함수

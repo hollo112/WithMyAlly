@@ -9,6 +9,7 @@
 #include "CharacterStat/WMACharacterStatComponent.h"
 #include "WMAComboActionData.h"
 #include "Item/ABWeaponItemData.h"
+#include "Net/UnrealNetwork.h"
 #include "WMACharacterControlData.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -39,13 +40,15 @@ AWMACharacterBase::AWMACharacterBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Female/Female_v04.Female_v04'"));
+
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Female/Female_walk_animation.Female_walk_animation'"));
+	
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/ABP_WMA_FEMALECharacter.ABP_WMA_FEMALECharacter_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/FemaleAnimation/ABP_Female.ABP_Female_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -333,6 +336,20 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
+}
+
+void AWMACharacterBase::MeshLoadCompleted()
+{
+	if (MeshHandle.IsValid())
+	{
+		USkeletalMesh* NPCMesh = Cast<USkeletalMesh>(MeshHandle->GetLoadedAsset());
+		if (NPCMesh)
+		{
+			GetMesh()->SetSkeletalMesh(NPCMesh);
+			GetMesh()->SetHiddenInGame(false);
+		}
+	}
+	MeshHandle->ReleaseHandle();
 }
 
 //// Called when the game starts or when spawned

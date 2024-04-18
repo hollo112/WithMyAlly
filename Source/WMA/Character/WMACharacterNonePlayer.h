@@ -37,4 +37,8 @@ protected:
 	FAICharacterAttackFinished OnAttackFinished;
 
 	virtual void NotifyComboActionEnd() override;
+
+// Actor Replication
+	UFUNCTION()
+	void PlayCloseAttackAnimation();
 };

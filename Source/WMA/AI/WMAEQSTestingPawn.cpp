@@ -2,9 +2,3 @@
 
 
 #include "AI/WMAEQSTestingPawn.h"
-
-UWMAEnvQuery::UWMAEnvQuery()
-{
-
-
-}

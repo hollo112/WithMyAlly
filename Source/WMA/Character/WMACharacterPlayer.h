@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(config = WMA)
 class WMA_API AWMACharacterPlayer : public AWMACharacterBase
 {
 	GENERATED_BODY()
@@ -100,4 +100,12 @@ protected:
 	void ChangeWeapon_Disposable();
 
 	void ChangeWeapon_Long();
+
+//Character Mesh
+	UPROPERTY(config)
+	TArray<FSoftObjectPath> PlayerMeshes;
+
+	void UpdateMeshesFromPlayerState();
+
+	virtual void OnRep_PlayerState();
 };

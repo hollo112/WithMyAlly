@@ -7,6 +7,7 @@
 #include "Interface/WMAAnimationCloseAttackInterface.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "Item/ABWeaponItemData.h"
+#include "Engine/StreamableManager.h"
 #include "WMACharacterBase.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -115,5 +116,10 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category = Equipment)
 	EItemType WeaponNow;																						// 어떤 무기를 들고 있는지 확인
+
+public:
+	void MeshLoadCompleted();
+
+	TSharedPtr<FStreamableHandle> MeshHandle;
 };
 
