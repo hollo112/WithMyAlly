@@ -18,6 +18,7 @@ class WMA_API AWMACharacterPlayer : public AWMACharacterBase
 public:
 	AWMACharacterPlayer();
 
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -51,6 +52,9 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
+	void StartInteract();
+	void StopInteract();
+
 // 무기 교체
 protected:
 	void ChangeWeapon_Short();
@@ -59,7 +63,9 @@ protected:
 
 	void ChangeWeapon_Long();
 
-
+	void StartRunning();
+	
+	void StopRunning();
 
 //애니메이션 몽타주 관련 Combo Action Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
@@ -80,4 +86,6 @@ protected:
 	int32 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
+
+	UINT8 IsRunning : 1;
 };
