@@ -91,6 +91,6 @@ protected:
 	virtual void EquipLong(class UABItemData* InItemData);
 	
 	UPROPERTY(VisibleAnywhere, Category = Equipment)
-	EItemType WeaponNow;			// 어떤 무기를 들고 있는지 확인
+	EItemType WeaponNow;																						// 어떤 무기를 들고 있는지 확인
 };
 

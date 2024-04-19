@@ -7,8 +7,6 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Physics/WMACollsion.h"
 #include "Interface/ABCharacterItemInterface.h"
-#include "Character/WMACharacterPlayer.h"
-#include <GameData/WMAGameInstance.h>
 
 // Sets default values
 AABItemBat::AABItemBat()
@@ -36,17 +34,10 @@ AABItemBat::AABItemBat()
 
 void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
-
-	if (!InteractionItem->InteractItem) {
-		return;
-	}
-
 	if (nullptr == Item) {
 		Destroy();
 		return;
 	}
-
 
 	IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
 	if (OverlappingPawn) {
@@ -58,11 +49,9 @@ void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 	SetActorEnableCollision(false);
 
 	Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
-
 }
 
 void AABItemBat::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
 {
 	Destroy();
 }
-

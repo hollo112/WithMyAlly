@@ -8,7 +8,6 @@
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
 #include "Item/ABWeaponItemData.h"
-#include "GameData/WMAGameInstance.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -38,13 +37,13 @@ AWMACharacterBase::AWMACharacterBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Female/Female_walk_animation.Female_walk_animation'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Female/Female_v04.Female_v04'"));
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/Female/ABP_WMA_FemaleCharacter.ABP_WMA_FemaleCharacter_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/ABP_WMA_FEMALECharacter.ABP_WMA_FEMALECharacter_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -180,9 +179,7 @@ void AWMACharacterBase::TakeItem(UABItemData* InItemData)
 void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
-	
-	if (WeaponItemData && InteractionItem->InteractItem) {
+	if (WeaponItemData) {
 		ShortWeapon->SetHiddenInGame(false);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
@@ -190,7 +187,6 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
 
 		WeaponNow = EItemType::ShortWeapon;										// 현재 들고 있는 무기 변경
-
 	}
 
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
