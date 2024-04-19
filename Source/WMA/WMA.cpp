@@ -3,5 +3,5 @@
 #include "WMA.h"
 #include "Modules/ModuleManager.h"
 
-DEFINE_LOG_CATEGORY(LogWMANetwork);
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, WMA, "WMA");
+IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, WMA, "WMA" );
+ 

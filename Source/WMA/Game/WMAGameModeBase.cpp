@@ -2,9 +2,6 @@
 
 
 #include "Game/WMAGameModeBase.h"
-#include "WMA.h"
-#include "WMAGameState.h"
-#include "Kismet/GameplayStatics.h"
 
 AWMAGameModeBase::AWMAGameModeBase()
 {
@@ -19,67 +16,4 @@ AWMAGameModeBase::AWMAGameModeBase()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
-
-	GameStateClass = AWMAGameState::StaticClass();
 }
-
-void AWMAGameModeBase::CreateServer()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), FName("WithMyAlly15F"), true, ((FString)(L"Listen")));
-}
-
-void AWMAGameModeBase::JoinServer()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), FName("127.0.0.1")); // Level 이름 대신 IP 주소.
-}
-
-//void AWMAGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-//{
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("=========================================================================="));
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-//
-//	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
-//
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
-//}
-//
-//APlayerController* AWMAGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-//{
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-//
-//	APlayerController* NewPlayerController = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
-//
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
-//
-//	return NewPlayerController;
-//}
-//
-//void AWMAGameModeBase::PostLogin(APlayerController* NewPlayer)
-//{
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-//
-//	Super::PostLogin(NewPlayer);
-//	UNetDriver* NetDriver = GetNetDriver();
-//	if (NetDriver)
-//	{
-//		for (const auto& Connection : NetDriver->ClientConnections)
-//		{
-//			WMA_LOG(LogWMANetwork, Log, TEXT("Client Connections : %s"), *Connection->GetName());
-//		}
-//	}
-//	else
-//	{
-//		//NetDriver->ClientConnections.Num();
-//		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No NetDriver"));
-//	}
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
-//}
-//
-//void AWMAGameModeBase::StartPlay()
-//{
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-//
-//	Super::StartPlay();
-//
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
-//}

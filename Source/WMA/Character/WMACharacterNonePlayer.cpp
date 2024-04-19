@@ -10,10 +10,10 @@ void AWMACharacterNonePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Stat
+// Stat
 	SetName(2);											// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
-	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed; 
 }
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
@@ -57,27 +57,8 @@ float AWMACharacterNonePlayer::GetAITurnSpeed()
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
-	OnAttackFinished = InOnAttackFinished;
 }
 
 void AWMACharacterNonePlayer::AttackByAI()
 {
-	ProcessComboCommand();
-	PlayCloseAttackAnimation();
-}
-
-void AWMACharacterNonePlayer::NotifyComboActionEnd()
-{
-	Super::NotifyComboActionEnd();
-	OnAttackFinished.ExecuteIfBound();
-}
-
-void AWMACharacterNonePlayer::PlayCloseAttackAnimation()
-{
-	if (!HasAuthority())
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		AnimInstance->StopAllMontages(0.0f);
-		AnimInstance->Montage_Play(ComboActionMontage);
-	}
 }
