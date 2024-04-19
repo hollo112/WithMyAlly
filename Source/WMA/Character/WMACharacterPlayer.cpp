@@ -11,6 +11,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WMAComboActionData.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
+#include "GameData/WMAGameInstance.h"
+#include "Item/ABItemBat.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -55,6 +57,7 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	{
 		AttackAction = InputActionAttackRef.Object;
 	}
+
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -84,6 +87,10 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::StartRunning);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AWMACharacterPlayer::StartInteract);
+	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AWMACharacterPlayer::StopInteract);
 
 	// 무기 교체 Input
 	InputComponent->BindAction("ChangeWeapon_Short_1", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Short);
@@ -114,6 +121,8 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
 }
+
+
 
 void AWMACharacterPlayer::ChangeWeapon_Short()
 {
@@ -233,3 +242,43 @@ void AWMACharacterPlayer::ComboCheck()
 		HasNextComboCommand = false;
 	}
 }
+
+void AWMACharacterPlayer::StartRunning()
+{
+
+	GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+}
+
+void AWMACharacterPlayer::StopRunning()
+{
+
+	GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
+}
+
+void AWMACharacterPlayer::StartInteract()
+{
+
+	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
+	if (InteractionItem) {
+		bool IItem = InteractionItem->InteractItem;
+		IItem = true;
+		InteractionItem->InteractItem = IItem;
+
+		//UE_LOG(LogTemp, Warning, TEXT("IItem :: %s"), InteractionItem->InteractItem ? TEXT("true") : TEXT("false"));
+	}
+
+}
+
+void AWMACharacterPlayer::StopInteract()
+{
+	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
+	if (InteractionItem) {
+		bool IItem = InteractionItem->InteractItem;
+		IItem = false;
+		InteractionItem->InteractItem = IItem;
+
+		//UE_LOG(LogTemp, Warning, TEXT("IItem :: %s"), InteractionItem->InteractItem ? TEXT("true") : TEXT("false"));
+	}
+
+}
+

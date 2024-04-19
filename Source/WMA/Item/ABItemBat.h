@@ -34,4 +34,6 @@ protected:
 
 	UFUNCTION()
 	void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);
+
+
 };
