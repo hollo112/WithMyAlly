@@ -41,14 +41,14 @@ AWMACharacterBase::AWMACharacterBase()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Female/Female_walk_animation.Female_walk_animation'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/Female/Female_Idle.Female_Idle"));
 
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/FemaleAnimation/ABP_Female.ABP_Female_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Female/Animations/ABP_Female.ABP_Female_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -82,13 +82,13 @@ AWMACharacterBase::AWMACharacterBase()
 
 	// Weapon Component
 	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
-	ShortWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	ShortWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	DisposableWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisposableWeapon"));
-	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
-	LongWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	LongWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 }

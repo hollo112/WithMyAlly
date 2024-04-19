@@ -69,6 +69,13 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 
 	bCanAttack = true;
 
+	// AnimInstance
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Male/Animations/ABP_Male.ABP_Male_C"));
+	if (AnimInstanceClassRef.Class)
+	{
+
+		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -128,6 +135,7 @@ void AWMACharacterPlayer::PossessedBy(AController* NewController)
 
 	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));*/
 	UpdateMeshesFromPlayerState();
+	UpdateAnimInstance();
 }
 
 void AWMACharacterPlayer::OnRep_Owner()
@@ -562,6 +570,11 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	UpdateMeshesFromPlayerState();
+}
+
+void AWMACharacterPlayer::UpdateAnimInstance()
+{
+
 }
 
 

@@ -108,4 +108,7 @@ protected:
 	void UpdateMeshesFromPlayerState();
 
 	virtual void OnRep_PlayerState();
+
+	//Character AnimInstace
+	void UpdateAnimInstance();
 };
