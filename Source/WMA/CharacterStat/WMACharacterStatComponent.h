@@ -10,12 +10,12 @@
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);										// 델리게이트. 죽었을 때 신호
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);		// 현재 HP
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class WMA_API UWMACharacterStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+	public:
 	// Sets default values for this component's properties
 	UWMACharacterStatComponent();
 
@@ -42,7 +42,7 @@ protected:
 	//UPROPERTY(VisibleInstanceOnly, Category = Stat)
 	//float MaxHp;
 
-	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHp, Transient, VisibleInstanceOnly, Category = Stat)		// Hp가 변경될때마다 OnRep_CurrentHp 함수 호출
 	float CurrentHp;
 
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
@@ -53,4 +53,11 @@ protected:
 
 	UPROPERTY(VisibleInstanceOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
+
+protected:
+	virtual void ReadyForReplication() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_CurrentHp();
 };
