@@ -8,13 +8,13 @@
 #include "WMACharacterNonePlayer.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class WMA_API AWMACharacterNonePlayer : public AWMACharacterBase, public IWMACharacterAIInterface
 {
 	GENERATED_BODY()
-protected:
+	protected:
 	virtual void BeginPlay() override;
 
 public:
@@ -24,7 +24,7 @@ protected:
 	void SetDead() override;
 	float DeadEventDelayTime = 5.0f;	// 몇초뒤에 사라지게 하기위한 변수
 
-// AI Section
+	// AI Section
 protected:
 	virtual float GetAIPatrolRadius() override;
 	virtual float GetAIDetectRange() override;
@@ -33,4 +33,12 @@ protected:
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;
+
+	FAICharacterAttackFinished OnAttackFinished;
+
+	virtual void NotifyComboActionEnd() override;
+
+	// Actor Replication
+	UFUNCTION()
+	void PlayCloseAttackAnimation();
 };
