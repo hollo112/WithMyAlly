@@ -23,25 +23,16 @@ AWMAGameModeBase::AWMAGameModeBase()
 	GameStateClass = AWMAGameState::StaticClass();
 }
 
-void AWMAGameModeBase::CreateServer()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), FName("WithMyAlly15F"), true, ((FString)(L"Listen")));
-}
 
-void AWMAGameModeBase::JoinServer()
+void AWMAGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
-	UGameplayStatics::OpenLevel(GetWorld(), FName("127.0.0.1")); // Level 이름 대신 IP 주소.
-}
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("=========================================================================="));
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
 
-//void AWMAGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
-//{
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("=========================================================================="));
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-//
-//	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
-//
-//	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
-//}
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+
+	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));
+}
 //
 //APlayerController* AWMAGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 //{

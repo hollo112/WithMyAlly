@@ -87,7 +87,7 @@ protected:
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
 
-	float CloseAttackTime = 1.27f;					// 공격 끝나는 시간
+	float CloseAttackTime = 2.27f;					// 공격 끝나는 시간
 	float LastCloseAttackStartTime = 0.0f;
 	float CloseAttackTimeDifference = 0.0f;			// 서버와 클라의 시간 차이
 	float AcceptCheckDistance = 300.0f;				// 공격액터와 피격액터 사이가 3미터 이내면 공격 성공으로 인식

@@ -69,13 +69,13 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 
 	bCanAttack = true;
 
-	// AnimInstance
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Male/Animations/ABP_Male.ABP_Male_C"));
-	if (AnimInstanceClassRef.Class)
-	{
+	//// AnimInstance
+	//static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Male/Animations/ABP_Male.ABP_Male_C"));
+	//if (AnimInstanceClassRef.Class)
+	//{
 
-		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
-	}
+	//	GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	//}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -275,7 +275,7 @@ void AWMACharacterPlayer::Attack()
 
 					PlayCloseAttackAnimation();
 				}
-				GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+				//GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 				ServerRPCCloseAttack(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());			// 서버의 시간 클라에게 넘겨주기
 				/*bCanAttack = false;
 				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -570,11 +570,35 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	UpdateMeshesFromPlayerState();
+	if (!HasAuthority())
+	{
+		if (IsLocallyControlled())
+		{
+			auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
+			GetMesh()->SetAnimInstanceClass(ABPClass);
+
+			auto AMClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_MaleComboAttack.AM_MaleComboAttack'"));
+			if (AMClass)
+			{
+				ComboActionMontage = AMClass;
+			}
+		}
+	}
 }
 
 void AWMACharacterPlayer::UpdateAnimInstance()
 {
+	if (!IsLocallyControlled())
+	{
+		auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
+		GetMesh()->SetAnimInstanceClass(ABPClass);
 
+		auto AMClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_MaleComboAttack.AM_MaleComboAttack'"));
+		if (AMClass)
+		{
+			ComboActionMontage = AMClass;
+		}
+	}
 }
 
 
