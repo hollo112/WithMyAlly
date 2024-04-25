@@ -8,3 +8,4 @@
 /.vsconfig
 *.sln
 *_BuiltData.uasset
+/Binaries
