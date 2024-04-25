@@ -7,7 +7,10 @@
 #include "Physics/WMACollsion.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
+#include "WMAComboActionData.h"
 #include "Item/ABWeaponItemData.h"
+#include "Net/UnrealNetwork.h"
+#include "WMACharacterControlData.h"
 #include "GameData/WMAGameInstance.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -38,13 +41,15 @@ AWMACharacterBase::AWMACharacterBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Female/Female_walk_animation.Female_walk_animation'"));
+
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/Female/Female_Idle.Female_Idle"));
+	
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animation/Female/ABP_WMA_FemaleCharacter.ABP_WMA_FemaleCharacter_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Female/Animations/ABP_Female.ABP_Female_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -54,6 +59,18 @@ AWMACharacterBase::AWMACharacterBase()
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Female/Animations/AM_FemaleComboAttack.AM_FemaleComboAttack'"));
+	if (ComboActionMontageRef.Object)
+	{
+		ComboActionMontage = ComboActionMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UWMAComboActionData> ComboActionDataRef(TEXT("/Script/WMA.WMAComboActionData'/Game/CharacterAction/WMAA_ComboAttack.WMAA_ComboAttack'"));
+	if (ComboActionDataRef.Object)
+	{
+		ComboActionData = ComboActionDataRef.Object;
 	}
 
 	// Stat Component
@@ -66,13 +83,13 @@ AWMACharacterBase::AWMACharacterBase()
 
 	// Weapon Component
 	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
-	ShortWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	ShortWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	DisposableWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DisposableWeapon"));
-	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	DisposableWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
-	LongWeapon->SetupAttachment(GetMesh(), TEXT("joint49_socket"));
+	LongWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 }
@@ -82,6 +99,99 @@ void AWMACharacterBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Stat->OnHpZero.AddUObject(this, &AWMACharacterBase::SetDead);
+}
+
+void AWMACharacterBase::SetCharacterControlData(const UWMACharacterControlData* CharacterControlData)
+{
+	// Pawn
+	bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
+
+	// CharacterMovement
+	GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
+	GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
+	GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
+}
+
+void AWMACharacterBase::ProcessComboCommand()
+{
+	if (CurrentCombo == 0)
+	{
+		ComboActionBegin();
+		return;
+	}
+
+	if (!ComboTimerHandle.IsValid())
+	{
+		HasNextComboCommand = false;
+	}
+	else
+	{
+		HasNextComboCommand = true;
+	}
+}
+
+void AWMACharacterBase::ComboActionBegin()
+{
+	// Combo Status
+	CurrentCombo = 1;
+
+	// Movement Setting
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	// Animation Setting
+	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &AWMACharacterBase::ComboActionEnd);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
+
+	ComboTimerHandle.Invalidate();
+	SetComboCheckTimer();
+}
+
+void AWMACharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
+{
+	ensure(CurrentCombo != 0);
+	CurrentCombo = 0;
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	NotifyComboActionEnd();
+}
+
+void AWMACharacterBase::NotifyComboActionEnd()
+{
+
+}
+
+void AWMACharacterBase::SetComboCheckTimer()
+{
+	int32 ComboIndex = CurrentCombo - 1;
+	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
+
+	const float AttackSpeedRate = Stat->GetCharacterStat().AttackSpeed;
+	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
+
+	if (ComboEffectiveTime > 0.0f)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &AWMACharacterBase::ComboCheck, ComboEffectiveTime, false);
+	}
+}
+
+void AWMACharacterBase::ComboCheck()
+{
+	ComboTimerHandle.Invalidate();
+	if (HasNextComboCommand)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
+		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
+		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
+		SetComboCheckTimer();
+		HasNextComboCommand = false;
+	}
 }
 
 void AWMACharacterBase::CloseAttackHitCheck()
@@ -118,7 +228,7 @@ void AWMACharacterBase::CloseAttackHitCheck()
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_WMAACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
-	
+
 	if (HitDetected)
 	{
 		FDamageEvent DamageEvent;
@@ -190,7 +300,6 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
 
 		WeaponNow = EItemType::ShortWeapon;										// 현재 들고 있는 무기 변경
-
 	}
 
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
@@ -230,6 +339,20 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
+}
+
+void AWMACharacterBase::MeshLoadCompleted()
+{
+	if (MeshHandle.IsValid())
+	{
+		USkeletalMesh* NPCMesh = Cast<USkeletalMesh>(MeshHandle->GetLoadedAsset());
+		if (NPCMesh)
+		{
+			GetMesh()->SetSkeletalMesh(NPCMesh);
+			GetMesh()->SetHiddenInGame(false);
+		}
+	}
+	MeshHandle->ReleaseHandle();
 }
 
 //// Called when the game starts or when spawned
