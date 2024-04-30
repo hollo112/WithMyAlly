@@ -83,10 +83,7 @@ protected:
 	virtual void SetDead();
 	void PlayDeadAnimation();
 
-// Stat Section
-protected:
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UWMACharacterStatComponent> Stat;
+
 
 public:
 	int32 GetName();
@@ -121,5 +118,38 @@ public:
 	void MeshLoadCompleted();
 
 	TSharedPtr<FStreamableHandle> MeshHandle;
+
+// Stat Section
+protected:
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWMACharacterStatComponent> Stat;
+
+protected:
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> FAUW1;
+
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> FAUW2;
+
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> FAUW3;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "UI")
+	TSubclassOf<UUserWidget> IMGWidgetClass;
+
+	//UPROPERTY()
+	//UUserWidget* FirstAttackedWidget;
+	TSubclassOf<UUserWidget> FirstAttackedWidgetClass;
+	TSubclassOf<UUserWidget> SecondAttackedWidgetClass;
+	TSubclassOf<UUserWidget> ThirdAttackedWidgetClass;
+
+public:
+
+	void UpdateAttackedIMG() const;
+
+	UINT8 StartAttack1;
+	UINT8 StartAttack2;
+	UINT8 StartAttack3;
+
 };
 

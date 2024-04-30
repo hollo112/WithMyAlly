@@ -12,6 +12,12 @@
 #include "Net/UnrealNetwork.h"
 #include "WMACharacterControlData.h"
 #include "GameData/WMAGameInstance.h"
+#include "Components/WidgetComponent.h"
+#include <Components/Image.h>
+#include "UI/WMAWidgetAttacked1.h"
+#include "Blueprint/UserWidget.h"
+#include <UI/WMAWidgetAttacked2.h>
+#include <UI/WMAWidgetAttacked3.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -73,8 +79,7 @@ AWMACharacterBase::AWMACharacterBase()
 		ComboActionData = ComboActionDataRef.Object;
 	}
 
-	// Stat Component
-	Stat = CreateDefaultSubobject<UWMACharacterStatComponent>(TEXT("Stat"));
+
 
 	// Item Actions
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipShort)));
@@ -92,7 +97,68 @@ AWMACharacterBase::AWMACharacterBase()
 	LongWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
+
+	// Stat Component
+	Stat = CreateDefaultSubobject<UWMACharacterStatComponent>(TEXT("Stat"));
+	FAUW1 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget1"));
+	FAUW2 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget2"));
+	FAUW3 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget3"));
+
+	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG1(TEXT("WidgetBlueprint'/Game/UI/WBP_FirstAttackedIMG.WBP_FirstAttackedIMG_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG2(TEXT("WidgetBlueprint'/Game/UI/WBP_SecondAttackedIMG.WBP_SecondAttackedIMG_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG3(TEXT("WidgetBlueprint'/Game/UI/WBP_ThirdAttackedIMG.WBP_ThirdAttackedIMG_C'"));
+
+	if (FAIMG1.Succeeded())
+	{
+		FirstAttackedWidgetClass = FAIMG1.Class;
+	}
+
+	if (FAIMG2.Succeeded())
+	{
+		SecondAttackedWidgetClass = FAIMG2.Class;
+	}
+
+	if (FAIMG3.Succeeded())
+	{
+		ThirdAttackedWidgetClass = FAIMG3.Class;
+	}
+
+	//FAUW1 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget1"));
+	//FAUW2 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget2"));
+	//FAUW3 = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget3"));
+
+	//static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG1(TEXT("WidgetBlueprint'/Game/UI/WBP_FirstAttackedIMG.WBP_FirstAttackedIMG_C'"));
+	//static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG2(TEXT("WidgetBlueprint'/Game/UI/WBP_SecondAttackedIMG.WBP_SecondAttackedIMG_C'"));
+	//static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG3(TEXT("WidgetBlueprint'/Game/UI/WBP_ThirdAttackedIMG.WBP_ThirdAttackedIMG_C'"));
+
+
+	//// 올바른 클래스 찾기 변수 사용
+	//if (FAIMG3.Succeeded() && FAIMG2.Succeeded() && FAIMG1.Succeeded()) {
+	//	UUserWidget* IMGWidget1 = CreateWidget<UUserWidget>(GetWorld(), FAIMG1.Class);
+	//	UUserWidget* IMGWidget2 = CreateWidget<UUserWidget>(GetWorld(), FAIMG2.Class);
+	//	UUserWidget* IMGWidget3 = CreateWidget<UUserWidget>(GetWorld(), FAIMG3.Class);
+
+	//	if (StartAttack1 == 1 && IMGWidget1) {
+	//		IMGWidget1->AddToViewport();
+	//		UWMAWidgetAttacked1* IMG1 = Cast<UWMAWidgetAttacked1>(IMGWidget1);
+	//		if (IMG1) {
+	//			IMG1->FadeInAnim();
+	//		}
+	//	}
+
+	//	/*if (IMGWidget2) {
+	//		IMGWidget2->AddToViewport();
+	//	}
+
+	//	if (IMGWidget3) {
+	//		IMGWidget3->AddToViewport();
+	//	}*/
+	//}
+
+
+
 }
+
 
 void AWMACharacterBase::PostInitializeComponents()
 {
@@ -291,8 +357,8 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
 	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
-	
-	if (WeaponItemData && InteractionItem->InteractItem) {
+	// && InteractionItem->InteractItem
+	if (WeaponItemData) {
 		ShortWeapon->SetHiddenInGame(false);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
@@ -353,6 +419,42 @@ void AWMACharacterBase::MeshLoadCompleted()
 		}
 	}
 	MeshHandle->ReleaseHandle();
+}
+
+void AWMACharacterBase::UpdateAttackedIMG() const
+{
+
+	// 올바른 클래스 찾기 변수 사용
+	if (FirstAttackedWidgetClass && SecondAttackedWidgetClass && ThirdAttackedWidgetClass) {
+		UUserWidget* IMGWidget1 = CreateWidget<UUserWidget>(GetWorld(), FirstAttackedWidgetClass);
+		UUserWidget* IMGWidget2 = CreateWidget<UUserWidget>(GetWorld(), SecondAttackedWidgetClass);
+		UUserWidget* IMGWidget3 = CreateWidget<UUserWidget>(GetWorld(), ThirdAttackedWidgetClass);
+
+		if (StartAttack1 == 1 && IMGWidget1) {
+			IMGWidget1->AddToViewport();
+			UWMAWidgetAttacked1* IMG1 = Cast<UWMAWidgetAttacked1>(IMGWidget1);
+			if (IMG1) {
+				IMG1->FadeInAnim();
+			}
+		}
+
+		if (StartAttack2 == 1 && IMGWidget2) {
+			IMGWidget2->AddToViewport();
+			UWMAWidgetAttacked2* IMG2 = Cast<UWMAWidgetAttacked2>(IMGWidget2);
+			if (IMG2) {
+				IMG2->FadeInAnim();
+			}
+		}
+
+		if (StartAttack3 == 1 && IMGWidget3) {
+			IMGWidget3->AddToViewport();
+			UWMAWidgetAttacked3* IMG3 = Cast<UWMAWidgetAttacked3>(IMGWidget3);
+			if (IMG3) {
+				IMG3->FadeInAnim();
+			}
+		}
+	}
+
 }
 
 //// Called when the game starts or when spawned

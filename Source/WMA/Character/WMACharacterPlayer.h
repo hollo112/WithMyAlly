@@ -63,6 +63,13 @@ protected:
 	void StartInteract();
 	void StopInteract();
 
+	void StartAttacked1();
+	void StopAttacked1();
+	void StartAttacked2();
+	void StopAttacked2();
+	void StartAttacked3();
+	void StopAttacked3();
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -117,4 +124,7 @@ protected:
 
 	//Character AnimInstace
 	void UpdateAnimInstance();
+
+
+
 };

@@ -36,11 +36,11 @@ AABItemBat::AABItemBat()
 
 void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
+	//UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
 
-	if (!InteractionItem->InteractItem) {
-		return;
-	}
+	//if (!InteractionItem->InteractItem) {
+	//	return;
+	//}
 
 	if (nullptr == Item) {
 		Destroy();

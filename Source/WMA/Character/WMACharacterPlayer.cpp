@@ -24,6 +24,8 @@
 #include "Engine/AssetManager.h"
 #include "GameData/WMAGameInstance.h"
 #include "Item/ABItemBat.h"
+#include "UI/WMAWidgetAttacked1.h"
+
 
 AWMACharacterPlayer::AWMACharacterPlayer()
 {
@@ -70,6 +72,7 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
+	
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -174,6 +177,17 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AWMACharacterPlayer::StartInteract);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AWMACharacterPlayer::StopInteract);
+
+	PlayerInputComponent->BindAction("Attacked1", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked1);
+	PlayerInputComponent->BindAction("Attacked1", IE_Released, this, &AWMACharacterPlayer::StopAttacked1);
+
+	PlayerInputComponent->BindAction("Attacked2", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked2);
+	PlayerInputComponent->BindAction("Attacked2", IE_Released, this, &AWMACharacterPlayer::StopAttacked2);
+
+	PlayerInputComponent->BindAction("Attacked3", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked3);
+	PlayerInputComponent->BindAction("Attacked3", IE_Released, this, &AWMACharacterPlayer::StopAttacked3);
+
+
 
 	// 무기 교체 Input
 	InputComponent->BindAction("ChangeWeapon_Short_1", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Short);
@@ -634,5 +648,43 @@ void AWMACharacterPlayer::StopInteract()
 		//UE_LOG(LogTemp, Warning, TEXT("IItem :: %s"), InteractionItem->InteractItem ? TEXT("true") : TEXT("false"));
 	}
 
+}
+
+void AWMACharacterPlayer::StartAttacked1()
+{	
+	StartAttack1 = 1;
+
+	UpdateAttackedIMG();
+	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
+}
+
+void AWMACharacterPlayer::StopAttacked1()
+{
+	StartAttack1 = 0;
+	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
+}
+
+void AWMACharacterPlayer::StartAttacked2()
+{
+	StartAttack2 = 1;
+
+	UpdateAttackedIMG();
+}
+
+void AWMACharacterPlayer::StopAttacked2()
+{
+	StartAttack2 = 0;
+}
+
+void AWMACharacterPlayer::StartAttacked3()
+{
+	StartAttack3 = 1;
+
+	UpdateAttackedIMG();
+}
+
+void AWMACharacterPlayer::StopAttacked3()
+{
+	StartAttack3 = 0;
 }
 
