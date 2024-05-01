@@ -117,4 +117,12 @@ protected:
 
 	//Character AnimInstace
 	void UpdateAnimInstance();
+
+	//respawn
+public:
+	void ResetPlayer();
+	void ResetAttack();
+
+	FTimerHandle AttackTimerHandle;
+	FTimerHandle DeadTimerHandle;
 };

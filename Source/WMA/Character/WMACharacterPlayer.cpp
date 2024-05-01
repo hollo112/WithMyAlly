@@ -23,6 +23,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/AssetManager.h"
 #include "GameData/WMAGameInstance.h"
+#include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"
 
 AWMACharacterPlayer::AWMACharacterPlayer()
@@ -88,6 +89,7 @@ void AWMACharacterPlayer::BeginPlay()
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -596,6 +598,14 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 			ComboActionMontage = AMClass;
 		}
 	}
+}
+
+void AWMACharacterPlayer::ResetPlayer()
+{
+}
+
+void AWMACharacterPlayer::ResetAttack()
+{
 }
 
 void AWMACharacterPlayer::StartRunning()
