@@ -274,21 +274,8 @@ void AWMACharacterPlayer::Attack()
 
 					PlayCloseAttackAnimation();
 				}
-				//GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 				ServerRPCCloseAttack(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());			// 서버의 시간 클라에게 넘겨주기
-				/*bCanAttack = false;
-				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-				FTimerHandle Handle;
-				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-					{
-						bCanAttack = true;
-						GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-					}
-				), CloseAttackTime, false, -1.0f);
-
-				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-				AnimInstance->Montage_Play(ComboActionMontage);*/
+				
 			}
 		}
 	}
@@ -416,7 +403,7 @@ bool AWMACharacterPlayer::ServerRPCCloseAttack_Validate(float AttackStartTime)
 		return true;
 	}
 
-	return (AttackStartTime - LastCloseAttackStartTime) > CloseAttackTime;
+	return (AttackStartTime - LastCloseAttackStartTime) > (CloseAttackTime - 0.4f);
 }
 
 void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartTime)
@@ -425,6 +412,7 @@ void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartT
 	OnRep_CanCloseAttack();
 
 	float AttackTimeDifference = GetWorld()->GetTimeSeconds() - AttackStartTime;		// 서버의 시간에서 클라가 보낸시간을 뺀다
+	AttackTimeDifference = FMath::Clamp(AttackTimeDifference, 0.0f, CloseAttackTime - 0.01f);
 
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
@@ -600,13 +588,7 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 	}
 }
 
-void AWMACharacterPlayer::ResetPlayer()
-{
-}
 
-void AWMACharacterPlayer::ResetAttack()
-{
-}
 
 void AWMACharacterPlayer::StartRunning()
 {

@@ -74,3 +74,4 @@ void UWMACharacterStatComponent::OnRep_CurrentHp()
 		OnHpZero.Broadcast();
 	}
 }
+
