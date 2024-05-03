@@ -592,18 +592,22 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 
 void AWMACharacterPlayer::StartRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+	}
 }
 
 void AWMACharacterPlayer::StopRunning()
 {
-
-	GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
+	}
 }
 
 void AWMACharacterPlayer::StartInteract()
 {
-
 	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
 	if (InteractionItem) {
 		bool IItem = InteractionItem->InteractItem;

@@ -20,6 +20,32 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 {
 	AIControllerClass = AWMAAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	//mesh & animations
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/Zombie/Zombie_Idle.Zombie_Idle"));
+	if (CharacterMeshRef.Object)
+	{
+		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
+	}
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Zombie/Animation/ABP_Zombie.ABP_Zombie_C"));
+	if (AnimInstanceClassRef.Class)
+	{
+		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/Animation/AM_Dead.AM_Dead'"));
+	if (DeadMontageRef.Object)
+	{
+		DeadMontage = DeadMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_ZomAttack.AM_ZomAttack'"));
+	if (ComboActionMontageRef.Object)
+	{
+		ComboActionMontage = ComboActionMontageRef.Object;
+	}
+
 }
 
 void AWMACharacterNonePlayer::SetDead()
@@ -63,7 +89,7 @@ void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinish
 void AWMACharacterNonePlayer::AttackByAI()
 {
 	ProcessComboCommand();
-	PlayCloseAttackAnimation();
+	//MulticastRPCZomAttack();
 }
 
 void AWMACharacterNonePlayer::NotifyComboActionEnd()
@@ -72,12 +98,14 @@ void AWMACharacterNonePlayer::NotifyComboActionEnd()
 	OnAttackFinished.ExecuteIfBound();
 }
 
-void AWMACharacterNonePlayer::PlayCloseAttackAnimation()
+void AWMACharacterNonePlayer::PlayAttackAnimation()
 {
-	if (!HasAuthority())
-	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		AnimInstance->StopAllMontages(0.0f);
-		AnimInstance->Montage_Play(ComboActionMontage);
-	}
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(ComboActionMontage);
+}
+
+void AWMACharacterNonePlayer::MulticastRPCZomAttack_Implementation()
+{
+	PlayAttackAnimation();
 }

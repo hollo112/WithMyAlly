@@ -34,4 +34,8 @@ public:
 	AWMAElevatorTeleport* otherTele;
 	UPROPERTY()
 	bool teleporting;
+	UPROPERTY()
+	bool bPlayerIn;
+
+	void WaitForPlayerInteract(AActor* Player);
 };

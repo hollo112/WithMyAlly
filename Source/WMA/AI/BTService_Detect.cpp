@@ -6,6 +6,9 @@
 #include "AIController.h"
 #include "Interface/WMACharacterAIInterface.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "CharacterStat/WMACharacterStatComponent.h"
 #include "Physics/WMACollsion.h"
 #include "DrawDebugHelpers.h"
 
@@ -52,11 +55,12 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	);
 
 	bool bFoundPlayer = false;
-
 	if (bResult)
 	{
 		for (auto const& OverlapResult : OverlapResults)
 		{
+			ACharacter* player = Cast<ACharacter>(ControllingPawn);
+			player->GetCharacterMovement()->MaxWalkSpeed = 150;
 			APawn* Pawn = Cast<APawn>(OverlapResult.GetActor());
 			if (Pawn && Pawn->GetController()->IsPlayerController())
 			{
@@ -75,6 +79,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (!bFoundPlayer)
 	{
 		// 감지된 플레이어가 없으니 타겟을 리셋합니다.
+		ACharacter* player = Cast<ACharacter>(ControllingPawn);
+		player->GetCharacterMovement()->MaxWalkSpeed = 50;
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);
 		DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
 	}

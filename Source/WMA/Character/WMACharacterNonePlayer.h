@@ -39,6 +39,8 @@ protected:
 	virtual void NotifyComboActionEnd() override;
 
 	// Actor Replication
-	UFUNCTION()
-	void PlayCloseAttackAnimation();
+	void PlayAttackAnimation();
+
+	UFUNCTION(Client, Unreliable)
+	void MulticastRPCZomAttack();
 };

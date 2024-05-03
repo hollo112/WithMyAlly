@@ -19,9 +19,11 @@ void AWMAElevatorTeleport::EnterTeleporter(AActor* overlappedActor, AActor* othe
 {
 	if (otherActor && otherActor != this)
 	{
+		AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(otherActor);
+		bPlayerIn = true;
+		//WaitForPlayerInteract(otherActor);
 		if (otherTele)
 		{
-			AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(otherActor);
 			if (player && !otherTele->teleporting)
 			{
 				teleporting = true;
@@ -37,13 +39,35 @@ void AWMAElevatorTeleport::ExitTeleporter(AActor* overlappedActor, AActor* other
 {
 	if (otherActor && otherActor != this)
 	{
+		bPlayerIn = false;
 		if (otherTele && !teleporting)
 		{
 			AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(otherActor);
 			if (player && !otherTele->teleporting)
 			{
 				otherTele->teleporting = false;
+			}
+		}
+	}
+}
 
+void AWMAElevatorTeleport::WaitForPlayerInteract(AActor* Player)
+{
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(Player);
+	while (bPlayerIn)
+	{
+		UE_LOG(LogTemp, Log, TEXT("playerIn"));
+		if (player->bInteract)
+		{
+			if (otherTele)
+			{
+				if (player && !otherTele->teleporting)
+				{
+					teleporting = true;
+					player->SetActorRotation(otherTele->GetActorRotation());
+					player->GetController()->SetControlRotation(player->GetActorRotation());
+					player->SetActorLocation(otherTele->GetActorLocation());
+				}
 			}
 		}
 	}
