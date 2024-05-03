@@ -3,6 +3,7 @@
 
 #include "Game/WMAGameState.h"
 #include "WMA.h"
+#include "Net/UnrealNetwork.h"
 
 void AWMAGameState::HandleBeginPlay()
 {

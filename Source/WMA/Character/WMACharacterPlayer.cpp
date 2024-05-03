@@ -23,6 +23,7 @@
 #include "GameFramework/PlayerState.h"
 #include "Engine/AssetManager.h"
 #include "GameData/WMAGameInstance.h"
+#include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"
 #include "UI/WMAWidgetAttacked1.h"
 
@@ -74,7 +75,6 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
-	
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -93,7 +93,6 @@ void AWMACharacterPlayer::BeginPlay()
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
-
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -289,21 +288,8 @@ void AWMACharacterPlayer::Attack()
 
 					PlayCloseAttackAnimation();
 				}
-				//GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
 				ServerRPCCloseAttack(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());			// 서버의 시간 클라에게 넘겨주기
-				/*bCanAttack = false;
-				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-				FTimerHandle Handle;
-				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-					{
-						bCanAttack = true;
-						GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-					}
-				), CloseAttackTime, false, -1.0f);
-
-				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-				AnimInstance->Montage_Play(ComboActionMontage);*/
+				
 			}
 		}
 	}
@@ -431,7 +417,7 @@ bool AWMACharacterPlayer::ServerRPCCloseAttack_Validate(float AttackStartTime)
 		return true;
 	}
 
-	return (AttackStartTime - LastCloseAttackStartTime) > CloseAttackTime;
+	return (AttackStartTime - LastCloseAttackStartTime) > (CloseAttackTime - 0.4f);
 }
 
 void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartTime)
@@ -440,6 +426,7 @@ void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartT
 	OnRep_CanCloseAttack();
 
 	float AttackTimeDifference = GetWorld()->GetTimeSeconds() - AttackStartTime;		// 서버의 시간에서 클라가 보낸시간을 뺀다
+	AttackTimeDifference = FMath::Clamp(AttackTimeDifference, 0.0f, CloseAttackTime - 0.01f);
 
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
@@ -615,15 +602,29 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 	}
 }
 
+void AWMACharacterPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("IN"));
+	AABItemBat* Bat = Cast<AABItemBat>(OtherActor);
+	MyBat = Bat;
+}
+
+
+
 void AWMACharacterPlayer::StartRunning()
 {
-	GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+	}
 }
 
 void AWMACharacterPlayer::StopRunning()
 {
-
-	GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
+	}
 }
 
 void AWMACharacterPlayer::StartInteract() {
