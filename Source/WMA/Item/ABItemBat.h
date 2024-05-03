@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interface/ABCharacterItemInterface.h"
 #include "GameFramework/Actor.h"
 #include "ABItemBat.generated.h"
 
@@ -15,6 +16,8 @@ public:
 	// Sets default values for this actor's properties
 	AABItemBat();
 
+	virtual void Tick(float DeltaTime) override;
+	
 protected:
 
 	UPROPERTY(VisibleAnywhere, Category = Box)
@@ -33,7 +36,30 @@ protected:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
 	UFUNCTION()
+	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
 	void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);
 
+	TObjectPtr<class UBoxComponent> TempTrigger;
+	TObjectPtr<class UStaticMeshComponent> TempMesh;
+	TObjectPtr<class UParticleSystemComponent> TempEffect;
 
+	UStaticMesh* TempBoxMesh;
+
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> TextE;
+
+	TSubclassOf<UUserWidget> InteractionItemWidgetClass;
+
+	UUserWidget* ItemText;
+
+
+public:
+
+	void  StartInteractionItem();
+	void StopInteractionItem();
+
+	UPROPERTY()
+	uint8 bInteractionItem : 1;
 };

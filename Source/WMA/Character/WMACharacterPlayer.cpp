@@ -40,6 +40,8 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	MyBat = CreateDefaultSubobject<AABItemBat>(TEXT("Bat"));
+
 	// Input
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
 	if (nullptr != InputMappingContextRef.Object)
@@ -91,6 +93,7 @@ void AWMACharacterPlayer::BeginPlay()
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -623,31 +626,16 @@ void AWMACharacterPlayer::StopRunning()
 	GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
 }
 
-void AWMACharacterPlayer::StartInteract()
-{
+void AWMACharacterPlayer::StartInteract() {
 
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
-	if (InteractionItem) {
-		bool IItem = InteractionItem->InteractItem;
-		IItem = true;
-		InteractionItem->InteractItem = IItem;
+	MyBat->StartInteractionItem();
 
-		//UE_LOG(LogTemp, Warning, TEXT("IItem :: %s"), InteractionItem->InteractItem ? TEXT("true") : TEXT("false"));
-	}
-
+	UE_LOG(LogTemp, Warning, TEXT("df"));
 }
 
 void AWMACharacterPlayer::StopInteract()
 {
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
-	if (InteractionItem) {
-		bool IItem = InteractionItem->InteractItem;
-		IItem = false;
-		InteractionItem->InteractItem = IItem;
-
-		//UE_LOG(LogTemp, Warning, TEXT("IItem :: %s"), InteractionItem->InteractItem ? TEXT("true") : TEXT("false"));
-	}
-
+	MyBat->StopInteractionItem();
 }
 
 void AWMACharacterPlayer::StartAttacked1()
@@ -655,7 +643,6 @@ void AWMACharacterPlayer::StartAttacked1()
 	StartAttack1 = 1;
 
 	UpdateAttackedIMG();
-	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
 }
 
 void AWMACharacterPlayer::StopAttacked1()

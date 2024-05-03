@@ -15,6 +15,4 @@ class WMA_API UWMAGameInstance : public UGameInstance
 	GENERATED_BODY()
 public:
 
-	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="Default")
-	bool InteractItem = false;
 };

@@ -107,7 +107,7 @@ AWMACharacterBase::AWMACharacterBase()
 	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG1(TEXT("WidgetBlueprint'/Game/UI/WBP_FirstAttackedIMG.WBP_FirstAttackedIMG_C'"));
 	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG2(TEXT("WidgetBlueprint'/Game/UI/WBP_SecondAttackedIMG.WBP_SecondAttackedIMG_C'"));
 	static ConstructorHelpers::FClassFinder<UUserWidget>FAIMG3(TEXT("WidgetBlueprint'/Game/UI/WBP_ThirdAttackedIMG.WBP_ThirdAttackedIMG_C'"));
-
+	
 	if (FAIMG1.Succeeded())
 	{
 		FirstAttackedWidgetClass = FAIMG1.Class;
@@ -422,7 +422,7 @@ void AWMACharacterBase::MeshLoadCompleted()
 }
 
 void AWMACharacterBase::UpdateAttackedIMG() const
-{
+{	
 
 	// 올바른 클래스 찾기 변수 사용
 	if (FirstAttackedWidgetClass && SecondAttackedWidgetClass && ThirdAttackedWidgetClass) {

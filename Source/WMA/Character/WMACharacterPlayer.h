@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
+#include "Item/ABItemBat.h"
 #include "InputActionValue.h"
 #include "WMACharacterPlayer.generated.h"
 
@@ -125,6 +126,8 @@ protected:
 	//Character AnimInstace
 	void UpdateAnimInstance();
 
+public:
 
-
+	UPROPERTY()
+	TObjectPtr<class AABItemBat>MyBat;
 };
