@@ -76,11 +76,20 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	Trigger->SetupAttachment(GetMesh());
-	Trigger->SetCollisionProfileName(CPROFILE_WMATRIGGER);
-	Trigger->SetBoxExtent(FVector(11.0f, 10.0f, 110.0f));
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AWMACharacterPlayer::OnOverlapBegin);
+
+	//Female Hair
+	FName HairSocket(TEXT("HairSocket"));
+	if (GetMesh()->DoesSocketExist(HairSocket)) 
+	{
+		Hair = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hair"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> HairMesh(TEXT("/Script/Engine.StaticMesh'/Game/MyCharacters/NewFemale/NewHair.NewHair'"));
+		if (HairMesh.Succeeded())
+		{
+			// 스태틱 메시를 설정해주고
+			Hair->SetStaticMesh(HairMesh.Object);
+		}
+		Hair->SetupAttachment(GetMesh(), HairSocket);
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -608,18 +617,6 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 	}
 }
 
-void AWMACharacterPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-
-	UE_LOG(LogTemp, Warning, TEXT("IN"));
-	if (OtherActor && OtherActor != this)
-	{
-		MyBat = OtherActor;
-
-		UE_LOG(LogTemp, Warning, TEXT("INn"));
-	}
-}
-
 void AWMACharacterPlayer::ServerSprint_Implementation(bool isSprinting)
 {
 	MulticastSprint(isSprinting);
@@ -654,21 +651,13 @@ void AWMACharacterPlayer::SprintRelease()
 
 void AWMACharacterPlayer::StartInteract() {
 
-	AABItemBat* Bat = Cast<AABItemBat>(MyBat);
-	if (Bat)
-	{
-		Bat->StartInteractionItem();
-	}
+	//MyBat->StartInteractionItem();
 	UE_LOG(LogTemp, Warning, TEXT("df"));
 }
 
 void AWMACharacterPlayer::StopInteract()
 {
-	AABItemBat* Bat = Cast<AABItemBat>(MyBat);
-	if (Bat)
-	{
-		Bat->StopInteractionItem();
-	}
+	//MyBat->StopInteractionItem();
 }
 
 void AWMACharacterPlayer::StartAttacked1()

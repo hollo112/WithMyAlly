@@ -58,7 +58,7 @@ protected:
 	TObjectPtr<class AActor> MyPlayer;
 public:
 
-	void  StartInteractionItem();
+	void StartInteractionItem();
 	void StopInteractionItem();
 
 	UPROPERTY()
