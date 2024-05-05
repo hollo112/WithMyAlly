@@ -83,23 +83,28 @@ void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 	 }
 
 	//UE_LOG(LogTemp, Warning, TEXT("Character is Die :: %s"), bInteractionItem ? TEXT("true") : TEXT("false"));
+	if (OtherActor)
+	{
+		AWMACharacterPlayer* Player = Cast<AWMACharacterPlayer>(OtherActor);
+		MyPlayer = Player;
+	}
 
 	if (bInteractionItem) {
-		IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
-		if (OverlappingPawn) {
-			OverlappingPawn->TakeItem(Item);
-			//TextE->SetHiddenInGame(true);
-		}
+		//IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
+		//if (OverlappingPawn) {
+		//	OverlappingPawn->TakeItem(Item);
+		//	//TextE->SetHiddenInGame(true);
+		//}
 
-		//Effect->Activate(true);
-		Mesh->SetHiddenInGame(true);
-		SetActorEnableCollision(false);
+		////Effect->Activate(true);
+		//Mesh->SetHiddenInGame(true);
+		//SetActorEnableCollision(false);
 
 
 
-		Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
+		//Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
 
-		Trigger->OnComponentBeginOverlap.RemoveDynamic(this, &AABItemBat::OnOverlapBegin);
+		//Trigger->OnComponentBeginOverlap.RemoveDynamic(this, &AABItemBat::OnOverlapBegin);
 	}
 }
 
@@ -121,6 +126,26 @@ void AABItemBat::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
 void AABItemBat::StartInteractionItem()
 {
 	bInteractionItem = true;
+	if (!MyPlayer)
+	{
+		return;
+	}
+
+	IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(MyPlayer);
+	if (OverlappingPawn) {
+		OverlappingPawn->TakeItem(Item);
+		//TextE->SetHiddenInGame(true);
+	}
+
+	//Effect->Activate(true);
+	Mesh->SetHiddenInGame(true);
+	SetActorEnableCollision(false);
+
+
+
+	Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
+
+	Trigger->OnComponentBeginOverlap.RemoveDynamic(this, &AABItemBat::OnOverlapBegin);
 }
 
 void AABItemBat::StopInteractionItem()

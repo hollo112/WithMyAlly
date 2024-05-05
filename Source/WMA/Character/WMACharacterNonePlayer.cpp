@@ -88,8 +88,9 @@ void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinish
 
 void AWMACharacterNonePlayer::AttackByAI()
 {
-	ProcessComboCommand();
 	//MulticastRPCZomAttack();
+	//ProcessComboCommand();
+	ServerAttack();
 }
 
 void AWMACharacterNonePlayer::NotifyComboActionEnd()
@@ -105,7 +106,17 @@ void AWMACharacterNonePlayer::PlayAttackAnimation()
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
 
+void AWMACharacterNonePlayer::ServerAttack_Implementation()
+{
+	MulticastRPCZomAttack();
+	ProcessComboCommand();
+}
+
 void AWMACharacterNonePlayer::MulticastRPCZomAttack_Implementation()
 {
-	PlayAttackAnimation();
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+		PlayAttackAnimation();
+	}
 }

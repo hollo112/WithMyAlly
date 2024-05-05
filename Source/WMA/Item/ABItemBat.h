@@ -54,7 +54,8 @@ protected:
 
 	UUserWidget* ItemText;
 
-
+	UPROPERTY()
+	TObjectPtr<class AActor> MyPlayer;
 public:
 
 	void  StartInteractionItem();

@@ -41,6 +41,8 @@ protected:
 	// Actor Replication
 	void PlayAttackAnimation();
 
-	UFUNCTION(Client, Unreliable)
+	UFUNCTION(Server, Reliable)
+	void ServerAttack();
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCZomAttack();
 };

@@ -24,7 +24,8 @@
 #include "Engine/AssetManager.h"
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
-#include "Item/ABItemBat.h"
+#include "Item/ABItemBat.h"	
+#include "Components/BoxComponent.h"
 #include "UI/WMAWidgetAttacked1.h"
 
 
@@ -75,6 +76,11 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
+	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	Trigger->SetupAttachment(GetMesh());
+	Trigger->SetCollisionProfileName(CPROFILE_WMATRIGGER);
+	Trigger->SetBoxExtent(FVector(11.0f, 10.0f, 110.0f));
+	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AWMACharacterPlayer::OnOverlapBegin);
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -175,8 +181,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
-	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::StartRunning);
-	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AWMACharacterPlayer::StartInteract);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AWMACharacterPlayer::StopInteract);
 
@@ -604,39 +610,65 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 
 void AWMACharacterPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+
 	UE_LOG(LogTemp, Warning, TEXT("IN"));
-	AABItemBat* Bat = Cast<AABItemBat>(OtherActor);
-	MyBat = Bat;
-}
-
-
-
-void AWMACharacterPlayer::StartRunning()
-{
-	if (HasAuthority())
+	if (OtherActor && OtherActor != this)
 	{
-		GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+		MyBat = OtherActor;
+
+		UE_LOG(LogTemp, Warning, TEXT("INn"));
 	}
 }
 
-void AWMACharacterPlayer::StopRunning()
+void AWMACharacterPlayer::ServerSprint_Implementation(bool isSprinting)
 {
-	if (HasAuthority())
+	MulticastSprint(isSprinting);
+}
+
+void AWMACharacterPlayer::MulticastSprint_Implementation(bool isSprinting)
+{
+	if (isSprinting)
+	{
+		GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
+	}
+	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
 	}
 }
 
+void AWMACharacterPlayer::SprintHold()
+{
+	bIsHoldingSprintButton = true;
+	if (bIsHoldingSprintButton)
+	{
+		ServerSprint(bIsHoldingSprintButton);
+	}
+}
+
+void AWMACharacterPlayer::SprintRelease()
+{
+	bIsHoldingSprintButton = false;
+	ServerSprint(false);
+}
+
 void AWMACharacterPlayer::StartInteract() {
 
-	MyBat->StartInteractionItem();
-
+	AABItemBat* Bat = Cast<AABItemBat>(MyBat);
+	if (Bat)
+	{
+		Bat->StartInteractionItem();
+	}
 	UE_LOG(LogTemp, Warning, TEXT("df"));
 }
 
 void AWMACharacterPlayer::StopInteract()
 {
-	MyBat->StopInteractionItem();
+	AABItemBat* Bat = Cast<AABItemBat>(MyBat);
+	if (Bat)
+	{
+		Bat->StopInteractionItem();
+	}
 }
 
 void AWMACharacterPlayer::StartAttacked1()
