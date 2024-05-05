@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/WMACharacterPlayer.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "GameFramework/Actor.h"
 #include "ABItemBat.generated.h"
@@ -15,15 +16,12 @@ class WMA_API AABItemBat : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AABItemBat();
-
-	virtual void Tick(float DeltaTime) override;
-	
 protected:
 
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
 
-	UPROPERTY(VisibleAnywhere, Category = Box)
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = Box)
 	TObjectPtr<class UStaticMeshComponent> Mesh;
 
 	UPROPERTY(VisibleAnywhere, Category = Effect)
@@ -54,12 +52,4 @@ protected:
 
 	UUserWidget* ItemText;
 
-
-public:
-
-	void  StartInteractionItem();
-	void StopInteractionItem();
-
-	UPROPERTY()
-	uint8 bInteractionItem : 1;
 };

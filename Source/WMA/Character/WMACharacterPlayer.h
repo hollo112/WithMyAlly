@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
-#include "Item/ABItemBat.h"
 #include "InputActionValue.h"
 #include "WMACharacterPlayer.generated.h"
 
@@ -60,9 +59,6 @@ protected:
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-
-	void StartInteract();
-	void StopInteract();
 
 	void StartAttacked1();
 	void StopAttacked1();
@@ -130,6 +126,7 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<class AABItemBat>MyBat;
+
 protected:
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
