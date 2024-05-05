@@ -59,25 +59,36 @@ void AWMAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stim
 {
 	if (Actor && Actor->Tags.Contains("Player"))
 	{
-		PerceivedActor = Actor;
+		UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
 
 		if (Stimulus.WasSuccessfullySensed())
 		{
-			// 플레이어가 성공적으로 감지되었을 때의 로직
-			// 예: Blackboard에 플레이어의 위치를 업데이트합니다.
-			UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
-			if (BlackboardPtr)
+			// 플레이어 위치와 AI 위치 사이의 벡터 계산
+			FVector Direction = Actor->GetActorLocation() - GetPawn()->GetActorLocation();
+			Direction.Normalize();
+
+			// AI 전방 벡터와 플레이어 위치 사이의 각도 계산
+			float DotProduct = FVector::DotProduct(GetPawn()->GetActorForwardVector(), Direction);
+			float Angle = FMath::Acos(DotProduct);
+			float AngleDegrees = FMath::RadiansToDegrees(Angle);
+
+			// 각도가 시야각 내에 있는지 확인
+			if (AngleDegrees <= AISenseConfigSight->PeripheralVisionAngleDegrees / 2)
 			{
 				BlackboardPtr->SetValueAsObject("TargetActor", Actor);
 				BlackboardPtr->SetValueAsVector("LastKnownPosition", Actor->GetActorLocation());
-				// 추가적으로 해야 할 일이 있다면 여기에 구현합니다.
+				// 성공적으로 감지된 경우
+			}
+			else
+			{
+				// 각도가 시야각 밖에 있는 경우
+				HandleLostSight();
 			}
 		}
 		else
 		{
-			// 플레이어 감지 실패 로직
-			// 예: 타이머를 설정하여 시야에서 잃어버린 것으로 처리합니다.
-			GetWorld()->GetTimerManager().SetTimer(LostSightTimerHandle, this, &AWMAAIController::HandleLostSight, 3.0f, false);
+			// 시각 자극을 감지하지 못한 경우
+			HandleLostSight();
 		}
 	}
 }

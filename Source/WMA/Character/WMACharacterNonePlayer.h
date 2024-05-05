@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
+#include "AI/BTService_Detect.h"
 #include "Interface/WMACharacterAIInterface.h"
 #include "WMACharacterNonePlayer.generated.h"
 
@@ -19,6 +20,8 @@ protected:
 
 public:
 	AWMACharacterNonePlayer();
+
+	virtual float GetPeripheralVisionAngleDegrees() const override;
 
 protected:
 	void SetDead() override;

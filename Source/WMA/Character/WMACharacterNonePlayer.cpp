@@ -10,10 +10,10 @@ void AWMACharacterNonePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-// Stat
-	SetName(2);											// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
+	// Stat
+	SetName(2);	// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
-	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed; 
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
@@ -46,6 +46,11 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 		ComboActionMontage = ComboActionMontageRef.Object;
 	}
 
+}
+
+float AWMACharacterNonePlayer::GetPeripheralVisionAngleDegrees() const
+{
+	return 180.0f;
 }
 
 void AWMACharacterNonePlayer::SetDead()
