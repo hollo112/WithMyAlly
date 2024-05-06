@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
+#include "AI/BTService_Detect.h"
 #include "Interface/WMACharacterAIInterface.h"
 #include "WMACharacterNonePlayer.generated.h"
 
@@ -20,6 +21,8 @@ protected:
 public:
 	AWMACharacterNonePlayer();
 
+	virtual float GetPeripheralVisionAngleDegrees() const override;
+
 protected:
 	void SetDead() override;
 	float DeadEventDelayTime = 5.0f;	// 몇초뒤에 사라지게 하기위한 변수
@@ -30,6 +33,8 @@ protected:
 	virtual float GetAIDetectRange() override;
 	virtual float GetAIAttackRange() override;
 	virtual float GetAITurnSpeed() override;
+	virtual float SetMovementSpeed() override;
+	virtual float ResetMovementSpeed() override;
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;

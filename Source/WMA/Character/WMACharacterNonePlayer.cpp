@@ -10,10 +10,10 @@ void AWMACharacterNonePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-// Stat
-	SetName(2);											// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
+	// Stat
+	SetName(2);	// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
-	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed; 
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
@@ -48,6 +48,11 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 
 }
 
+float AWMACharacterNonePlayer::GetPeripheralVisionAngleDegrees() const
+{
+	return 180.0f;
+}
+
 void AWMACharacterNonePlayer::SetDead()
 {
 	Super::SetDead();
@@ -78,7 +83,17 @@ float AWMACharacterNonePlayer::GetAIAttackRange()
 
 float AWMACharacterNonePlayer::GetAITurnSpeed()
 {
-	return 2.0f;
+	return 2.0f; 
+}
+
+float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔주면 됨
+{
+	return GetCharacterMovement()->MaxWalkSpeed  = Stat->GetCharacterStat().MovementSpeed * 7 ;
+}
+
+float AWMACharacterNonePlayer::ResetMovementSpeed()
+{
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)

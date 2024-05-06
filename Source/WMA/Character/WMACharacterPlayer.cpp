@@ -177,8 +177,6 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::StartRunning);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
-	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AWMACharacterPlayer::StartInteract);
-	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AWMACharacterPlayer::StopInteract);
 
 	PlayerInputComponent->BindAction("Attacked1", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked1);
 	PlayerInputComponent->BindAction("Attacked1", IE_Released, this, &AWMACharacterPlayer::StopAttacked1);
@@ -625,18 +623,6 @@ void AWMACharacterPlayer::StopRunning()
 	{
 		GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
 	}
-}
-
-void AWMACharacterPlayer::StartInteract() {
-
-	MyBat->StartInteractionItem();
-
-	UE_LOG(LogTemp, Warning, TEXT("df"));
-}
-
-void AWMACharacterPlayer::StopInteract()
-{
-	MyBat->StopInteractionItem();
 }
 
 void AWMACharacterPlayer::StartAttacked1()
