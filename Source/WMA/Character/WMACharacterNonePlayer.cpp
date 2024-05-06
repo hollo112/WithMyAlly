@@ -83,7 +83,12 @@ float AWMACharacterNonePlayer::GetAIAttackRange()
 
 float AWMACharacterNonePlayer::GetAITurnSpeed()
 {
-	return 2.0f;
+	return 2.0f; 
+}
+
+float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔주면 됨
+{
+	return GetCharacterMovement()->MaxWalkSpeed  = Stat->GetCharacterStat().MovementSpeed * 7 ;
 }
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)

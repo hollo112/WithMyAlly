@@ -7,7 +7,7 @@
 #include "Character/WMACharacterBase.h"
 #include "Interface/WMACharacterAIInterface.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "GameFramework/Character.h"
+#include "GameFramework/Character.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
 #include "Physics/WMACollsion.h"
@@ -78,7 +78,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Green, false, 0.2f);
                     DrawDebugPoint(World, Pawn->GetActorLocation(), 10.0f, FColor::Green, false, 0.2f);
                     DrawDebugLine(World, ControllingPawn->GetActorLocation(), Pawn->GetActorLocation(), FColor::Green, false, 0.27f);
-
+                    AIPawn->SetMovementSpeed();
                     break;
                 }
             }
