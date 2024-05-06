@@ -56,6 +56,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         CollisionQueryParam
     );
 
+    bool bFoundPlayer = false;
     if (bResult)
     {
         for (auto const& OverlapResult : OverlapResults)
@@ -69,19 +70,23 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                 float Angle = FMath::Acos(DotProduct);
                 float AngleDegrees = FMath::RadiansToDegrees(Angle);
 
-                DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Green, false, 0.2f);
-
                 if (AngleDegrees <= PeripheralVisionAngle / 2)
                 {
                     // 타겟 발견
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);
-                    DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Green, false, 0.2f);
-                    DrawDebugPoint(World, Pawn->GetActorLocation(), 10.0f, FColor::Green, false, 0.2f);
-                    DrawDebugLine(World, ControllingPawn->GetActorLocation(), Pawn->GetActorLocation(), FColor::Green, false, 0.27f);
+                    bFoundPlayer = true;
                     AIPawn->SetMovementSpeed();
                     break;
                 }
             }
         }
+    }
+
+    if (!bFoundPlayer)
+    {
+        // 플레이어가 감지 범위 밖으로 이동했으므로, 타겟을 리셋하고 속도를 원래대로 조정합니다.
+        OwnerComp.GetBlackboardComponent()->ClearValue(BBKEY_TARGET);
+        AIPawn->ResetMovementSpeed();
+        DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
     }
 }

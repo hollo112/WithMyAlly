@@ -77,6 +77,7 @@ void AWMAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stim
 			{
 				BlackboardPtr->SetValueAsObject("TargetActor", Actor);
 				BlackboardPtr->SetValueAsVector("LastKnownPosition", Actor->GetActorLocation());
+			}
 				// 성공적으로 감지된 경우
 			}
 			else
@@ -84,12 +85,11 @@ void AWMAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stim
 				// 각도가 시야각 밖에 있는 경우
 				HandleLostSight();
 			}
-		}
-		else
-		{
+	}
+	else
+	{
 			// 시각 자극을 감지하지 못한 경우
 			HandleLostSight();
-		}
 	}
 }
 
@@ -128,9 +128,15 @@ void AWMAAIController::SetPerceptionSystem()
 	AISenseConfigSight->DetectionByAffiliation.bDetectNeutrals = true;
 	AISenseConfigSight->DetectionByAffiliation.bDetectFriendlies = true;
 
+	AISenseConfigHearing->HearingRange = 1000.0f;
+	AISenseConfigHearing->LoSHearingRange = 1300.0f;
+	AISenseConfigHearing->DetectionByAffiliation.bDetectEnemies = true;
+	AISenseConfigHearing->DetectionByAffiliation.bDetectNeutrals = true;
+	AISenseConfigHearing->DetectionByAffiliation.bDetectFriendlies = true;
+
 	// Add the Sight Sense to the Perception Component
 	AIPerceptionComponent->ConfigureSense(*AISenseConfigSight);
-
+	AIPerceptionComponent->ConfigureSense(*AISenseConfigHearing);
 
 
 }
