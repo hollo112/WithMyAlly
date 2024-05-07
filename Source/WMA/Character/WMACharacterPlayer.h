@@ -60,9 +60,6 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
-	void StartInteract();
-	void StopInteract();
-
 	void StartAttacked1();
 	void StopAttacked1();
 	void StartAttacked2();

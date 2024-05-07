@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/WMACharacterPlayer.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "GameFramework/Actor.h"
 #include "ABItemBat.generated.h"
@@ -10,57 +11,45 @@
 UCLASS()
 class WMA_API AABItemBat : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AABItemBat();
+    GENERATED_BODY()
 
-	virtual void Tick(float DeltaTime) override;
-	
+    public:
+    // Sets default values for this actor's properties
+    AABItemBat();
 protected:
 
-	UPROPERTY(VisibleAnywhere, Category = Box)
-	TObjectPtr<class UBoxComponent> Trigger;
+    UPROPERTY(VisibleAnywhere, Category = Box)
+    TObjectPtr<class UBoxComponent> Trigger;
 
-	UPROPERTY(VisibleAnywhere, Category = Box)
-	TObjectPtr<class UStaticMeshComponent> Mesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Box)
+    TObjectPtr<class UStaticMeshComponent> Mesh;
 
-	UPROPERTY(VisibleAnywhere, Category = Effect)
-	TObjectPtr<class UParticleSystemComponent> Effect;
+    UPROPERTY(VisibleAnywhere, Category = Effect)
+    TObjectPtr<class UParticleSystemComponent> Effect;
 
-	UPROPERTY(EditAnywhere, Category = Item)
-	TObjectPtr<class UABItemData>Item;
+    UPROPERTY(EditAnywhere, Category = Item)
+    TObjectPtr<class UABItemData>Item;
 
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 
-	UFUNCTION()
-	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+    UFUNCTION()
+    void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION()
-	void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);
+    UFUNCTION()
+    void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);
 
-	TObjectPtr<class UBoxComponent> TempTrigger;
-	TObjectPtr<class UStaticMeshComponent> TempMesh;
-	TObjectPtr<class UParticleSystemComponent> TempEffect;
+    TObjectPtr<class UBoxComponent> TempTrigger;
+    TObjectPtr<class UStaticMeshComponent> TempMesh;
+    TObjectPtr<class UParticleSystemComponent> TempEffect;
 
-	UStaticMesh* TempBoxMesh;
+    UStaticMesh* TempBoxMesh;
 
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UWidgetComponent> TextE;
+    UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<class UWidgetComponent> TextE;
 
-	TSubclassOf<UUserWidget> InteractionItemWidgetClass;
+    TSubclassOf<UUserWidget> InteractionItemWidgetClass;
 
-	UUserWidget* ItemText;
+    UUserWidget* ItemText;
 
-	UPROPERTY()
-	TObjectPtr<class AActor> MyPlayer;
-public:
-
-	void StartInteractionItem();
-	void StopInteractionItem();
-
-	UPROPERTY()
-	uint8 bInteractionItem : 1;
 };
