@@ -112,7 +112,7 @@ protected:
 	UPROPERTY(config)
 	TArray<FSoftObjectPath> PlayerMeshes;
 
-	void UpdateMeshesFromPlayerState();
+	//void UpdateMeshesFromPlayerState();
 
 	virtual void OnRep_PlayerState();
 

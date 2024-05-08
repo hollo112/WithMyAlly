@@ -147,7 +147,7 @@ void AWMACharacterPlayer::PossessedBy(AController* NewController)
 	}
 
 	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));*/
-	UpdateMeshesFromPlayerState();
+	//UpdateMeshesFromPlayerState();
 	UpdateAnimInstance();
 }
 
@@ -575,21 +575,26 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
-void AWMACharacterPlayer::UpdateMeshesFromPlayerState()
-{
-	int32 MeshIndex = FMath::Clamp(GetPlayerState()->PlayerId % PlayerMeshes.Num(), 0, PlayerMeshes.Num() - 1);
-	MeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(PlayerMeshes[MeshIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterBase::MeshLoadCompleted));
-}
+//void AWMACharacterPlayer::UpdateMeshesFromPlayerState()
+//{
+//	int32 MeshIndex = FMath::Clamp(GetPlayerState()->PlayerId % PlayerMeshes.Num(), 0, PlayerMeshes.Num() - 1);
+//	MeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(PlayerMeshes[MeshIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterBase::MeshLoadCompleted));
+//}
 
 void AWMACharacterPlayer::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	UpdateMeshesFromPlayerState();
 	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
+			auto SM_Male = LoadObject<USkeletalMesh>(NULL, TEXT("/Game/MyCharacters/Male/Male_Idle.Male_Idle"));
+			if (SM_Male)
+			{
+				GetMesh()->SetSkeletalMesh(SM_Male);
+			}
+
 			auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
 			GetMesh()->SetAnimInstanceClass(ABPClass);
 
@@ -606,6 +611,12 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 {
 	if (!IsLocallyControlled())
 	{
+		auto SM_Male = LoadObject<USkeletalMesh>(NULL, TEXT("/Game/MyCharacters/Male/Male_Idle.Male_Idle"));
+		if (SM_Male)
+		{
+			GetMesh()->SetSkeletalMesh(SM_Male);
+		}
+
 		auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
 		GetMesh()->SetAnimInstanceClass(ABPClass);
 
