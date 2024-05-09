@@ -54,10 +54,12 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 
 void AWMACharacterNonePlayer::SetDead()
 {
-	Super::SetDead();
-	ServerSetDead();
-	/*GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	FTimerHandle DeadTimerHandle;
+	//PlayDeadAnimation();
+	//SetActorEnableCollision(false);
+	ServerRPCSetDead();
+	//Super::SetDead();
+
+	/*FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
 		{
@@ -66,14 +68,20 @@ void AWMACharacterNonePlayer::SetDead()
 	), DeadEventDelayTime, false);*/
 }
 
-void AWMACharacterNonePlayer::ServerSetDead_Implementation()
+void AWMACharacterNonePlayer::ServerRPCSetDead_Implementation()
 {
-	MulticastSetDead();
-}
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);	// 움직이지 못하게 하기
+	PlayDeadAnimation();
+	SetActorEnableCollision(false);
 
-void AWMACharacterNonePlayer::MulticastSetDead_Implementation()
-{
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	MulticastServerRPCSetDead();
+
+	AWMAAIController* AIController = Cast<AWMAAIController>(GetController());
+	if (AIController)
+	{
+		AIController->StopAI();
+	}
+
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
@@ -81,6 +89,12 @@ void AWMACharacterNonePlayer::MulticastSetDead_Implementation()
 			Destroy();
 		}
 	), DeadEventDelayTime, false);
+}
+
+void AWMACharacterNonePlayer::MulticastServerRPCSetDead_Implementation()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	PlayDeadAnimation();
 }
 
 float AWMACharacterNonePlayer::GetAIPatrolRadius()

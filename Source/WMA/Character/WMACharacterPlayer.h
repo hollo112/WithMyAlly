@@ -72,8 +72,7 @@ protected:
 
 	void Attack();
 	void PlayCloseAttackAnimation();
-	virtual void CloseAttackHitCheck() override;
-	void AttackHitConfirm(AActor* HitActor);
+	
 	void DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward);
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -82,19 +81,13 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastRPCCloseAttack();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCNotifyHit(const FHitResult& HitResult, float HitCheckTime);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCNotifyMiss(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime);		//FVector용량 크기때문에 NetQuantize로 변경
-
 	UPROPERTY(ReplicatedUsing = OnRep_CanCloseAttack)
 	uint8 bCanAttack : 1;
 
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
 
-	float CloseAttackTime = 1.27f;					// 공격 끝나는 시간
+	float CloseAttackTime = 2.2f;					// 공격 끝나는 시간
 	float LastCloseAttackStartTime = 0.0f;
 	float CloseAttackTimeDifference = 0.0f;			// 서버와 클라의 시간 차이
 	float AcceptCheckDistance = 300.0f;				// 공격액터와 피격액터 사이가 3미터 이내면 공격 성공으로 인식
@@ -111,8 +104,6 @@ protected:
 	//Character Mesh
 	UPROPERTY(config)
 	TArray<FSoftObjectPath> PlayerMeshes;
-
-	//void UpdateMeshesFromPlayerState();
 
 	virtual void OnRep_PlayerState();
 
@@ -136,6 +127,9 @@ protected:
 
 	void SprintHold();
 	void SprintRelease();
+
+	void InteractHold();
+	void InteractRelease();
 
 protected:
 	UPROPERTY(VisibleAnywhere)

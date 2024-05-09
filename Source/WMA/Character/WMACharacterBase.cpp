@@ -266,28 +266,26 @@ void AWMACharacterBase::CloseAttackHitCheck()
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
 
-	//float AttackRange;
-	//switch (WeaponNow)//
-	//{
-	//case EItemType::ShortWeapon:
-	//	AttackRange = Stat->GetCharacterStat().ShortWPRange;
-	//	break;
-	//case EItemType::DisposableWeapon:
-	//	AttackRange = Stat->GetCharacterStat().DisposableWPRange;
-	//	break;
-	//case EItemType::LongWeapon:
-	//	AttackRange = Stat->GetCharacterStat().LongWPRange;
-	//	break;
-	//case EItemType::NoWeapon:
-	//	AttackRange = 0.0f;
-	//	break;
-	//default:
-	//	AttackRange = 0.0f;
-	//	break;
-	//}
-	//
-
-	const float AttackRange = Stat->GetCharacterStat().ShortWPRange;
+	float AttackRange;
+	switch (WeaponNow)//
+	{
+	case EItemType::ShortWeapon:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	case EItemType::DisposableWeapon:
+		AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+		break;
+	case EItemType::LongWeapon:
+		AttackRange = Stat->GetCharacterStat().LongWPRange;
+		break;
+	case EItemType::NoWeapon:
+		AttackRange = 0.0f;
+		break;
+	default:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	}
+	
 	const float AttackRadius = Stat->GetAttackRadius();
 	const float AttackDamage = Stat->GetCharacterStat().Attack;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();

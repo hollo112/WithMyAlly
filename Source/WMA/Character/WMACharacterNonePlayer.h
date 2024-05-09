@@ -22,11 +22,11 @@ public:
 
 protected:
 	void SetDead() override;
-
 	UFUNCTION(Server, Reliable)
-	void ServerSetDead();
+	void ServerRPCSetDead();
+
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetDead();
+	void MulticastServerRPCSetDead();
 
 	float DeadEventDelayTime = 5.0f;	// 몇초뒤에 사라지게 하기위한 변수
 

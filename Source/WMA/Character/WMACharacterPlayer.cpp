@@ -25,7 +25,9 @@
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"	
+#include "Item/EV_ButtonActor.h"	
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
 
 
@@ -202,6 +204,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Attacked3", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked3);
 	PlayerInputComponent->BindAction("Attacked3", IE_Released, this, &AWMACharacterPlayer::StopAttacked3);
 
+	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
 
 
 	// 무기 교체 Input
@@ -315,82 +319,6 @@ void AWMACharacterPlayer::PlayCloseAttackAnimation()
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
 
-void AWMACharacterPlayer::CloseAttackHitCheck()
-{
-	if (IsLocallyControlled())
-	{
-		FHitResult OutHitResult;
-		FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-
-		float AttackRange;
-		switch (WeaponNow)//
-		{
-		case EItemType::ShortWeapon:
-			AttackRange = Stat->GetCharacterStat().ShortWPRange;
-			break;
-		case EItemType::DisposableWeapon:
-			AttackRange = Stat->GetCharacterStat().DisposableWPRange;
-			break;
-		case EItemType::LongWeapon:
-			AttackRange = Stat->GetCharacterStat().LongWPRange;
-			break;
-		case EItemType::NoWeapon:
-			AttackRange = 0.0f;
-			break;
-		default:
-			AttackRange = 0.0f;
-			break;
-		}
-		const float AttackRadius = Stat->GetAttackRadius();
-		const float AttackDamage = Stat->GetCharacterStat().Attack;
-		const FVector Forward = GetActorForwardVector();
-		const FVector Start = GetActorLocation() + Forward * GetCapsuleComponent()->GetScaledCapsuleRadius();
-		const FVector End = Start + GetActorForwardVector() * AttackRange;
-
-		bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_WMAACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
-
-
-		//if (OutHitResult.GetActor()->IsA(AWMACharacterPlayer::StaticClass()))			//만약 플레이러를 공격했다면 판정X
-		//{
-		//	HitDetected = false;
-		//}
-
-		float HitCheckTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-		if (!HasAuthority())
-		{
-			if (HitDetected)
-			{
-				ServerRPCNotifyHit(OutHitResult, HitCheckTime);
-				FDamageEvent DamageEvent;
-				OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-			}
-			else
-			{
-				ServerRPCNotifyMiss(Start, End, Forward, HitCheckTime);
-			}
-		}
-		else
-		{
-			FColor DebugColor = HitDetected ? FColor::Green : FColor::Red;
-			DrawDebugAttackRange(DebugColor, Start, End, Forward);
-			if (HitDetected)
-			{
-				AttackHitConfirm(OutHitResult.GetActor());
-			}
-		}
-	}
-}
-
-void AWMACharacterPlayer::AttackHitConfirm(AActor* HitActor)
-{
-	if (HasAuthority())
-	{
-		const float AttackDamage = Stat->GetCharacterStat().Attack;
-		FDamageEvent DamageEvent;
-		HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-	}
-}
-
 void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
 {
 #if ENABLE_DRAW_DEBUG
@@ -456,21 +384,6 @@ void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartT
 	PlayCloseAttackAnimation();
 
 	MulticastRPCCloseAttack();
-	//for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-	//{
-	//	if (PlayerController && GetController() != PlayerController)			// 나와 다른 컨트롤러
-	//	{
-	//		if (!PlayerController->IsLocalController())
-	//		{
-	//			// Simulated Proxy로 폰을 재생하는 PlayerController
-	//			AWMACharacterPlayer* OtherPlayer = Cast<AWMACharacterPlayer>(PlayerController->GetPawn());
-	//			if (OtherPlayer)
-	//			{
-	//				OtherPlayer->ClientRPCPlayAnimation(this);
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
@@ -479,47 +392,6 @@ void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
 	{
 		PlayCloseAttackAnimation();
 	}
-}
-
-
-bool AWMACharacterPlayer::ServerRPCNotifyHit_Validate(const FHitResult& HitResult, float HitCheckTime)
-{
-	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
-}
-
-void AWMACharacterPlayer::ServerRPCNotifyHit_Implementation(const FHitResult& HitResult, float HitCheckTime)
-{
-	AActor* HitActor = HitResult.GetActor();
-	if (::IsValid(HitActor))
-	{
-		const FVector HitLocation = HitResult.Location;
-		const FBox HitBox = HitActor->GetComponentsBoundingBox();
-		const FVector ActorBoxCenter = (HitBox.Min + HitBox.Max) * 0.5f;
-		if (FVector::DistSquared(HitLocation, ActorBoxCenter) <= AcceptCheckDistance * AcceptCheckDistance)
-		{
-			AttackHitConfirm(HitActor);
-		}
-		else
-		{
-			WMA_LOG(LogWMANetwork, Warning, TEXT("%s"), TEXT("Hit Rejected"));
-		}
-
-#if ENABLE_DRAW_DEBUG
-		DrawDebugPoint(GetWorld(), ActorBoxCenter, 50.0f, FColor::Cyan, false, 5.0f);
-		DrawDebugPoint(GetWorld(), HitLocation, 50.0f, FColor::Magenta, false, 5.0f);
-#endif
-		DrawDebugAttackRange(FColor::Green, HitResult.TraceStart, HitResult.TraceEnd, HitActor->GetActorForwardVector());
-	}
-}
-
-bool AWMACharacterPlayer::ServerRPCNotifyMiss_Validate(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
-{
-	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
-}
-
-void AWMACharacterPlayer::ServerRPCNotifyMiss_Implementation(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
-{
-	DrawDebugAttackRange(FColor::Red, TraceStart, TraceEnd, TraceDir);
 }
 
 void AWMACharacterPlayer::OnRep_CanCloseAttack()
@@ -575,12 +447,6 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
-//void AWMACharacterPlayer::UpdateMeshesFromPlayerState()
-//{
-//	int32 MeshIndex = FMath::Clamp(GetPlayerState()->PlayerId % PlayerMeshes.Num(), 0, PlayerMeshes.Num() - 1);
-//	MeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(PlayerMeshes[MeshIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterBase::MeshLoadCompleted));
-//}
-
 void AWMACharacterPlayer::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
@@ -603,6 +469,8 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 			{
 				ComboActionMontage = AMClass;
 			}
+
+			Hair->SetHiddenInGame(true);
 		}
 	}
 }
@@ -625,6 +493,8 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 		{
 			ComboActionMontage = AMClass;
 		}
+
+		Hair->SetHiddenInGame(true);
 	}
 }
 
@@ -658,6 +528,17 @@ void AWMACharacterPlayer::SprintRelease()
 {
 	bIsHoldingSprintButton = false;
 	ServerSprint(false);
+}
+
+void AWMACharacterPlayer::InteractHold()
+{
+	class AEV_ButtonActor* EVButton;
+	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
+	EVButton->OnInteract();
+}
+
+void AWMACharacterPlayer::InteractRelease()
+{
 }
 
 void AWMACharacterPlayer::StartAttacked1()
