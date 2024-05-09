@@ -41,8 +41,6 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	MyBat = CreateDefaultSubobject<AABItemBat>(TEXT("Bat"));
-
 	// Input
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
 	if (nullptr != InputMappingContextRef.Object)
@@ -175,6 +173,7 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
+
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::StartRunning);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
 
@@ -599,15 +598,6 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 		}
 	}
 }
-
-void AWMACharacterPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp, Warning, TEXT("IN"));
-	AABItemBat* Bat = Cast<AABItemBat>(OtherActor);
-	MyBat = Bat;
-}
-
-
 
 void AWMACharacterPlayer::StartRunning()
 {

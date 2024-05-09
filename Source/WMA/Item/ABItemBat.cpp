@@ -22,7 +22,7 @@ AABItemBat::AABItemBat()
 	Effect = CreateDefaultSubobject < UParticleSystemComponent>(TEXT("Effect"));
 	TextE = CreateDefaultSubobject<UWidgetComponent>(TEXT("TextE"));
 	Item = CreateDefaultSubobject<UABItemData>(TEXT("ItemBat"));
-
+	UE_LOG(LogTemp, Warning, TEXT("DFDF"));
 
 
 	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C'"));
@@ -57,7 +57,7 @@ void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	//TextE->SetHiddenInGame(false);
 
-
+	UE_LOG(LogTemp, Warning, TEXT("DFDF"));
 	UE_LOG(LogTemp, Warning, TEXT("HI"));
 	if (InteractionItemWidgetClass)
 	{
