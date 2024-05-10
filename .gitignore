@@ -9,3 +9,5 @@
 *.sln
 *_BuiltData.uasset
 /Binaries
+/Content/Megascans
+/Content/MSPresets

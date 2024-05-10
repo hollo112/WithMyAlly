@@ -12,6 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include "UI/WMAItemInteractionWidget.h"
 #include "Interface/ABCharacterItemInterface.h"
+#include "Character/WMACharacterPlayer.h"
 
 // Sets default values
 AABItemPhone::AABItemPhone()
@@ -22,7 +23,7 @@ AABItemPhone::AABItemPhone()
 	Text = CreateDefaultSubobject<UWidgetComponent>(TEXT("Text"));
 	Item = CreateDefaultSubobject<UABItemData>(TEXT("ItemBat"));
 
-	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_PhoneInteraction.WBP_PhoneInteraction_C"));
 	if (InputE.Succeeded())
 	{
 		InteractionItemWidgetClass = InputE.Class;
@@ -48,7 +49,8 @@ AABItemPhone::AABItemPhone()
 
 void AABItemPhone::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	if (InteractionItemWidgetClass)
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+	if (InteractionItemWidgetClass && player->IsLocallyControlled())
 	{
 		ItemText = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
 

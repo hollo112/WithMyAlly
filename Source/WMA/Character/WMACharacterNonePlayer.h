@@ -29,6 +29,12 @@ public:
 
 protected:
 	void SetDead() override;
+	UFUNCTION(Server, Reliable)
+	void ServerRPCSetDead();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastServerRPCSetDead();
+
 	float DeadEventDelayTime = 5.0f;	// 몇초뒤에 사라지게 하기위한 변수
 
 	// AI Section
@@ -52,10 +58,17 @@ protected:
 	// Actor Replication
 	void PlayAttackAnimation();
 
-	UFUNCTION(Client, Unreliable)
-	void MulticastRPCZomAttack();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCAttack();
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UEnvQuery* MyEQSTemplate;
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCAttack();
 
+	UPROPERTY(ReplicatedUsing = OnRep_CanCloseAttack)
+	uint8 bIsAttacking : 1;
+
+	UFUNCTION()
+	void OnRep_CanCloseAttack();
 };
