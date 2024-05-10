@@ -3,6 +3,9 @@
 
 #include "Character/WMACharacterNonePlayer.h"
 #include "AI/WMAAIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "EnvironmentQuery/EnvQuery.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
 
@@ -14,6 +17,9 @@ void AWMACharacterNonePlayer::BeginPlay()
 	SetName(2);	// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
+	//GrowlAudioComponent->SetSound(GrowlSound);
+	//GrowlAudioComponent->SetVolumeMultiplier(0.2f);
 }
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
@@ -46,10 +52,16 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 		ComboActionMontage = ComboActionMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UEnvQuery> EQSQuery(TEXT("EnvQuery'/Game/AI/EQS_FindPlayer.EQS_FindPlayer'"));
+	if (EQSQuery.Succeeded())
+	{
+		MyEQSTemplate = EQSQuery.Object;
+	}
 }
 
 float AWMACharacterNonePlayer::GetPeripheralVisionAngleDegrees() const
 {
+
 	return 180.0f;
 }
 
@@ -93,8 +105,22 @@ float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔
 
 float AWMACharacterNonePlayer::ResetMovementSpeed()
 {
+
+
 	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
+
+void AWMACharacterNonePlayer::SetGrowlSound()
+{
+	//GrowlAudioComponent->Play();
+}
+
+void AWMACharacterNonePlayer::StopGrowlSound()
+{
+	//GrowlAudioComponent->Stop();
+}
+
+
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
@@ -119,6 +145,8 @@ void AWMACharacterNonePlayer::PlayAttackAnimation()
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
+
+
 
 void AWMACharacterNonePlayer::MulticastRPCZomAttack_Implementation()
 {

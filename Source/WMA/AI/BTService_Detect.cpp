@@ -23,6 +23,11 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 {
     Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
+   //GrowlTime = GrowlTime + 1.0f;
+    //UE_LOG(LogTemp, Warning, TEXT("%d"), GrowlTime);
+
+    
+
     APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
     if (nullptr == ControllingPawn)
     {
@@ -59,6 +64,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
     bool bFoundPlayer = false;
     if (bResult)
     {
+        //AIPawn->StopGrowlSound();
         for (auto const& OverlapResult : OverlapResults)
         {
             APawn* Pawn = Cast<APawn>(OverlapResult.GetActor());
@@ -89,4 +95,9 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         AIPawn->ResetMovementSpeed();
         DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
     }
+    
+    /*if (GrowlTime % 10 == 1 && !bFoundPlayer) 
+    {
+        AIPawn->SetGrowlSound();
+    }*/
 }
