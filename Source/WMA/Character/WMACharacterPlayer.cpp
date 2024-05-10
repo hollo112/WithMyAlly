@@ -45,8 +45,6 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	MyBat = CreateDefaultSubobject<AABItemBat>(TEXT("Bat"));
-
 	// Input
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
 	if (nullptr != InputMappingContextRef.Object)
@@ -126,31 +124,8 @@ void AWMACharacterPlayer::SetDead()
 
 void AWMACharacterPlayer::PossessedBy(AController* NewController)
 {
-	/*WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
-	}*/
-
 	Super::PossessedBy(NewController);
 
-	/*OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
-	}
-
-	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));*/
-	//UpdateMeshesFromPlayerState();
 	UpdateAnimInstance();
 }
 
@@ -230,7 +205,6 @@ void AWMACharacterPlayer::SetCharacterControl()
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		//Subsystem->RemoveMappingContext(DefaultMappingContext);
 	}
 
 }
@@ -409,32 +383,31 @@ void AWMACharacterPlayer::OnRep_CanCloseAttack()
 
 void AWMACharacterPlayer::ChangeWeapon_Short()
 {
-	if (WeaponNow == EItemType::NoWeapon) {
-		//return;
-	}
+	//if (WeaponNow == EItemType::NoWeapon) {
+	//	//return;
+	//}
 
-	ShortWeapon->SetHiddenInGame(false);
-	DisposableWeapon->SetHiddenInGame(true);
-	LongWeapon->SetHiddenInGame(true);
+	//ShortWeapon->SetHiddenInGame(false);
+	//DisposableWeapon->SetHiddenInGame(true);
+	//LongWeapon->SetHiddenInGame(true);
 
-	WeaponNow = EItemType::ShortWeapon;									// 현재 들고 있는 무기 변경
+	//WeaponNow = EItemType::ShortWeapon;									// 현재 들고 있는 무기 변경
 
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+	ServerRPCChangeWP(EItemType::ShortWeapon);
 }
 
 void AWMACharacterPlayer::ChangeWeapon_Disposable()
 {
-	if (WeaponNow == EItemType::NoWeapon) {
-		return;
-	}
+	//if (WeaponNow == EItemType::NoWeapon) {
+	//	return;
+	//}
 
-	ShortWeapon->SetHiddenInGame(true);
-	DisposableWeapon->SetHiddenInGame(false);
-	LongWeapon->SetHiddenInGame(true);
+	//ShortWeapon->SetHiddenInGame(true);
+	//DisposableWeapon->SetHiddenInGame(false);
+	//LongWeapon->SetHiddenInGame(true);
 
-	WeaponNow = EItemType::DisposableWeapon;							// 현재 들고 있는 무기 변경
-
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+	//WeaponNow = EItemType::DisposableWeapon;							// 현재 들고 있는 무기 변경
+	ServerRPCChangeWP(EItemType::DisposableWeapon);
 }
 
 void AWMACharacterPlayer::ChangeWeapon_Long()
@@ -444,8 +417,36 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	LongWeapon->SetHiddenInGame(false);
 
 	WeaponNow = EItemType::LongWeapon;									// 현재 들고 있는 무기 변경
+}
 
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
+void AWMACharacterPlayer::ServerRPCChangeWP_Implementation(EItemType InItemData)
+{
+	MulticastRPCChangeWP(InItemData);
+}
+
+void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemData)
+{
+	if (WeaponNow == EItemType::NoWeapon) {
+		return;
+	}
+
+	if (InItemData == EItemType::DisposableWeapon)
+	{
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(false);
+		LongWeapon->SetHiddenInGame(true);
+
+		WeaponNow = EItemType::DisposableWeapon;
+	}
+
+	if (InItemData == EItemType::ShortWeapon)
+	{
+		ShortWeapon->SetHiddenInGame(false);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+
+		WeaponNow = EItemType::ShortWeapon;								// 현재 들고 있는 무기 변경
+	}
 }
 
 void AWMACharacterPlayer::OnRep_PlayerState()
@@ -554,7 +555,6 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 {
 	TArray<AActor*> Result;
 	GetOverlappingActors(Result, AActor::StaticClass());
-	//GetOverlappingActors(Result, AABItemFruitSwd::StaticClass());
 
 	for (auto* TmpActor : Result)
 	{
@@ -579,6 +579,36 @@ void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)
 	ServerRPCTakeItem(InItemData);
 }
 
+float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (IsLocallyControlled())
+	{
+		if (!StartAttack1 && Stat->GetCurrentHp() < 20)
+		{
+			StartAttack1 = true;
+			UpdateAttackedIMG();
+			StartAttack1 = false;
+		}
+		if (!StartAttack2 && Stat->GetCurrentHp() < 15)
+		{
+			StartAttack2 = true;
+			UpdateAttackedIMG();
+			StartAttack2 = false;
+		}
+		if (!StartAttack3 && Stat->GetCurrentHp() < 10)
+		{
+			StartAttack3 = true;
+			UpdateAttackedIMG();
+			StartAttack3 = false;
+		}
+		//Stat->GetCurrentHp()
+	}
+
+	return DamageAmount;
+}
+
 void AWMACharacterPlayer::ServerRPCTakeItem_Implementation(UABItemData* InItemData)
 {
 	MulticastRPCTakeItem(InItemData);
@@ -593,38 +623,38 @@ void AWMACharacterPlayer::MulticastRPCTakeItem_Implementation(UABItemData* InIte
 
 void AWMACharacterPlayer::StartAttacked1()
 {	
-	StartAttack1 = 1;
+	StartAttack1 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked1()
 {
-	StartAttack1 = 0;
+	StartAttack1 = false;
 	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
 }
 
 void AWMACharacterPlayer::StartAttacked2()
 {
-	StartAttack2 = 1;
+	StartAttack2 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked2()
 {
-	StartAttack2 = 0;
+	StartAttack2 = false;
 }
 
 void AWMACharacterPlayer::StartAttacked3()
 {
-	StartAttack3 = 1;
+	StartAttack3 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked3()
 {
-	StartAttack3 = 0;
+	StartAttack3 = false;;
 }
 

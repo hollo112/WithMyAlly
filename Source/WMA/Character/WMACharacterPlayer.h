@@ -96,10 +96,12 @@ protected:
 	// 무기 교체
 protected:
 	void ChangeWeapon_Short();
-
 	void ChangeWeapon_Disposable();
-
 	void ChangeWeapon_Long();
+	UFUNCTION(Server, Reliable)
+	void ServerRPCChangeWP(EItemType InItemData);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCChangeWP(EItemType InItemData);
 
 	//Character Mesh
 	UPROPERTY(config)
@@ -110,9 +112,6 @@ protected:
 	//Character AnimInstace
 	void UpdateAnimInstance();
 
-public:
-	UPROPERTY()
-	TObjectPtr<class AActor>MyBat;
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UBoxComponent> Trigger;
@@ -143,6 +142,9 @@ protected:
 	void MulticastRPCTakeItem(UABItemData* InItemData);
 
 	virtual void TakeItem(class UABItemData* InItemData) override;
+
+	//피격시 UI
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

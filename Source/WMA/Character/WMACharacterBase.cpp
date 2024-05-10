@@ -354,7 +354,6 @@ void AWMACharacterBase::TakeItem(UABItemData* InItemData)
 void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
 	// && InteractionItem->InteractItem
 	if (WeaponItemData) {
 		ShortWeapon->SetHiddenInGame(false);

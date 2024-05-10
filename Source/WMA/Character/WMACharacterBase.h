@@ -147,9 +147,9 @@ public:
 
 	void UpdateAttackedIMG() const;
 
-	UINT8 StartAttack1;
-	UINT8 StartAttack2;
-	UINT8 StartAttack3;
+	UINT8 StartAttack1 = 0;
+	UINT8 StartAttack2 = 0;
+	UINT8 StartAttack3 = 0;
 
 };
 
