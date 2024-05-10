@@ -22,7 +22,7 @@ AABItemPhone::AABItemPhone()
 	Text = CreateDefaultSubobject<UWidgetComponent>(TEXT("Text"));
 	Item = CreateDefaultSubobject<UABItemData>(TEXT("ItemBat"));
 
-	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteractionF.WBP_ItemInteractionF_C'"));
 	if (InputE.Succeeded())
 	{
 		InteractionItemWidgetClass = InputE.Class;
