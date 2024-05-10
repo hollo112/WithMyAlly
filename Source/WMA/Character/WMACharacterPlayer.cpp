@@ -24,7 +24,11 @@
 #include "Engine/AssetManager.h"
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
-#include "Item/ABItemBat.h"
+#include "Item/ABItemBat.h"	
+#include "Item/ABItemFruitSwd.h"
+#include "Item/EV_ButtonActor.h"	
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
 #include <Blueprint/WidgetLayoutLibrary.h>
 
@@ -74,6 +78,20 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	}
 
 	bCanAttack = true;
+
+	//Female Hair
+	FName HairSocket(TEXT("HairSocket"));
+	if (GetMesh()->DoesSocketExist(HairSocket)) 
+	{
+		Hair = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hair"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> HairMesh(TEXT("/Script/Engine.StaticMesh'/Game/MyCharacters/NewFemale/NewHair.NewHair'"));
+		if (HairMesh.Succeeded())
+		{
+			// 스태틱 메시를 설정해주고
+			Hair->SetStaticMesh(HairMesh.Object);
+		}
+		Hair->SetupAttachment(GetMesh(), HairSocket);
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -107,31 +125,8 @@ void AWMACharacterPlayer::SetDead()
 
 void AWMACharacterPlayer::PossessedBy(AController* NewController)
 {
-	/*WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("Begin"));
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
-	}*/
-
 	Super::PossessedBy(NewController);
 
-	/*OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("Owner: %s"), *OwnerActor->GetName());
-	}
-	else
-	{
-		WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("No Owner"));
-	}
-
-	WMA_LOG(LogWMANetwork, Log, TEXT("%s"), TEXT("End"));*/
-	UpdateMeshesFromPlayerState();
 	UpdateAnimInstance();
 }
 
@@ -174,9 +169,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
-
-	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::StartRunning);
-	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::StopRunning);
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
 	PlayerInputComponent->BindAction("RemoveWidget", IE_Pressed, this, &AWMACharacterPlayer::EscapeWidget);
 
@@ -189,6 +183,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Attacked3", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked3);
 	PlayerInputComponent->BindAction("Attacked3", IE_Released, this, &AWMACharacterPlayer::StopAttacked3);
 
+	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
 
 
 	// 무기 교체 Input
@@ -212,7 +208,6 @@ void AWMACharacterPlayer::SetCharacterControl()
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		//Subsystem->RemoveMappingContext(DefaultMappingContext);
 	}
 
 }
@@ -303,80 +298,6 @@ void AWMACharacterPlayer::PlayCloseAttackAnimation()
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
 
-void AWMACharacterPlayer::CloseAttackHitCheck()
-{
-	if (IsLocallyControlled())
-	{
-		FHitResult OutHitResult;
-		FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-
-		float AttackRange;
-		switch (WeaponNow)//
-		{
-		case EItemType::ShortWeapon:
-			AttackRange = Stat->GetCharacterStat().ShortWPRange;
-			break;
-		case EItemType::DisposableWeapon:
-			AttackRange = Stat->GetCharacterStat().DisposableWPRange;
-			break;
-		case EItemType::LongWeapon:
-			AttackRange = Stat->GetCharacterStat().LongWPRange;
-			break;
-		case EItemType::NoWeapon:
-			AttackRange = 0.0f;
-			break;
-		default:
-			AttackRange = 0.0f;
-			break;
-		}
-		const float AttackRadius = Stat->GetAttackRadius();
-		const float AttackDamage = Stat->GetCharacterStat().Attack;
-		const FVector Forward = GetActorForwardVector();
-		const FVector Start = GetActorLocation() + Forward * GetCapsuleComponent()->GetScaledCapsuleRadius();
-		const FVector End = Start + GetActorForwardVector() * AttackRange;
-
-		bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_WMAACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
-
-
-		//if (OutHitResult.GetActor()->IsA(AWMACharacterPlayer::StaticClass()))			//만약 플레이러를 공격했다면 판정X
-		//{
-		//	HitDetected = false;
-		//}
-
-		float HitCheckTime = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
-		if (!HasAuthority())
-		{
-			if (HitDetected)
-			{
-				ServerRPCNotifyHit(OutHitResult, HitCheckTime);
-			}
-			else
-			{
-				ServerRPCNotifyMiss(Start, End, Forward, HitCheckTime);
-			}
-		}
-		else
-		{
-			FColor DebugColor = HitDetected ? FColor::Green : FColor::Red;
-			DrawDebugAttackRange(DebugColor, Start, End, Forward);
-			if (HitDetected)
-			{
-				AttackHitConfirm(OutHitResult.GetActor());
-			}
-		}
-	}
-}
-
-void AWMACharacterPlayer::AttackHitConfirm(AActor* HitActor)
-{
-	if (HasAuthority())
-	{
-		const float AttackDamage = Stat->GetCharacterStat().Attack;
-		FDamageEvent DamageEvent;
-		HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-	}
-}
-
 void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
 {
 #if ENABLE_DRAW_DEBUG
@@ -442,21 +363,6 @@ void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartT
 	PlayCloseAttackAnimation();
 
 	MulticastRPCCloseAttack();
-	//for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-	//{
-	//	if (PlayerController && GetController() != PlayerController)			// 나와 다른 컨트롤러
-	//	{
-	//		if (!PlayerController->IsLocalController())
-	//		{
-	//			// Simulated Proxy로 폰을 재생하는 PlayerController
-	//			AWMACharacterPlayer* OtherPlayer = Cast<AWMACharacterPlayer>(PlayerController->GetPawn());
-	//			if (OtherPlayer)
-	//			{
-	//				OtherPlayer->ClientRPCPlayAnimation(this);
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
@@ -465,47 +371,6 @@ void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
 	{
 		PlayCloseAttackAnimation();
 	}
-}
-
-
-bool AWMACharacterPlayer::ServerRPCNotifyHit_Validate(const FHitResult& HitResult, float HitCheckTime)
-{
-	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
-}
-
-void AWMACharacterPlayer::ServerRPCNotifyHit_Implementation(const FHitResult& HitResult, float HitCheckTime)
-{
-	AActor* HitActor = HitResult.GetActor();
-	if (::IsValid(HitActor))
-	{
-		const FVector HitLocation = HitResult.Location;
-		const FBox HitBox = HitActor->GetComponentsBoundingBox();
-		const FVector ActorBoxCenter = (HitBox.Min + HitBox.Max) * 0.5f;
-		if (FVector::DistSquared(HitLocation, ActorBoxCenter) <= AcceptCheckDistance * AcceptCheckDistance)
-		{
-			AttackHitConfirm(HitActor);
-		}
-		else
-		{
-			WMA_LOG(LogWMANetwork, Warning, TEXT("%s"), TEXT("Hit Rejected"));
-		}
-
-#if ENABLE_DRAW_DEBUG
-		DrawDebugPoint(GetWorld(), ActorBoxCenter, 50.0f, FColor::Cyan, false, 5.0f);
-		DrawDebugPoint(GetWorld(), HitLocation, 50.0f, FColor::Magenta, false, 5.0f);
-#endif
-		DrawDebugAttackRange(FColor::Green, HitResult.TraceStart, HitResult.TraceEnd, HitActor->GetActorForwardVector());
-	}
-}
-
-bool AWMACharacterPlayer::ServerRPCNotifyMiss_Validate(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
-{
-	return (HitCheckTime - LastCloseAttackStartTime) > AcceptMinCheckTime;
-}
-
-void AWMACharacterPlayer::ServerRPCNotifyMiss_Implementation(FVector_NetQuantize TraceStart, FVector_NetQuantize TraceEnd, FVector_NetQuantizeNormal TraceDir, float HitCheckTime)
-{
-	DrawDebugAttackRange(FColor::Red, TraceStart, TraceEnd, TraceDir);
 }
 
 void AWMACharacterPlayer::OnRep_CanCloseAttack()
@@ -522,32 +387,31 @@ void AWMACharacterPlayer::OnRep_CanCloseAttack()
 
 void AWMACharacterPlayer::ChangeWeapon_Short()
 {
-	if (WeaponNow == EItemType::NoWeapon) {
-		//return;
-	}
+	//if (WeaponNow == EItemType::NoWeapon) {
+	//	//return;
+	//}
 
-	ShortWeapon->SetHiddenInGame(false);
-	DisposableWeapon->SetHiddenInGame(true);
-	LongWeapon->SetHiddenInGame(true);
+	//ShortWeapon->SetHiddenInGame(false);
+	//DisposableWeapon->SetHiddenInGame(true);
+	//LongWeapon->SetHiddenInGame(true);
 
-	WeaponNow = EItemType::ShortWeapon;									// 현재 들고 있는 무기 변경
+	//WeaponNow = EItemType::ShortWeapon;									// 현재 들고 있는 무기 변경
 
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP Short"));
+	ServerRPCChangeWP(EItemType::ShortWeapon);
 }
 
 void AWMACharacterPlayer::ChangeWeapon_Disposable()
 {
-	if (WeaponNow == EItemType::NoWeapon) {
-		return;
-	}
+	//if (WeaponNow == EItemType::NoWeapon) {
+	//	return;
+	//}
 
-	ShortWeapon->SetHiddenInGame(true);
-	DisposableWeapon->SetHiddenInGame(false);
-	LongWeapon->SetHiddenInGame(true);
+	//ShortWeapon->SetHiddenInGame(true);
+	//DisposableWeapon->SetHiddenInGame(false);
+	//LongWeapon->SetHiddenInGame(true);
 
-	WeaponNow = EItemType::DisposableWeapon;							// 현재 들고 있는 무기 변경
-
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP DISPOSABLE"));
+	//WeaponNow = EItemType::DisposableWeapon;							// 현재 들고 있는 무기 변경
+	ServerRPCChangeWP(EItemType::DisposableWeapon);
 }
 
 void AWMACharacterPlayer::ChangeWeapon_Long()
@@ -557,25 +421,52 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	LongWeapon->SetHiddenInGame(false);
 
 	WeaponNow = EItemType::LongWeapon;									// 현재 들고 있는 무기 변경
-
-	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 }
 
-void AWMACharacterPlayer::UpdateMeshesFromPlayerState()
+void AWMACharacterPlayer::ServerRPCChangeWP_Implementation(EItemType InItemData)
 {
-	int32 MeshIndex = FMath::Clamp(GetPlayerState()->PlayerId % PlayerMeshes.Num(), 0, PlayerMeshes.Num() - 1);
-	MeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(PlayerMeshes[MeshIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterBase::MeshLoadCompleted));
+	MulticastRPCChangeWP(InItemData);
+}
+
+void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemData)
+{
+	if (WeaponNow == EItemType::NoWeapon) {
+		return;
+	}
+
+	if (InItemData == EItemType::DisposableWeapon)
+	{
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(false);
+		LongWeapon->SetHiddenInGame(true);
+
+		WeaponNow = EItemType::DisposableWeapon;
+	}
+
+	if (InItemData == EItemType::ShortWeapon)
+	{
+		ShortWeapon->SetHiddenInGame(false);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+
+		WeaponNow = EItemType::ShortWeapon;								// 현재 들고 있는 무기 변경
+	}
 }
 
 void AWMACharacterPlayer::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	UpdateMeshesFromPlayerState();
 	if (!HasAuthority())
 	{
 		if (IsLocallyControlled())
 		{
+			auto SM_Male = LoadObject<USkeletalMesh>(NULL, TEXT("/Game/MyCharacters/Male/Male_Idle.Male_Idle"));
+			if (SM_Male)
+			{
+				GetMesh()->SetSkeletalMesh(SM_Male);
+			}
+
 			auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
 			GetMesh()->SetAnimInstanceClass(ABPClass);
 
@@ -584,6 +475,8 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 			{
 				ComboActionMontage = AMClass;
 			}
+
+			Hair->SetHiddenInGame(true);
 		}
 	}
 }
@@ -592,6 +485,12 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 {
 	if (!IsLocallyControlled())
 	{
+		auto SM_Male = LoadObject<USkeletalMesh>(NULL, TEXT("/Game/MyCharacters/Male/Male_Idle.Male_Idle"));
+		if (SM_Male)
+		{
+			GetMesh()->SetSkeletalMesh(SM_Male);
+		}
+
 		auto ABPClass = LoadClass<UAnimInstance>(NULL, TEXT("/Game/MyCharacters/Male/Animation/ABP_Male.ABP_Male_C"));
 		GetMesh()->SetAnimInstanceClass(ABPClass);
 
@@ -600,60 +499,168 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 		{
 			ComboActionMontage = AMClass;
 		}
+
+		Hair->SetHiddenInGame(true);
 	}
 }
 
-void AWMACharacterPlayer::StartRunning()
+void AWMACharacterPlayer::ServerSprint_Implementation(bool isSprinting)
 {
-	if (HasAuthority())
+	MulticastSprint(isSprinting);
+}
+
+void AWMACharacterPlayer::MulticastSprint_Implementation(bool isSprinting)
+{
+	if (isSprinting)
 	{
 		GetCharacterMovement()->MaxWalkSpeed *= 2;  // 원하는 속도배수로 조정
 	}
-}
-
-void AWMACharacterPlayer::StopRunning()
-{
-	if (HasAuthority())
+	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed /= 2;  // 증가했던 속도를 원래대로 복원
 	}
 }
 
+void AWMACharacterPlayer::SprintHold()
+{
+	bIsHoldingSprintButton = true;
+	if (bIsHoldingSprintButton)
+	{
+		ServerSprint(bIsHoldingSprintButton);
+	}
+}
+
+void AWMACharacterPlayer::SprintRelease()
+{
+	bIsHoldingSprintButton = false;
+	ServerSprint(false);
+}
+
+void AWMACharacterPlayer::InteractHold()
+{
+	UE_LOG(LogTemp, Log, TEXT("Log pick"));
+	class AEV_ButtonActor* EVButton;
+	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
+	EVButton->OnInteract();
+
+	ServerRPCPickUp();
+}
+
+void AWMACharacterPlayer::InteractRelease()
+{
+
+}
+
+void AWMACharacterPlayer::ServerRPCPickUp_Implementation()
+{
+	MulticastRPCPickUp();
+}
+
+void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
+{
+	TArray<AActor*> Result;
+	GetOverlappingActors(Result, AActor::StaticClass());
+
+	for (auto* TmpActor : Result)
+	{
+		if (TmpActor->IsA(AABItemBat::StaticClass()))
+		{
+			AABItemBat* Bat = Cast<AABItemBat>(TmpActor);
+			Bat->OnInteract();
+			Bat->Destroy();
+		}
+
+		if (TmpActor->IsA(AABItemFruitSwd::StaticClass()))
+		{
+			AABItemFruitSwd* Bat = Cast<AABItemFruitSwd>(TmpActor);
+			Bat->OnInteract();
+			Bat->Destroy();
+		}
+	}
+}
+
+void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)
+{
+	ServerRPCTakeItem(InItemData);
+}
+
+float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (IsLocallyControlled())
+	{
+		if (!StartAttack1 && Stat->GetCurrentHp() < 20)
+		{
+			StartAttack1 = true;
+			UpdateAttackedIMG();
+			StartAttack1 = false;
+		}
+		if (!StartAttack2 && Stat->GetCurrentHp() < 15)
+		{
+			StartAttack2 = true;
+			UpdateAttackedIMG();
+			StartAttack2 = false;
+		}
+		if (!StartAttack3 && Stat->GetCurrentHp() < 10)
+		{
+			StartAttack3 = true;
+			UpdateAttackedIMG();
+			StartAttack3 = false;
+		}
+		//Stat->GetCurrentHp()
+	}
+
+	return DamageAmount;
+}
+
+void AWMACharacterPlayer::ServerRPCTakeItem_Implementation(UABItemData* InItemData)
+{
+	MulticastRPCTakeItem(InItemData);
+}
+
+void AWMACharacterPlayer::MulticastRPCTakeItem_Implementation(UABItemData* InItemData)
+{
+	if (InItemData) {
+		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
+}
+
 void AWMACharacterPlayer::StartAttacked1()
 {	
-	StartAttack1 = 1;
+	StartAttack1 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked1()
 {
-	StartAttack1 = 0;
+	StartAttack1 = false;
 	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
 }
 
 void AWMACharacterPlayer::StartAttacked2()
 {
-	StartAttack2 = 1;
+	StartAttack2 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked2()
 {
-	StartAttack2 = 0;
+	StartAttack2 = false;
 }
 
 void AWMACharacterPlayer::StartAttacked3()
 {
-	StartAttack3 = 1;
+	StartAttack3 = true;
 
 	UpdateAttackedIMG();
 }
 
 void AWMACharacterPlayer::StopAttacked3()
 {
-	StartAttack3 = 0;
+	StartAttack3 = false;;
 }
 
 void AWMACharacterPlayer::EscapeWidget() 

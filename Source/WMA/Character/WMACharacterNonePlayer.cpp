@@ -8,6 +8,10 @@
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
+#include "WMACharacterPlayer.h"
+#include "GameFramework/GameStateBase.h"
+#include "EngineUtils.h"
+#include "Net/UnrealNetwork.h"
 
 void AWMACharacterNonePlayer::BeginPlay()
 {
@@ -40,7 +44,7 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/Animation/AM_Dead.AM_Dead'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_ZomDead.AM_ZomDead'"));
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
@@ -50,12 +54,6 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 	if (ComboActionMontageRef.Object)
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UEnvQuery> EQSQuery(TEXT("EnvQuery'/Game/AI/EQS_FindPlayer.EQS_FindPlayer'"));
-	if (EQSQuery.Succeeded())
-	{
-		MyEQSTemplate = EQSQuery.Object;
 	}
 }
 
@@ -67,7 +65,33 @@ float AWMACharacterNonePlayer::GetPeripheralVisionAngleDegrees() const
 
 void AWMACharacterNonePlayer::SetDead()
 {
-	Super::SetDead();
+	//PlayDeadAnimation();
+	//SetActorEnableCollision(false);
+	ServerRPCSetDead();
+	//Super::SetDead();
+
+	/*FTimerHandle DeadTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
+		[&]()
+		{
+			Destroy();
+		}
+	), DeadEventDelayTime, false);*/
+}
+
+void AWMACharacterNonePlayer::ServerRPCSetDead_Implementation()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);	// 움직이지 못하게 하기
+	PlayDeadAnimation();
+	SetActorEnableCollision(false);
+
+	MulticastServerRPCSetDead();
+
+	AWMAAIController* AIController = Cast<AWMAAIController>(GetController());
+	if (AIController)
+	{
+		AIController->StopAI();
+	}
 
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
@@ -76,6 +100,12 @@ void AWMACharacterNonePlayer::SetDead()
 			Destroy();
 		}
 	), DeadEventDelayTime, false);
+}
+
+void AWMACharacterNonePlayer::MulticastServerRPCSetDead_Implementation()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	PlayDeadAnimation();
 }
 
 float AWMACharacterNonePlayer::GetAIPatrolRadius()
@@ -129,8 +159,12 @@ void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinish
 
 void AWMACharacterNonePlayer::AttackByAI()
 {
-	ProcessComboCommand();
 	//MulticastRPCZomAttack();
+	if (!bIsAttacking)
+	{
+		
+		ServerRPCAttack();
+	}
 }
 
 void AWMACharacterNonePlayer::NotifyComboActionEnd()
@@ -146,9 +180,53 @@ void AWMACharacterNonePlayer::PlayAttackAnimation()
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
 
+void AWMACharacterNonePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AWMACharacterNonePlayer, bIsAttacking);
+}
 
-void AWMACharacterNonePlayer::MulticastRPCZomAttack_Implementation()
+void AWMACharacterNonePlayer::OnRep_CanCloseAttack()
+{
+	if (bIsAttacking)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+}
+
+void AWMACharacterNonePlayer::MulticastRPCAttack_Implementation()
 {
 	PlayAttackAnimation();
+}
+
+bool AWMACharacterNonePlayer::ServerRPCAttack_Validate()
+{
+	return true;
+}
+
+void AWMACharacterNonePlayer::ServerRPCAttack_Implementation()
+{
+	//ProcessComboCommand();
+
+	bIsAttacking = true;
+	OnRep_CanCloseAttack();
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	FTimerHandle AttackTimerHandle;
+	float AttackTime = 4.6;
+
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			bIsAttacking = false;
+			OnRep_CanCloseAttack();
+		}
+	), AttackTime, false);
+
+	PlayAttackAnimation();
+	MulticastRPCAttack();
 }

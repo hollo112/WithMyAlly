@@ -12,98 +12,116 @@
 #include "Components/WidgetComponent.h"
 #include "UI/WMAItemInteractionWidget.h"
 #include "Interface/ABCharacterItemInterface.h"
-
+#include "Character/WMACharacterPlayer.h"
 
 // Sets default values
 AABItemBat::AABItemBat()
 {
-	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Effect = CreateDefaultSubobject < UParticleSystemComponent>(TEXT("Effect"));
-	TextE = CreateDefaultSubobject<UWidgetComponent>(TEXT("TextE"));
-	Item = CreateDefaultSubobject<UABItemData>(TEXT("ItemBat"));
-	UE_LOG(LogTemp, Warning, TEXT("DFDF"));
+    Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+    Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+    Effect = CreateDefaultSubobject < UParticleSystemComponent>(TEXT("Effect"));
+    TextE = CreateDefaultSubobject<UWidgetComponent>(TEXT("TextE"));
+    Item = CreateDefaultSubobject<UABItemData>(TEXT("ItemBat"));
 
 
-	static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C'"));
-	if (InputE.Succeeded()) 
-	{
-		InteractionItemWidgetClass = InputE.Class;
-	}
 
-	RootComponent = Trigger;
-	Mesh->SetupAttachment(Trigger);
-	Effect->SetupAttachment(Trigger);
+    static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
+    if (InputE.Succeeded())
+    {
+        InteractionItemWidgetClass = InputE.Class;
+    }
 
-	Trigger->SetCollisionProfileName(CPROFILE_WMATRIGGER);
-	Trigger->SetBoxExtent(FVector(11.0f, 10.0f, 110.0f));
+    RootComponent = Trigger;
+    Mesh->SetupAttachment(Trigger);
+    Effect->SetupAttachment(Trigger);
 
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBat::OnOverlapBegin);
-	Trigger->OnComponentEndOverlap.AddDynamic(this,&AABItemBat::OnOverlapEnd);
+    Trigger->SetCollisionProfileName(CPROFILE_WMATRIGGER);
+    Trigger->SetBoxExtent(FVector(11.0f, 10.0f, 110.0f));
+
+    Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBat::OnOverlapBegin);
+    Trigger->OnComponentEndOverlap.AddDynamic(this, &AABItemBat::OnOverlapEnd);
 
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Item/Bat/Batfbx.Batfbx'"));
-	if (BoxMeshRef.Succeeded()) 
-	{
-		TempBoxMesh = BoxMeshRef.Object;
-		Mesh->SetStaticMesh(BoxMeshRef.Object);
-	}
-	Mesh->SetRelativeLocation(FVector(0.0f, -3.5f, -20.0f));
-	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Item/Bat/Batfbx.Batfbx'"));
+    if (BoxMeshRef.Succeeded())
+    {
+        TempBoxMesh = BoxMeshRef.Object;
+        Mesh->SetStaticMesh(BoxMeshRef.Object);
+    }
+    Mesh->SetRelativeLocation(FVector(0.0f, -3.5f, -20.0f));
+    Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+
+
+    Mesh->SetIsReplicated(true);
 }
 
+void AABItemBat::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (InteractionItemWidgetClass)
+    {
+        ItemWidget = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
+        
+        if (ItemWidget)
+        {
+            ItemWidget->AddToViewport();
+        }
+    }
+}
 
 void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	//TextE->SetHiddenInGame(false);
-
-	UE_LOG(LogTemp, Warning, TEXT("DFDF"));
-	UE_LOG(LogTemp, Warning, TEXT("HI"));
-	if (InteractionItemWidgetClass)
-	{
-		ItemText = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
-
-		if(ItemText)
-			ItemText->AddToViewport();
-	}
-	if (nullptr == Item) {
-		Destroy();
-		return;
-	}
-
-	//IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
-	//if (OverlappingPawn)
-	//{
-	//	IACharcterII = OverlappingPawn;
-	//	OverlappingPawn->TakeItem(Item);
-
-	//	//TextE->SetHiddenInGame(true);
-	//	bBat = 1;
-	//	UE_LOG(LogTemp, Warning, TEXT("bBat is :: %s at Begin"), bBat ? TEXT("true") : TEXT("false"));
-	//}
-
-	////Effect->Activate(true);
-
-	//Mesh->SetHiddenInGame(true);
-	//SetActorEnableCollision(false);
-
-	//Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
-	//UE_LOG(LogTemp, Warning, TEXT("Bye"));
-
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+    if (player && player->IsLocallyControlled())
+    {
+        if (ItemWidget)
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Visible);
+            PlayerActor = OtherActor;
+        }
+    }
 }
 
 void AABItemBat::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
 
-	if (ItemText) 
-	{
-		ItemText->RemoveFromViewport();
-		ItemText = nullptr;
-	}
-
+    if (player && player->IsLocallyControlled())
+    {
+        if (ItemWidget && player->IsLocallyControlled())
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
+            PlayerActor = NULL;
+        }
+    }
 }
 
 void AABItemBat::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
 {
-	Destroy();
+    Destroy();
+}
+
+void AABItemBat::OnInteract()
+{
+    if (ItemWidget->IsVisible())
+    {
+        if (nullptr == Item) {
+            Destroy();
+            return;
+        }
+
+        if (PlayerActor)
+        {
+            IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(PlayerActor);
+            if (OverlappingPawn)
+            {
+                OverlappingPawn->TakeItem(Item);
+            }
+        }
+        Mesh->SetHiddenInGame(true);
+        SetActorEnableCollision(false);
+        Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
+    }
+    ////Effect->Activate(true);
 }

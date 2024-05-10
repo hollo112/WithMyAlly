@@ -52,14 +52,14 @@ AWMACharacterBase::AWMACharacterBase()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/Female/Female_Idle.Female_Idle"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/NewFemale/Female_Idle.Female_Idle"));
 	
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Female/Animations/ABP_Female.ABP_Female_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/NewFemale/Animation/ABP_Female.ABP_Female_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -71,7 +71,7 @@ AWMACharacterBase::AWMACharacterBase()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Female/Animations/AM_FemaleComboAttack.AM_FemaleComboAttack'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_ComboAttack.AM_ComboAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
@@ -270,28 +270,26 @@ void AWMACharacterBase::CloseAttackHitCheck()
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
 
-	//float AttackRange;
-	//switch (WeaponNow)//
-	//{
-	//case EItemType::ShortWeapon:
-	//	AttackRange = Stat->GetCharacterStat().ShortWPRange;
-	//	break;
-	//case EItemType::DisposableWeapon:
-	//	AttackRange = Stat->GetCharacterStat().DisposableWPRange;
-	//	break;
-	//case EItemType::LongWeapon:
-	//	AttackRange = Stat->GetCharacterStat().LongWPRange;
-	//	break;
-	//case EItemType::NoWeapon:
-	//	AttackRange = 0.0f;
-	//	break;
-	//default:
-	//	AttackRange = 0.0f;
-	//	break;
-	//}
-	//
-
-	const float AttackRange = Stat->GetCharacterStat().ShortWPRange;
+	float AttackRange;
+	switch (WeaponNow)//
+	{
+	case EItemType::ShortWeapon:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	case EItemType::DisposableWeapon:
+		AttackRange = Stat->GetCharacterStat().DisposableWPRange;
+		break;
+	case EItemType::LongWeapon:
+		AttackRange = Stat->GetCharacterStat().LongWPRange;
+		break;
+	case EItemType::NoWeapon:
+		AttackRange = 0.0f;
+		break;
+	default:
+		AttackRange = Stat->GetCharacterStat().ShortWPRange;
+		break;
+	}
+	
 	const float AttackRadius = Stat->GetAttackRadius();
 	const float AttackDamage = Stat->GetCharacterStat().Attack;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
@@ -374,7 +372,6 @@ void AWMACharacterBase::TakeItem(UABItemData* InItemData)
 void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 {
 	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
-	UWMAGameInstance* InteractionItem = Cast<UWMAGameInstance>(GetWorld()->GetGameInstance());
 	// && InteractionItem->InteractItem
 	if (WeaponItemData) {
 		ShortWeapon->SetHiddenInGame(false);

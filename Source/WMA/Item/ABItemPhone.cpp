@@ -12,6 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include "UI/WMAItemInteractionWidget.h"
 #include "Interface/ABCharacterItemInterface.h"
+#include "Character/WMACharacterPlayer.h"
 
 // Sets default values
 AABItemPhone::AABItemPhone()
@@ -48,7 +49,8 @@ AABItemPhone::AABItemPhone()
 
 void AABItemPhone::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	if (InteractionItemWidgetClass)
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+	if (InteractionItemWidgetClass && player->IsLocallyControlled())
 	{
 		ItemText = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
 
