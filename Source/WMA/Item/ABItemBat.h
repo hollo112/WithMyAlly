@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/WMACharacterPlayer.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "GameFramework/Actor.h"
 #include "ABItemBat.generated.h"
@@ -13,9 +12,13 @@ class WMA_API AABItemBat : public AActor
 {
     GENERATED_BODY()
 
-    public:
+public:
     // Sets default values for this actor's properties
     AABItemBat();
+    
+protected:
+    virtual void BeginPlay() override;
+
 protected:
 
     UPROPERTY(VisibleAnywhere, Category = Box)
@@ -50,6 +53,9 @@ protected:
 
     TSubclassOf<UUserWidget> InteractionItemWidgetClass;
 
-    UUserWidget* ItemText;
+    UUserWidget* ItemWidget;
 
+    AActor* PlayerActor;
+public:
+    void OnInteract();
 };

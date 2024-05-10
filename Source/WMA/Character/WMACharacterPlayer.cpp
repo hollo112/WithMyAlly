@@ -25,6 +25,7 @@
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"	
+#include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -535,10 +536,59 @@ void AWMACharacterPlayer::InteractHold()
 	class AEV_ButtonActor* EVButton;
 	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
 	EVButton->OnInteract();
+
+	ServerRPCPickUp();
 }
 
 void AWMACharacterPlayer::InteractRelease()
 {
+
+}
+
+void AWMACharacterPlayer::ServerRPCPickUp_Implementation()
+{
+	MulticastRPCPickUp();
+}
+
+void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
+{
+	TArray<AActor*> Result;
+	GetOverlappingActors(Result, AActor::StaticClass());
+	//GetOverlappingActors(Result, AABItemFruitSwd::StaticClass());
+
+	for (auto* TmpActor : Result)
+	{
+		if (TmpActor->IsA(AABItemBat::StaticClass()))
+		{
+			AABItemBat* Bat = Cast<AABItemBat>(TmpActor);
+			Bat->OnInteract();
+			Bat->Destroy();
+		}
+
+		if (TmpActor->IsA(AABItemFruitSwd::StaticClass()))
+		{
+			AABItemFruitSwd* Bat = Cast<AABItemFruitSwd>(TmpActor);
+			Bat->OnInteract();
+			Bat->Destroy();
+		}
+	}
+}
+
+void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)
+{
+	ServerRPCTakeItem(InItemData);
+}
+
+void AWMACharacterPlayer::ServerRPCTakeItem_Implementation(UABItemData* InItemData)
+{
+	MulticastRPCTakeItem(InItemData);
+}
+
+void AWMACharacterPlayer::MulticastRPCTakeItem_Implementation(UABItemData* InItemData)
+{
+	if (InItemData) {
+		TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
 }
 
 void AWMACharacterPlayer::StartAttacked1()

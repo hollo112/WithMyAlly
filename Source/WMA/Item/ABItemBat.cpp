@@ -12,7 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include "UI/WMAItemInteractionWidget.h"
 #include "Interface/ABCharacterItemInterface.h"
-
+#include "Character/WMACharacterPlayer.h"
 
 // Sets default values
 AABItemBat::AABItemBat()
@@ -25,7 +25,7 @@ AABItemBat::AABItemBat()
 
 
 
-    static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("WidgetBlueprint'/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C'"));
+    static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
     if (InputE.Succeeded())
     {
         InteractionItemWidgetClass = InputE.Class;
@@ -50,58 +50,78 @@ AABItemBat::AABItemBat()
     }
     Mesh->SetRelativeLocation(FVector(0.0f, -3.5f, -20.0f));
     Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+
+
+    Mesh->SetIsReplicated(true);
 }
-void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+
+void AABItemBat::BeginPlay()
 {
-    //TextE->SetHiddenInGame(false);
+    Super::BeginPlay();
 
-
-    UE_LOG(LogTemp, Warning, TEXT("HI"));
     if (InteractionItemWidgetClass)
     {
-        ItemText = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
-
-        if (ItemText)
-            ItemText->AddToViewport();
+        ItemWidget = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
+        
+        if (ItemWidget)
+        {
+            ItemWidget->AddToViewport();
+        }
     }
-    if (nullptr == Item) {
-        Destroy();
-        return;
+}
+
+void AABItemBat::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+{
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+    if (player && player->IsLocallyControlled())
+    {
+        if (ItemWidget)
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Visible);
+            PlayerActor = OtherActor;
+        }
     }
-
-    //IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
-    //if (OverlappingPawn)
-    //{
-    //    IACharcterII = OverlappingPawn;
-    //    OverlappingPawn->TakeItem(Item);
-
-    //    //TextE->SetHiddenInGame(true);
-    //    bBat = 1;
-    //    UE_LOG(LogTemp, Warning, TEXT("bBat is :: %s at Begin"), bBat ? TEXT("true") : TEXT("false"));
-    //}
-
-    ////Effect->Activate(true);
-
-    //Mesh->SetHiddenInGame(true);
-    //SetActorEnableCollision(false);
-
-    //Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
-    //UE_LOG(LogTemp, Warning, TEXT("Bye"));
-
 }
 
 void AABItemBat::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
 
-    if (ItemText)
+    if (player && player->IsLocallyControlled())
     {
-        ItemText->RemoveFromViewport();
-        ItemText = nullptr;
+        if (ItemWidget && player->IsLocallyControlled())
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
+            PlayerActor = NULL;
+        }
     }
-
 }
 
 void AABItemBat::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
 {
     Destroy();
+}
+
+void AABItemBat::OnInteract()
+{
+    if (ItemWidget->IsVisible())
+    {
+        if (nullptr == Item) {
+            Destroy();
+            return;
+        }
+
+        if (PlayerActor)
+        {
+            IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(PlayerActor);
+            if (OverlappingPawn)
+            {
+                OverlappingPawn->TakeItem(Item);
+            }
+        }
+        Mesh->SetHiddenInGame(true);
+        SetActorEnableCollision(false);
+        Effect->OnSystemFinished.AddDynamic(this, &AABItemBat::OnEffectFinished);
+    }
+    ////Effect->Activate(true);
 }

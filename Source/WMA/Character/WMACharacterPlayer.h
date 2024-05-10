@@ -131,6 +131,19 @@ protected:
 	void InteractHold();
 	void InteractRelease();
 
+	// Picking
+	UFUNCTION(Server, Reliable)
+	void ServerRPCPickUp();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCPickUp();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCTakeItem(UABItemData* InItemData);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCTakeItem(UABItemData* InItemData);
+
+	virtual void TakeItem(class UABItemData* InItemData) override;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Hair;
