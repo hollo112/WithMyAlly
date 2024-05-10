@@ -60,6 +60,8 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
+	void EscapeWidget();
+
 	void StartAttacked1();
 	void StopAttacked1();
 	void StartAttacked2();

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/WMACharacterPlayer.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "GameFramework/Actor.h"
 #include "ABItemBat.generated.h"

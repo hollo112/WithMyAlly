@@ -30,6 +30,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
+#include <Blueprint/WidgetLayoutLibrary.h>
 
 
 AWMACharacterPlayer::AWMACharacterPlayer()
@@ -171,6 +172,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
+	PlayerInputComponent->BindAction("RemoveWidget", IE_Pressed, this, &AWMACharacterPlayer::EscapeWidget);
+
 	PlayerInputComponent->BindAction("Attacked1", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked1);
 	PlayerInputComponent->BindAction("Attacked1", IE_Released, this, &AWMACharacterPlayer::StopAttacked1);
 
@@ -248,6 +251,7 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
 }
+
 
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -534,6 +538,7 @@ void AWMACharacterPlayer::SprintRelease()
 
 void AWMACharacterPlayer::InteractHold()
 {
+	UE_LOG(LogTemp, Log, TEXT("Log pick"));
 	class AEV_ButtonActor* EVButton;
 	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
 	EVButton->OnInteract();
@@ -658,3 +663,7 @@ void AWMACharacterPlayer::StopAttacked3()
 	StartAttack3 = false;;
 }
 
+void AWMACharacterPlayer::EscapeWidget() 
+{
+	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
+}

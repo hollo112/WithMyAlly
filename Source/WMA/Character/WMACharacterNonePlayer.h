@@ -3,7 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundAttenuation.h"
 #include "Character/WMACharacterBase.h"
+#include "EnvironmentQuery/EnvQuery.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
+#include "AI/BTService_Detect.h"
 #include "Interface/WMACharacterAIInterface.h"
 #include "WMACharacterNonePlayer.generated.h"
 
@@ -19,6 +24,8 @@ protected:
 
 public:
 	AWMACharacterNonePlayer();
+
+	virtual float GetPeripheralVisionAngleDegrees() const override;
 
 protected:
 	void SetDead() override;
@@ -36,6 +43,10 @@ protected:
 	virtual float GetAIDetectRange() override;
 	virtual float GetAIAttackRange() override;
 	virtual float GetAITurnSpeed() override;
+	virtual float SetMovementSpeed() override;
+	virtual float ResetMovementSpeed() override;
+	virtual void SetGrowlSound() override;
+	virtual void StopGrowlSound() override;
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;

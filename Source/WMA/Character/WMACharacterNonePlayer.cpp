@@ -3,6 +3,9 @@
 
 #include "Character/WMACharacterNonePlayer.h"
 #include "AI/WMAAIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "EnvironmentQuery/EnvQuery.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CharacterStat/WMACharacterStatComponent.h"
 #include "WMACharacterPlayer.h"
@@ -14,10 +17,13 @@ void AWMACharacterNonePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-// Stat
-	SetName(2);											// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
+	// Stat
+	SetName(2);	// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
-	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed; 
+	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
+	//GrowlAudioComponent->SetSound(GrowlSound);
+	//GrowlAudioComponent->SetVolumeMultiplier(0.2f);
 }
 
 AWMACharacterNonePlayer::AWMACharacterNonePlayer()
@@ -49,7 +55,12 @@ AWMACharacterNonePlayer::AWMACharacterNonePlayer()
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
 	}
+}
 
+float AWMACharacterNonePlayer::GetPeripheralVisionAngleDegrees() const
+{
+
+	return 180.0f;
 }
 
 void AWMACharacterNonePlayer::SetDead()
@@ -114,8 +125,32 @@ float AWMACharacterNonePlayer::GetAIAttackRange()
 
 float AWMACharacterNonePlayer::GetAITurnSpeed()
 {
-	return 2.0f;
+	return 2.0f; 
 }
+
+float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔주면 됨
+{
+	return GetCharacterMovement()->MaxWalkSpeed  = Stat->GetCharacterStat().MovementSpeed * 7 ;
+}
+
+float AWMACharacterNonePlayer::ResetMovementSpeed()
+{
+
+
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+}
+
+void AWMACharacterNonePlayer::SetGrowlSound()
+{
+	//GrowlAudioComponent->Play();
+}
+
+void AWMACharacterNonePlayer::StopGrowlSound()
+{
+	//GrowlAudioComponent->Stop();
+}
+
+
 
 void AWMACharacterNonePlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
@@ -143,7 +178,6 @@ void AWMACharacterNonePlayer::PlayAttackAnimation()
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(ComboActionMontage);
-
 }
 
 void AWMACharacterNonePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
