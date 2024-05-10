@@ -60,6 +60,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         FCollisionShape::MakeSphere(DetectRadius),
         CollisionQueryParam
     );
+    APawn* InstigatorPawn = nullptr;
 
     bool bFoundPlayer = false;
     if (bResult)
@@ -83,6 +84,13 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     bFoundPlayer = true;
                     AIPawn->SetMovementSpeed();
                     break;
+
+                }
+                else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
+                {
+                    OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
+                    AIPawn->SetMovementSpeed();
+                    bFoundPlayer = true;
                 }
             }
         }

@@ -18,6 +18,10 @@
 #include "Blueprint/UserWidget.h"
 #include <UI/WMAWidgetAttacked2.h>
 #include <UI/WMAWidgetAttacked3.h>
+#include <BehaviorTree/BehaviorTreeComponent.h>
+#include <AI/WMAAI.h>
+#include "AIController.h" // 이미 포함되어 있으면 생략
+#include "BehaviorTree/BlackboardComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -317,6 +321,20 @@ float AWMACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 
 	Stat->ApplyDamage(DamageAmount);
 	
+	APawn* InstigatorPawn = Cast<APawn>(DamageCauser);
+	if (InstigatorPawn && InstigatorPawn->IsPlayerControlled())
+	{
+		AAIController* AICont = Cast<AAIController>(GetController());
+		if (AICont)
+		{
+			UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(AICont->BrainComponent);
+			if (BTComp)
+			{
+				BTComp->GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
+			}
+		}
+	}
+
 	//SetDead();
 
 	return DamageAmount;
