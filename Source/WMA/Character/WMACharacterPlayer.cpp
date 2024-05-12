@@ -172,8 +172,6 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
-	PlayerInputComponent->BindAction("RemoveWidget", IE_Pressed, this, &AWMACharacterPlayer::EscapeWidget);
-
 	PlayerInputComponent->BindAction("Attacked1", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked1);
 	PlayerInputComponent->BindAction("Attacked1", IE_Released, this, &AWMACharacterPlayer::StopAttacked1);
 
@@ -663,7 +661,3 @@ void AWMACharacterPlayer::StopAttacked3()
 	StartAttack3 = false;;
 }
 
-void AWMACharacterPlayer::EscapeWidget() 
-{
-	UWidgetLayoutLibrary::RemoveAllWidgets(GetWorld());
-}

@@ -15,7 +15,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(config = WMA)
 class WMA_API AWMACharacterNonePlayer : public AWMACharacterBase, public IWMACharacterAIInterface
 {
 	GENERATED_BODY()
@@ -71,4 +71,19 @@ protected:
 
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
+
+	//Zombie Mesh
+	virtual void PostInitializeComponents() override;
+	void NPCMeshLoadCompleted();
+
+	UPROPERTY(config)
+	TArray<FSoftObjectPath> ZombieMeshes;
+
+	TSharedPtr<FStreamableHandle> NPCMeshHandle;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCSetMesh();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCSetMesh();
 };
