@@ -1,0 +1,57 @@
+//Inputs: Camera Position, Time , Absolute World Position, SceneTexture:PostProcessInput0
+
+
+float4 result = float4(0, 0, 0, 0);
+
+float2 pointCtr = float2(0.5, 0.5);
+
+float2 uvOffset = uv - pointCtr;
+
+float radiusMin = 0.05;
+float radiusMax = 0.1;
+float ringThickness = 0.005;
+float fadeInner = 0.005;
+float fadeOuter = 0.001;
+float duration = 0.5;       //비 오는 속도
+
+
+
+float2 seed = float2(123.456, 789.012);
+float2 offsetRange = float2(-1, 1);
+
+float drops = 100;
+for(
+int i = 0;i<
+drops; i++)
+{
+    seed = frac(seed*123.456);
+
+    float2 randOffset = lerp(offsetRange.x, offsetRange.y, seed);
+
+    float cycle = duration + frac(randOffset);
+    float pulse = frac(time / cycle);
+
+    
+
+    float radius = radiusMin + pulse * (radiusMax - radiusMin);
+
+    float2 offset = (uv - 0.5) - randOffset;
+
+    float pointDist = length(offset);
+
+float radiusLimit = radiusMin + (seed.y) * (radiusMax - radiusMin);
+
+    float alpha = saturate(smoothstep(radius - fadeInner, radius + fadeInner, pointDist));
+
+    alpha *= saturate(1.0- smoothstep(radiusLimit - fadeOuter,radiusLimit+fadeOuter,pointDist));
+
+    if(pointDist >= radius - ringThickness && pointDist <= radius + ringThickness)
+    {
+    result +=
+alpha;
+    }
+}
+
+
+
+return saturate(result);
