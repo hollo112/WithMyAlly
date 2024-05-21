@@ -1,0 +1,248 @@
+float4 SceneTexture_PostProcessInput0;
+
+float2 MF_RayCastSphere(float SphereRadius, float3 Offset)
+{
+    float3 CameraPos;
+
+    float3 OffsetDiv = Offset + CameraPos;
+    float3 OffsetAdd = Offset; // 나중에 Add에 쓸 부분
+    float3 OffsetSubtract = Offset; // 나중에 Subtract에 쓸 부분
+    float FirstSphereRadius = SphereRadius * 0.66667; //밑 두갈래 멀티플라이아직 안했음.
+    float multiplySRadius = SphereRadius * SphereRadius;
+    float c_PI = 3.141592;
+    
+    OffsetDiv = OffsetDiv / FirstSphereRadius;
+        
+    OffsetDiv = round(OffsetDiv);
+    OffsetDiv = OffsetDiv * FirstSphereRadius;
+    
+    OffsetSubtract = OffsetSubtract - OffsetDiv;
+    
+    float3 CameraVec;
+    
+    CameraVec = CameraVec * -1.0;
+    
+    float DotCamera = dot(CameraVec, OffsetSubtract); //맨 위 dot
+    
+    DotCamera = DotCamera * -1.0;
+    
+    float AddDotCamera = DotCamera;
+    
+    DotCamera = DotCamera * DotCamera;
+            
+    float DotOffset = dot(OffsetSubtract, OffsetSubtract);
+
+    DotOffset = DotOffset - multiplySRadius;
+    
+    DotCamera = sqrt(DotCamera - DotOffset);
+    
+    AddDotCamera = AddDotCamera + DotCamera;
+    
+    CameraVec = CameraVec * AddDotCamera;
+    
+    OffsetAdd = OffsetAdd + CameraVec;
+    
+    OffsetAdd = OffsetAdd - OffsetDiv;
+    
+    OffsetAdd = normalize(OffsetAdd);
+    
+    float Atan = (OffsetAdd.g, OffsetAdd.r);
+    
+    float Asin = asin(OffsetAdd.b);
+    
+    float2 Append = float2(Atan, Asin);
+       
+    Append = Append / c_PI;
+    
+    
+    return Append;
+}
+
+float4 A()
+{
+    float4 a;
+    a.rgb = SceneTexture_PostProcessInput0.rgb;
+    a.a = 0.0;
+    
+    //vec4 a = SceneTexture_PostProcessInput0.rgb;
+    
+    return a;
+}
+
+float4 B()
+{
+    float4 b = float4(0.944, 0.98, 1, 0);
+    
+    b = b * 150.0;
+    
+    return b;
+}
+
+float C()
+{
+    float3 CameraPos;
+    float SphereScale = 300.0f;
+    float SphereScale1 = 300.0f;
+    
+    SphereScale = SphereScale * 0.66667;
+    float3 CameraPosSS = CameraPos / SphereScale;
+    
+    float3 RoundCameraPos = round(CameraPosSS);
+    
+        
+    CameraPosSS = CameraPosSS - RoundCameraPos; //첫 분기점
+    float3 newCameraPos = CameraPos;
+    
+    float3 SignCameraPos = sign(newCameraPos);
+        
+    float2 ResultRed, ResultGreen, ResultYellow, ResultBlue, ResultPink, ResultSky, ResultWh;
+    
+    
+    if (SignCameraPos.r == 1.0 && SignCameraPos.g == 0.0 && SignCameraPos.b == 0.0)
+    {
+        SignCameraPos = SignCameraPos * float3(1.0, 0.0, 0.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultRed = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 0.0 && SignCameraPos.g == 1.0 && SignCameraPos.b == 0.0)
+    {
+        SignCameraPos = SignCameraPos * float3(0.0, 1.0, 0.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultGreen = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 1.0 && SignCameraPos.g == 1.0 && SignCameraPos.b == 0.0)
+    {
+        SignCameraPos = SignCameraPos * float3(1.0, 1.0, 0.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultYellow = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 0.0 && SignCameraPos.g == 0.0 && SignCameraPos.b == 1.0)
+    {
+        SignCameraPos = SignCameraPos * float3(0.0, 0.0, 1.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultBlue = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 1.0 && SignCameraPos.g == 0.0 && SignCameraPos.b == 1.0)
+    {
+        SignCameraPos = SignCameraPos * float3(1.0, 0.0, 1.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultPink = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 0.0 && SignCameraPos.g == 1.0 && SignCameraPos.b == 1.0)
+    {
+        SignCameraPos = SignCameraPos * float3(0.0, 1.0, 1.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultSky = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    }
+    if (SignCameraPos.r == 1.0 && SignCameraPos.g == 1.0 && SignCameraPos.b == 1.0)
+    {
+        SignCameraPos = SignCameraPos * float3(1.0, 1.0, 1.0);
+        SignCameraPos = SignCameraPos * SphereScale1;
+        
+        ResultWh = MF_RayCastSphere(SphereScale1, SignCameraPos);
+    } ///////////////////////////////////////////////////////////MF_RayCastSphere_Inst 전까지함.                                                     
+    
+    CameraPosSS = (abs(CameraPosSS) * 2.0); //->두번째 분기점 좀 있다가 다시 코딩 이거 안했음 확인요망/
+    ////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    float2 Result = MF_RayCastSphere(SphereScale1, float3(0.0, 0.0, 0.0));
+    
+    float2 Param = float2(0.01, -0.005);
+    
+    float2 TimeP = iTime * Param;
+    
+    float2 TimeB = TimeP + Result;
+    float2 TimeRed = TimeP + ResultRed;
+    float2 TimeGreen = TimeP + ResultGreen;
+    float2 TimeYellow = TimeP + ResultYellow;
+    float2 TimeBlue = TimeP + ResultBlue;
+    float2 TimePink = TimeP + ResultPink;
+    float2 TimeSky = TimeP + ResultSky;
+    float2 TimeWh = TimeP + ResultWh;
+    
+    float4 TextureColorB = textureLod(iChannel0, TimeB, 0.0);
+    float4 TextureColorRed = textureLod(iChannel0, TimeRed, 0.0);
+    float4 TextureColorGreen = textureLod(iChannel0, TimeGreen, 0.0);
+    float4 TextureColorYellow = textureLod(iChannel0, TimeYellow, 0.0);
+    float4 TextureColorBlue = textureLod(iChannel0, TimeBlue, 0.0);
+    float4 TextureColorPink = textureLod(iChannel0, TimePink, 0.0);
+    float4 TextureColorSky = textureLod(iChannel0, TimeSky, 0.0);
+    float4 TextureColorWh = textureLod(iChannel0, TimeWh, 0.0);
+    
+        
+    float LerpBR = lerp(TextureColorB.g, TextureColorRed.g, CameraPosSS.r);
+    float LerpGY = lerp(TextureColorGreen.g, TextureColorYellow.g, CameraPosSS.r);
+    float LerpBP = lerp(TextureColorBlue.g, TextureColorPink.g, CameraPosSS.r);
+    float LerpSW = lerp(TextureColorSky.g, TextureColorWh.g, CameraPosSS.r);
+    
+    float LerpBRGY = lerp(LerpBR, LerpGY, CameraPosSS.g);
+    float LerpBPSW = lerp(LerpBP, LerpSW, CameraPosSS.g);
+    
+    float LerpFin = lerp(LerpBRGY, LerpBPSW, CameraPosSS.b); //////////////////////////////////////LerpFin 나중에 또 써야함!
+    
+    
+    float SphereScale2 = 600.0f;
+    float SphereScale3 = 1200.0f;
+ 
+    float2 ResultS2 = MF_RayCastSphere(SphereScale2, float3(0.0, 0.0, 0.0));
+    float2 ResultS3 = MF_RayCastSphere(SphereScale3, float3(0.0, 0.0, 0.0));
+    
+    ResultS2 = ResultS2 * 3.0;
+    ResultS3 = ResultS3 * 6.0;
+    
+    float2 Param2 = float2(0.006, -0.003);
+    float2 Param3 = float2(0.002, -0.001);
+    
+    float2 TimeP2 = iTime * Param2;
+    float2 TimeP3 = iTime * Param3;
+    
+    ResultS2 = ResultS2 + TimeP2;
+    ResultS3 = ResultS3 + TimeP3;
+    
+    float4 TextureMidRange = textureLod(iChannel0, ResultS2, 0.0); //////////////////////// 텍스쳐 셈플 까지함 나중에 또 써야함!!
+    float4 TextureLongRange = textureLod(iChannel0, ResultS3, 0.0); /////////////////////////나중에 또 써야함!!
+    
+    
+    float3 AbsWorldPs;
+    float FFLength = 3000.0f;
+    
+    float dist = distance(CameraPos, AbsWorldPs);
+    dist = dist / 3000.0f;
+    
+    float Clamp = clamp(dist, 0.0, 1.0);
+    
+    
+    LerpFin = 1.0 - LerpFin;
+    
+    float LerpFinMul = LerpFin * LerpFin;
+    
+    LerpFinMul = LerpFinMul * 1.0;
+    
+    LerpFinMul = 1.0 - LerpFinMul;
+    
+    Clamp = Clamp * Clamp;
+    
+    float Alpha = Clamp * LerpFinMul;
+    
+    return Alpha;
+}
+
+void mainImage(out float4 fragColor, in float2 fragCoord)
+{
+
+    float4 a = A();
+    float4 b = B();
+    float c = C();
+       
+    float4 Final = lerp(a, b, c);
+    
+    // Output to screen
+    fragColor = Final;
+}
