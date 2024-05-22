@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Components/TextBlock.h"
 #include "UI/WMAItemInteractionWidget.h"
+#include "Components/TextBlock.h"
 
 UWMAItemInteractionWidget::UWMAItemInteractionWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {

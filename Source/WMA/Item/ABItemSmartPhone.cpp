@@ -48,7 +48,8 @@ AABItemSmartPhone::AABItemSmartPhone()
 
 void AABItemSmartPhone::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-	if (InteractionItemWidgetClass)
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+	if (InteractionItemWidgetClass && player->IsLocallyControlled())
 	{
 		ItemText = CreateWidget<UUserWidget>(GetWorld(), InteractionItemWidgetClass);
 

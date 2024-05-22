@@ -13,7 +13,8 @@ UWMACharacterStatComponent::UWMACharacterStatComponent()
 	CurrentName = 1;
 
 	AttackRadius = 50.0f;
-	SetIsReplicated(true);							// 이 액터 컴포넌트는 네트워크로 리플리케이션 될 준비가 되어있음
+	//SetIsReplicated(true);							// 이 액터 컴포넌트는 네트워크로 리플리케이션 될 준비가 되어있음
+	SetIsReplicatedByDefault(true);
 }
 
 

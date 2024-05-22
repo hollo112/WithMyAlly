@@ -28,6 +28,8 @@ protected:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	bool bIsESCOpened = false;
 	// Character Control Section
 protected:
 	void SetCharacterControl();
@@ -57,10 +59,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ESCAction;
+
+	void ESCInput();
+	TSubclassOf<UUserWidget> ESCMenuWidgetClass;
+	UUserWidget* ESCWidget;
+	UFUNCTION(Server, Reliable)
+	void ServerESC();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastESC();
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-
-	void EscapeWidget();
 
 	void StartAttacked1();
 	void StopAttacked1();

@@ -17,6 +17,7 @@
 #include "UI/WMAWidgetAttacked1.h"
 #include "Blueprint/UserWidget.h"
 #include <UI/WMAWidgetAttacked2.h>
+#include "Perception/AISense_Hearing.h"
 #include <UI/WMAWidgetAttacked3.h>
 #include <BehaviorTree/BehaviorTreeComponent.h>
 #include <AI/WMAAI.h>
@@ -65,7 +66,7 @@ AWMACharacterBase::AWMACharacterBase()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/Animation/AM_Dead.AM_Dead'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Female/Animations/AM_FemaleDead.AM_FemaleDead'"));
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
@@ -470,6 +471,14 @@ void AWMACharacterBase::UpdateAttackedIMG() const
 		}
 	}
 
+}
+
+void AWMACharacterBase::StepCheck()
+{
+	float Loudness = 1.0f;
+	float MaxRange = 400.f;
+
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), Loudness, this, MaxRange);
 }
 
 //// Called when the game starts or when spawned

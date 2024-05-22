@@ -11,6 +11,7 @@
 #include "WMACharacterPlayer.h"
 #include "GameFramework/GameStateBase.h"
 #include "EngineUtils.h"
+#include "Engine/AssetManager.h"
 #include "Net/UnrealNetwork.h"
 
 void AWMACharacterNonePlayer::BeginPlay()
@@ -135,8 +136,6 @@ float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔
 
 float AWMACharacterNonePlayer::ResetMovementSpeed()
 {
-
-
 	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
@@ -199,6 +198,19 @@ void AWMACharacterNonePlayer::OnRep_CanCloseAttack()
 	}
 }
 
+void AWMACharacterNonePlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	ensure(ZombieMeshes.Num() > 0);
+	int32 RandIndex = FMath::RandRange(0, ZombieMeshes.Num() - 1);
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(ZombieMeshes[RandIndex], FStreamableDelegate::CreateUObject(this, &AWMACharacterNonePlayer::NPCMeshLoadCompleted));
+}
+
+void AWMACharacterNonePlayer::NPCMeshLoadCompleted()
+{
+	ServerRPCSetMesh();
+}
+
 void AWMACharacterNonePlayer::MulticastRPCAttack_Implementation()
 {
 	PlayAttackAnimation();
@@ -229,4 +241,24 @@ void AWMACharacterNonePlayer::ServerRPCAttack_Implementation()
 
 	PlayAttackAnimation();
 	MulticastRPCAttack();
+}
+
+void AWMACharacterNonePlayer::ServerRPCSetMesh_Implementation()
+{
+	MulticastRPCSetMesh();
+}
+
+void AWMACharacterNonePlayer::MulticastRPCSetMesh_Implementation()
+{
+	if (NPCMeshHandle.IsValid())
+	{
+		USkeletalMesh* NPCMesh = Cast<USkeletalMesh>(NPCMeshHandle->GetLoadedAsset());
+		if (NPCMesh)
+		{
+			GetMesh()->SetSkeletalMesh(NPCMesh);
+			GetMesh()->SetHiddenInGame(false);
+		}
+	}
+
+	NPCMeshHandle->ReleaseHandle();
 }

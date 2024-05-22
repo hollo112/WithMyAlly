@@ -15,7 +15,7 @@
 
 AWMAGameModeBase::AWMAGameModeBase()
 {
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Engine.Blueprint'/Game/Characters/BP_WMA_CharacterPlayer.BP_WMA_CharacterPlayer_C'"));
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Engine.Blueprint'/Game/Blueprint/BP_WMACharacterPlayer.BP_WMACharacterPlayer_C'"));
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;
