@@ -5,6 +5,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Perception/AIPerceptionSystem.h"
 #include "WMAAI.h"
 #include <Perception/AIPerceptionComponent.h>
 #include <Perception/AISenseConfig_Sight.h>
@@ -57,39 +58,50 @@ void AWMAAIController::StopAI()
 
 void AWMAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (Actor && Actor->Tags.Contains("Player"))
+	//if (Actor && Actor->Tags.Contains("Player"))
+	//{
+	//	UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
+
+	//	if (Stimulus.WasSuccessfullySensed())
+	//	{
+	//		// 플레이어 위치와 AI 위치 사이의 벡터 계산
+	//		FVector Direction = Actor->GetActorLocation() - GetPawn()->GetActorLocation();
+	//		Direction.Normalize();
+
+	//		// AI 전방 벡터와 플레이어 위치 사이의 각도 계산
+	//		float DotProduct = FVector::DotProduct(GetPawn()->GetActorForwardVector(), Direction);
+	//		float Angle = FMath::Acos(DotProduct);
+	//		float AngleDegrees = FMath::RadiansToDegrees(Angle);
+
+	//		// 각도가 시야각 내에 있는지 확인
+	//		if (AngleDegrees <= AISenseConfigSight->PeripheralVisionAngleDegrees / 2)
+	//		{
+	//			UE_LOG(LogTemp, Log, TEXT("InSight"));
+	//			BlackboardPtr->SetValueAsObject(BBKEY_TARGET, Actor);
+	//			BlackboardPtr->SetValueAsVector("LastKnownPosition", Actor->GetActorLocation());
+	//		}
+	//			// 성공적으로 감지된 경우
+	//	}
+	//		else
+	//		{
+	//			// 각도가 시야각 밖에 있는 경우
+	//			HandleLostSight();
+	//		}
+	//}
+	//else
+	//{
+	//		// 시각 자극을 감지하지 못한 경우
+	//		HandleLostSight();
+	//}
+
+	auto SensedClass = UAIPerceptionSystem::GetSenseClassForStimulus(AISenseConfigHearing, Stimulus);
+	UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
+
+	if (SensedClass)
 	{
-		UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
 
-		if (Stimulus.WasSuccessfullySensed())
-		{
-			// 플레이어 위치와 AI 위치 사이의 벡터 계산
-			FVector Direction = Actor->GetActorLocation() - GetPawn()->GetActorLocation();
-			Direction.Normalize();
-
-			// AI 전방 벡터와 플레이어 위치 사이의 각도 계산
-			float DotProduct = FVector::DotProduct(GetPawn()->GetActorForwardVector(), Direction);
-			float Angle = FMath::Acos(DotProduct);
-			float AngleDegrees = FMath::RadiansToDegrees(Angle);
-
-			// 각도가 시야각 내에 있는지 확인
-			if (AngleDegrees <= AISenseConfigSight->PeripheralVisionAngleDegrees / 2)
-			{
-				BlackboardPtr->SetValueAsObject("TargetActor", Actor);
-				BlackboardPtr->SetValueAsVector("LastKnownPosition", Actor->GetActorLocation());
-			}
-				// 성공적으로 감지된 경우
-			}
-			else
-			{
-				// 각도가 시야각 밖에 있는 경우
-				HandleLostSight();
-			}
-	}
-	else
-	{
-			// 시각 자극을 감지하지 못한 경우
-			HandleLostSight();
+		BlackboardPtr->SetValueAsObject(BBKEY_TARGET, Actor);
+		UE_LOG(LogTemp, Log, TEXT("Hearing"));
 	}
 }
 
@@ -122,14 +134,15 @@ void AWMAAIController::SetPerceptionSystem()
 
 
 	AISenseConfigSight->SightRadius = 1200.0f;
-	AISenseConfigSight->LoseSightRadius = 1200.0f;
+	AISenseConfigSight->LoseSightRadius = 1700.0f;
 	AISenseConfigSight->PeripheralVisionAngleDegrees = 180.0f;
 	AISenseConfigSight->DetectionByAffiliation.bDetectEnemies = true;
 	AISenseConfigSight->DetectionByAffiliation.bDetectNeutrals = true;
 	AISenseConfigSight->DetectionByAffiliation.bDetectFriendlies = true;
 
-	AISenseConfigHearing->HearingRange = 1000.0f;
-	AISenseConfigHearing->LoSHearingRange = 1300.0f;
+	//range 변경시 고쳐야함
+	AISenseConfigHearing->HearingRange = 400.0f;
+	//AISenseConfigHearing->LoSHearingRange = 1300.0f;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectNeutrals = true;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectFriendlies = true;

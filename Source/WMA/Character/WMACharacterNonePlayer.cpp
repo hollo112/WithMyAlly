@@ -136,8 +136,6 @@ float AWMACharacterNonePlayer::SetMovementSpeed()	//좀비 스피드 설정 숫자만 바꿔
 
 float AWMACharacterNonePlayer::ResetMovementSpeed()
 {
-
-
 	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 

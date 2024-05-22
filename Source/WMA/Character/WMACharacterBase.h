@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/WMAAnimationCloseAttackInterface.h"
+#include "Interface/WMAStepInterface.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "Item/ABWeaponItemData.h"
 #include "Engine/StreamableManager.h"
@@ -25,7 +26,7 @@ struct FTakeItemDelegateWrapper {
 };
 
 UCLASS()
-class WMA_API AWMACharacterBase : public ACharacter, public IWMAAnimationCloseAttackInterface, public IABCharacterItemInterface
+class WMA_API AWMACharacterBase : public ACharacter, public IWMAAnimationCloseAttackInterface, public IABCharacterItemInterface, public IWMAStepInterface
 {
 	GENERATED_BODY()
 
@@ -151,5 +152,7 @@ public:
 	UINT8 StartAttack2 = 0;
 	UINT8 StartAttack3 = 0;
 
+protected:
+	virtual void StepCheck() override;
 };
 

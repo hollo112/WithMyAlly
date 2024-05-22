@@ -25,6 +25,7 @@
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"	
+#include "Item/ABDoor.h"	
 #include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Components/BoxComponent.h"
@@ -77,6 +78,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		AttackAction = InputActionAttackRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionESCRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_ESCMenu.IA_ESCMenu'"));
+	if (nullptr != InputActionESCRef.Object)
+	{
+		ESCAction = InputActionESCRef.Object;
+	}
+
 	bCanAttack = true;
 
 	//Female Hair
@@ -92,6 +99,14 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		}
 		Hair->SetupAttachment(GetMesh(), HairSocket);
 	}
+
+	//ESC Widget
+	static ConstructorHelpers::FClassFinder<UUserWidget> ESCWid(TEXT("/Game/UI/WBP_ESCMenu.WBP_ESCMenu_C"));
+	if (ESCWid.Succeeded())
+	{
+		ESCMenuWidgetClass = ESCWid.Class;
+	}
+
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -110,6 +125,13 @@ void AWMACharacterPlayer::BeginPlay()
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+
+// ESCUI
+	ESCWidget = CreateWidget<UUserWidget>(GetWorld(), ESCMenuWidgetClass);
+	if (ESCWidget)
+	{
+		ESCWidget->AddToViewport();
+	}
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -169,6 +191,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
+	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
+
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
@@ -183,7 +207,6 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
-
 
 	// 무기 교체 Input
 	InputComponent->BindAction("ChangeWeapon_Short_1", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Short);
@@ -221,6 +244,37 @@ void AWMACharacterPlayer::SetCharacterControlData(const UWMACharacterControlData
 	CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
 	CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
 	CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
+}
+
+void AWMACharacterPlayer::ESCInput()
+{
+	ServerESC();
+}
+
+void AWMACharacterPlayer::ServerESC_Implementation()
+{
+	MulticastESC();
+}
+
+void AWMACharacterPlayer::MulticastESC_Implementation()
+{
+	if (!bIsESCOpened)
+	{
+		if (ESCWidget)
+		{	
+			if (IsLocallyControlled())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Log Message"));
+				bIsESCOpened = true;
+				ESCWidget->SetVisibility(ESlateVisibility::Visible);
+				APlayerController* PlayerController = Cast<APlayerController>(GetController());
+				if (PlayerController)
+				{
+					PlayerController->bShowMouseCursor = true;
+				}
+			}
+		}
+	}
 }
 
 void AWMACharacterPlayer::Move(const FInputActionValue& Value)
@@ -539,7 +593,17 @@ void AWMACharacterPlayer::InteractHold()
 	UE_LOG(LogTemp, Log, TEXT("Log pick"));
 	class AEV_ButtonActor* EVButton;
 	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
-	EVButton->OnInteract();
+	if (EVButton)
+	{
+		EVButton->OnInteract();
+	}
+
+	class AABDoor* ABDoor;
+	ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
+	if (ABDoor)
+	{
+		ABDoor->OnInteract();
+	}
 
 	ServerRPCPickUp();
 }
