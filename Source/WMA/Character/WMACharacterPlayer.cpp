@@ -15,6 +15,8 @@
 #include "WMA.h"
 #include "Components/CapsuleComponent.h"
 #include "Physics/WMACollsion.h"
+#include "Perception/AISense_Hearing.h"
+#include "Perception/AIPerceptionSystem.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Net/UnrealNetwork.h"
@@ -29,6 +31,7 @@
 #include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Components/BoxComponent.h"
+#include "Perception/AISense_Hearing.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
 #include <Blueprint/WidgetLayoutLibrary.h>
@@ -121,7 +124,6 @@ void AWMACharacterPlayer::BeginPlay()
 	}
 
 	SetCharacterControl();
-
 // Stat
 	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
@@ -132,6 +134,7 @@ void AWMACharacterPlayer::BeginPlay()
 	{
 		ESCWidget->AddToViewport();
 	}
+
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -294,6 +297,21 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
+
+	if (!bIsHoldingSprintButton) {
+		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+
+		const float SoundStrength = 70.0f;
+		AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 1200.0f, FName("WalkStep"));
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+
+		const float SoundStrength = 120.0f;
+		AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 2000.0f, FName("RunStep"));
+	}
+
+
 }
 
 void AWMACharacterPlayer::Look(const FInputActionValue& Value)
