@@ -16,7 +16,8 @@
 UBTService_Detect::UBTService_Detect()
 {
 	NodeName = TEXT("Detect");
-	Interval = 1.0f;																							// 1초단위로 수행
+	Interval = 1.0f;	// 1초단위로 수행
+
 }
 
 void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)

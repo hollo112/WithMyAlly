@@ -295,6 +295,24 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
+
+	const float MinSoundThreshold = 50.0f; // 예시 임계값
+
+	if (!bIsHoldingSprintButton) {
+		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+		const float SoundStrength = 40.0f;
+		if (SoundStrength >= MinSoundThreshold) {
+			AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 20.0f, FName("WalkStep"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+		const float SoundStrength = 120.0f;
+		if (SoundStrength >= MinSoundThreshold) {
+			AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("RunStep"));
+		}
+	}
+
 }
 
 void AWMACharacterPlayer::Look(const FInputActionValue& Value)
