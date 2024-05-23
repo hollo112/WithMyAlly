@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
-#include "Perception/AISense_Hearing.h"
 #include "InputActionValue.h"
 #include "WMACharacterPlayer.generated.h"
 
@@ -163,10 +162,4 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Hair;
-
-public:
-
-	// 청각 인식 센스
-	UAISense_Hearing* AISenseHearing;
-
 };
