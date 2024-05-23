@@ -27,6 +27,7 @@
 #include "Item/ABItemBat.h"	
 #include "Item/ABDoor.h"	
 #include "Item/ABItemFruitSwd.h"
+#include "Item/ABItemSiren.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -590,7 +591,6 @@ void AWMACharacterPlayer::SprintRelease()
 
 void AWMACharacterPlayer::InteractHold()
 {
-	UE_LOG(LogTemp, Log, TEXT("Log pick"));
 	class AEV_ButtonActor* EVButton;
 	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
 	if (EVButton)
@@ -638,6 +638,14 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			Bat->OnInteract();
 			Bat->Destroy();
 		}
+	}
+
+	//Siren
+	class AABItemSiren* Siren;
+	Siren = Cast<AABItemSiren>(UGameplayStatics::GetActorOfClass(GetWorld(), AABItemSiren::StaticClass()));
+	if (Siren)
+	{
+		Siren->OnInteract();
 	}
 }
 
