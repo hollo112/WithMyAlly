@@ -19,19 +19,6 @@ UBTService_Detect::UBTService_Detect()
 	NodeName = TEXT("Detect");
 	Interval = 1.0f;	// 1초단위로 수행
 
-    PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
-    HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
-
-    // Set the default values for the hearing config
-    HearingConfig->HearingRange = 2000.0f;
-    HearingConfig->LoSHearingRange = 1200.0f;
-    HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-    HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-    HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
-    // Add the hearing config to the perception component
-    PerceptionComponent->ConfigureSense(*HearingConfig);
-    PerceptionComponent->SetDominantSense(UAISense_Hearing::StaticClass());
 }
 
 void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -117,34 +104,4 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         AIPawn->ResetMovementSpeed();
         DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
     }
-
-    TArray<AActor*> SensedActors;
-    PerceptionComponent->GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), SensedActors);
-    for (AActor* SensedActor : SensedActors)
-    {
-        if (SensedActor && SensedActor->IsA(APawn::StaticClass()))
-        {
-            // 소음원 발견
-            OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, SensedActor);
-            bFoundPlayer = true;
-            AIPawn->SetMovementSpeed();
-            break;
-        }
-    }
-
-    if (!bFoundPlayer)
-    {
-        // 플레이어가 감지 범위 밖으로 이동했으므로, 타겟을 리셋하고 속도를 원래대로 조정합니다.
-        OwnerComp.GetBlackboardComponent()->ClearValue(BBKEY_TARGET);
-        AIPawn->ResetMovementSpeed();
-        DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
-    }
-
-
-}
-
-void UBTService_Detect::SetupPerceptionSystem()
-{
-
-
 }
