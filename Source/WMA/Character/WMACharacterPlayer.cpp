@@ -722,36 +722,3 @@ void AWMACharacterPlayer::MulticastRPCTakeItem_Implementation(UABItemData* InIte
 }
 
 
-void AWMACharacterPlayer::PlaySirenSound()
-{
-	UGameplayStatics::PlaySoundAtLocation(this, SirenSound, GetActorLocation());
-
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_Noise, this, &AWMACharacterPlayer::GenerateNoise, 0.01f, true);
-
-	// 사운드 재생 시간이 끝나면 타이머를 중지합니다.
-	float SoundDuration = SirenSound->GetDuration();
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_StopNoise, this, &AWMACharacterPlayer::StopGeneratingNoise, SoundDuration, false);
-
-}
-
-void AWMACharacterPlayer::StopSirenSound()
-{
-	StopGeneratingNoise();
-}
-
-void AWMACharacterPlayer::GenerateNoise()
-{
-	const float SoundStrength = 1200.0f;
-	FVector NoiseLocation = GetActorLocation();
-	float MaxRange = 2000.0f;
-	FName Tag = FName("SirenSound");
-
-	// UAISense_Hearing::ReportNoiseEvent를 사용하여 소음 이벤트를 보고합니다.
-	UAISense_Hearing::ReportNoiseEvent(this, NoiseLocation, SoundStrength, this, MaxRange, Tag);
-
-}
-
-void AWMACharacterPlayer::StopGeneratingNoise()
-{
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Noise);
-}

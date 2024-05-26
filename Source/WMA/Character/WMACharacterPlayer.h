@@ -74,18 +74,6 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
-	USoundBase* SirenSound;
-
-	void PlaySirenSound();
-	void StopSirenSound();
-
-	FTimerHandle TimerHandle_Noise;
-	FTimerHandle TimerHandle_StopNoise;
-
-	void GenerateNoise();
-	void StopGeneratingNoise();
-
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
