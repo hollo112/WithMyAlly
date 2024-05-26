@@ -199,14 +199,9 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
-	PlayerInputComponent->BindAction("Attacked1", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked1);
-	PlayerInputComponent->BindAction("Attacked1", IE_Released, this, &AWMACharacterPlayer::StopAttacked1);
+	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
 
-	PlayerInputComponent->BindAction("Attacked2", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked2);
-	PlayerInputComponent->BindAction("Attacked2", IE_Released, this, &AWMACharacterPlayer::StopAttacked2);
-
-	PlayerInputComponent->BindAction("Attacked3", IE_Pressed, this, &AWMACharacterPlayer::StartAttacked3);
-	PlayerInputComponent->BindAction("Attacked3", IE_Released, this, &AWMACharacterPlayer::StopAttacked3);
+	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
@@ -324,6 +319,9 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
 }
+
+
+
 
 
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -709,40 +707,37 @@ void AWMACharacterPlayer::MulticastRPCTakeItem_Implementation(UABItemData* InIte
 	}
 }
 
-void AWMACharacterPlayer::StartAttacked1()
-{	
-	StartAttack1 = true;
 
-	UpdateAttackedIMG();
-}
-
-void AWMACharacterPlayer::StopAttacked1()
+void AWMACharacterPlayer::PlaySirenSound()
 {
-	StartAttack1 = false;
-	//UE_LOG(LogTemp, Warning, TEXT("%d"), StartAttack1);
+	UGameplayStatics::PlaySoundAtLocation(this, SirenSound, GetActorLocation());
+
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_Noise, this, &AWMACharacterPlayer::GenerateNoise, 0.01f, true);
+
+	// 사운드 재생 시간이 끝나면 타이머를 중지합니다.
+	float SoundDuration = SirenSound->GetDuration();
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_StopNoise, this, &AWMACharacterPlayer::StopGeneratingNoise, SoundDuration, false);
+
 }
 
-void AWMACharacterPlayer::StartAttacked2()
+void AWMACharacterPlayer::StopSirenSound()
 {
-	StartAttack2 = true;
-
-	UpdateAttackedIMG();
+	StopGeneratingNoise();
 }
 
-void AWMACharacterPlayer::StopAttacked2()
+void AWMACharacterPlayer::GenerateNoise()
 {
-	StartAttack2 = false;
+	const float SoundStrength = 1200.0f;
+	FVector NoiseLocation = GetActorLocation();
+	float MaxRange = 2000.0f;
+	FName Tag = FName("SirenSound");
+
+	// UAISense_Hearing::ReportNoiseEvent를 사용하여 소음 이벤트를 보고합니다.
+	UAISense_Hearing::ReportNoiseEvent(this, NoiseLocation, SoundStrength, this, MaxRange, Tag);
+
 }
 
-void AWMACharacterPlayer::StartAttacked3()
+void AWMACharacterPlayer::StopGeneratingNoise()
 {
-	StartAttack3 = true;
-
-	UpdateAttackedIMG();
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Noise);
 }
-
-void AWMACharacterPlayer::StopAttacked3()
-{
-	StartAttack3 = false;;
-}
-

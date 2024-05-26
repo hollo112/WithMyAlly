@@ -152,4 +152,6 @@ void AWMAAIController::SetPerceptionSystem()
 	AIPerceptionComponent->ConfigureSense(*AISenseConfigHearing);
 
 
+
+
 }
