@@ -27,4 +27,6 @@ class WMA_API AWMAGameModeBase : public AGameModeBase
 	
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	bool ShouldSpawnAtStartSpot(AController* Player) override { return false; };
+
+	void TravelNewMap();
 };

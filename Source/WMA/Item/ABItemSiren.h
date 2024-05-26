@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Perception/AISense_Hearing.h"
 #include "ABItemSiren.generated.h"
 
 UCLASS()
@@ -19,13 +20,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-    UPROPERTY(VisibleAnywhere, Category = Box)
+    UPROPERTY(VisibleAnywhere, Replicated, Category = Box)
     TObjectPtr<class UBoxComponent> CollisionBox;
 
-    UPROPERTY(VisibleAnywhere, Category = "Mesh")
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
     class UStaticMeshComponent* Siren;
 
-    UPROPERTY(EditAnywhere, Category = Item)
+    UPROPERTY(EditAnywhere, Replicated, Category = Item)
     TObjectPtr<class UABItemData>Item;
 
     UFUNCTION()
@@ -46,7 +47,20 @@ protected:
     AActor* PlayerActor;
 
     bool bIsHolding = false;
+
+    void MakeSound();
+
 public:
     void OnInteract();
 
+    UAISense_Hearing* AISenseHearing;
+protected:
+    UFUNCTION(Client, Reliable)
+    void ServerRPCInteract();
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastRPCInteract();
+
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+    void ATDTSiren();
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/WMACharacterBase.h"
+#include "Perception/AISense_Hearing.h"
 #include "InputActionValue.h"
 #include "WMACharacterPlayer.generated.h"
 
@@ -162,4 +163,13 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Hair;
+
+	// AI Hearing
+public:
+	UAISense_Hearing* AISenseHearing;
+protected:
+	UFUNCTION(Server, Reliable)
+	void ServerRPCMovingSound();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCMovingSound();
 };

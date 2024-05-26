@@ -66,6 +66,11 @@ AActor* AWMAGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 	return NULL;
 }
 
+void AWMAGameModeBase::TravelNewMap()
+{
+	GetWorld()->ServerTravel(TEXT("/Game/Map/NewMap?listen"));
+}
+
 
 APlayerController* AWMAGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
