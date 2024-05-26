@@ -75,6 +75,7 @@ void AWMACharacterNonePlayer::SetDead()
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
 		{
+
 			Destroy();
 		}
 	), DeadEventDelayTime, false);*/

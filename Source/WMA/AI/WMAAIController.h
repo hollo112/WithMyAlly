@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "WMAAIController.generated.h"
 
@@ -48,4 +50,5 @@ private:
 
 
 	void SetPerceptionSystem();
+
 };

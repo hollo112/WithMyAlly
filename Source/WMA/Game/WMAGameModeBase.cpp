@@ -47,23 +47,32 @@ AActor* AWMAGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
 	if (Player)
 	{
-		AWMAPlayerState *PlayerState = Cast<AWMAPlayerState>(Player->PlayerState);
+		AWMAPlayerState* PlayerState = Cast<AWMAPlayerState>(Player->PlayerState);
 		UE_LOG(LogTemp, Log, TEXT("choose : %s"), PlayerState->bFemale ? TEXT("true") : TEXT("false"));
 		if (PlayerState)
 		{
-			TArray<AWMAPlayerStart *> Starts;
-			for (TActorIterator<AWMAPlayerStart> StartItr(GetWorld()); StartItr; ++StartItr) 
+			TArray<AWMAPlayerStart*> Starts;
+			for (TActorIterator<AWMAPlayerStart> StartItr(GetWorld()); StartItr; ++StartItr)
 			{
-				if (StartItr->bFemale == PlayerState->bFemale) {
+				if (StartItr->bFemale == PlayerState->bFemale)
+				{
 					Starts.Add(*StartItr);
 				}
 			}
 
-			return Starts[FMath::RandRange(0, Starts.Num() - 1)];
+			if (Starts.Num() > 0)
+			{
+				return Starts[FMath::RandRange(0, Starts.Num() - 1)];
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No suitable player starts found for the player"));
+				return Super::ChoosePlayerStart_Implementation(Player); // 기본 플레이어 시작 위치로 돌아가기
+			}
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void AWMAGameModeBase::TravelNewMap()
