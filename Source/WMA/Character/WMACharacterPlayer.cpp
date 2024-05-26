@@ -197,10 +197,6 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
 
-	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
-
-	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
-
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
 

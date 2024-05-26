@@ -35,10 +35,6 @@
 		{
 			"Name": "NiagaraFluids",
 			"Enabled": true
-		},
-		{
-			"Name": "MovieRenderPipeline",
-			"Enabled": true
 		}
 	]
 }
