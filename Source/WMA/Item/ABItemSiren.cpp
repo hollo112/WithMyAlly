@@ -57,54 +57,44 @@ void AABItemSiren::BeginPlay()
     FTimerHandle TimerHandle;
     float SoundTime = 1;
     GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
+
+    //
+    bIsVisible = false;
 }
 
 void AABItemSiren::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
-    if (player && player->IsLocallyControlled())
-    {
-        if (ItemWidget)
-        {
-            ItemWidget->SetVisibility(ESlateVisibility::Visible);
-            PlayerActor = OtherActor;
-        }
-    }
+    ServerRPCOverlap(OtherActor);
 }
 
 void AABItemSiren::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
-
-    if (player && player->IsLocallyControlled())
-    {
-        if (ItemWidget && player->IsLocallyControlled())
-        {
-            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
-            //PlayerActor = NULL;
-        }
-    }
+    ServerRPCOverlapEnd(OtherActor);
 }
 
 void AABItemSiren::MakeSound()
 {
-    const float MinSoundThreshold = 50.0f; // 예시 임계값
-    const float SoundStrength = 120.0f;
+    const float MinSoundThreshold = 10.0f; // 예시 임계값
+    const float SoundStrength = 80.0f;
 
     if (SoundStrength >= MinSoundThreshold) {
-        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("Siren"));
+        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 20.0f, FName("Siren"));
     }
 }
 
 void AABItemSiren::OnInteract()
 {
     //ServerRPCInteract();
-    if (!HasAuthority())
-    {
-        //ATDTSiren();
-        ServerRPCInteract();
-    }
-    else
+    //if (!HasAuthority())
+    //{
+    //    //ATDTSiren();
+    //    ServerRPCInteract();
+    //}
+    //else
+    //{
+    //    ATDTSiren();
+    //}
+    if (HasAuthority())
     {
         ATDTSiren();
     }
@@ -117,11 +107,13 @@ void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(AABItemSiren, Siren);
     DOREPLIFETIME(AABItemSiren, CollisionBox);
     DOREPLIFETIME(AABItemSiren, Item);
+    DOREPLIFETIME(AABItemSiren, bIsVisible);
 }
 
 void AABItemSiren::ATDTSiren()
 {
-    if (ItemWidget->IsVisible() && !bIsHolding)
+    //if (ItemWidget->IsVisible() && !bIsHolding)
+    if (bIsVisible && !bIsHolding)
     {
         UE_LOG(LogTemp, Log, TEXT("Log InteractSiren"));
 
@@ -136,16 +128,18 @@ void AABItemSiren::ATDTSiren()
                 UE_LOG(LogTemp, Log, TEXT("Log attach"));
                 bIsHolding = true;
                 Siren->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
+                SetActorEnableCollision(false);
             }
         }
-        SetActorEnableCollision(false);
+      
 
     }
-    else if (!ItemWidget->IsVisible() && bIsHolding)
+    //else if (!ItemWidget->IsVisible() && bIsHolding)
+    else if (!bIsVisible && bIsHolding)
     {
-        bIsHolding = false;
         if (PlayerActor)
         {
+            bIsHolding = false;
             AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(PlayerActor);
             if (player)
             {
@@ -154,19 +148,68 @@ void AABItemSiren::ATDTSiren()
                 //DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
                 Siren->SetSimulatePhysics(true);
                 PlayerActor = NULL;
+                SetActorEnableCollision(true);
             }
         }
-        SetActorEnableCollision(true);
+        
     }
+}
+
+void AABItemSiren::ServerRPCOverlapEnd_Implementation(AActor* OtherActor)
+{
+    MulticastRPCOverlapEnd(OtherActor);
+}
+
+void AABItemSiren::MulticastRPCOverlapEnd_Implementation(AActor* OtherActor)
+{
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+
+    if (player && player->IsLocallyControlled())
+    {
+        if (ItemWidget && player->IsLocallyControlled())
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
+            //PlayerActor = NULL;
+        }
+    }
+
+    //
+    bIsVisible = false;
+}
+
+void AABItemSiren::ServerRPCOverlap_Implementation(AActor* OtherActor)
+{
+    MulticastRPCOverlap(OtherActor);
+}
+
+void AABItemSiren::MulticastRPCOverlap_Implementation(AActor* OtherActor)
+{
+    UE_LOG(LogTemp, Log, TEXT("overlap"));
+    AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
+
+    if (player && player->IsLocallyControlled())
+    {
+        if (ItemWidget)
+        {
+            ItemWidget->SetVisibility(ESlateVisibility::Visible);
+        }
+    }
+    PlayerActor = OtherActor;
+    bIsVisible = true;
 }
 
 void AABItemSiren::ServerRPCInteract_Implementation()
 {
-    //MulticastRPCInteract();
+    MulticastRPCInteract();
     //ATDTSiren();
+   
+}
+
+void AABItemSiren::MulticastRPCInteract_Implementation()
+{
     if (!bIsHolding)
     {
-        UE_LOG(LogTemp, Log, TEXT("Log InteractSiren"));
+        UE_LOG(LogTemp, Log, TEXT("Log server InteractSiren"));
 
         if (PlayerActor)
         {
@@ -176,7 +219,7 @@ void AABItemSiren::ServerRPCInteract_Implementation()
                 //AttachToComponent(player->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
                 Siren->SetSimulatePhysics(false);
 
-                UE_LOG(LogTemp, Log, TEXT("Log attach"));
+                UE_LOG(LogTemp, Log, TEXT("Log server attach"));
                 bIsHolding = true;
                 Siren->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
             }
@@ -201,10 +244,5 @@ void AABItemSiren::ServerRPCInteract_Implementation()
         }
         SetActorEnableCollision(true);
     }
-}
-
-void AABItemSiren::MulticastRPCInteract_Implementation()
-{
-   
 }
 

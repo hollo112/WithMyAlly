@@ -162,7 +162,7 @@ public:
 	UAISense_Hearing* AISenseHearing;
 protected:
 	UFUNCTION(Server, Reliable)
-	void ServerRPCMovingSound();
+	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCMovingSound();
 };
