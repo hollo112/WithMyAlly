@@ -33,6 +33,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
+#include "Game/WMAGameModeBase.h"
 #include <Blueprint/WidgetLayoutLibrary.h>
 
 
@@ -160,6 +161,19 @@ void AWMACharacterPlayer::SetDead()
 	{
 		DisableInput(PlayerController);
 	}
+
+	FTimerHandle TimerHandle;
+	float DeadTime = 1.2;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			AWMAGameModeBase* GameMode = Cast<AWMAGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (GameMode)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Log Travel"));
+				//GameMode->bUseSeamlessTravel = true;
+				GameMode->Travel15F();
+			}
+		}), DeadTime, false);
 }
 
 void AWMACharacterPlayer::PossessedBy(AController* NewController)
@@ -627,15 +641,28 @@ void AWMACharacterPlayer::SprintRelease()
 
 void AWMACharacterPlayer::InteractHold()
 {
-	class AEV_ButtonActor* EVButton;
+	/*class AEV_ButtonActor* EVButton;
 	EVButton = Cast<AEV_ButtonActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AEV_ButtonActor::StaticClass()));
 	if (EVButton)
 	{
 		EVButton->OnInteract();
+	}*/
+
+	TArray<AActor*> Result;
+	GetOverlappingActors(Result, AActor::StaticClass());
+
+	for (auto* TmpActor : Result)
+	{
+		if (TmpActor->IsA(AEV_ButtonActor::StaticClass()))
+		{
+			AEV_ButtonActor* EVButton = Cast<AEV_ButtonActor>(TmpActor);
+			EVButton->OnInteract();
+		}
 	}
+
 	class AWMACardRead* CardRead;
 	CardRead = Cast<AWMACardRead>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMACardRead::StaticClass()));
-	if (EVButton)
+	if (CardRead)
 	{
 		CardRead->OnInteract();
 	}

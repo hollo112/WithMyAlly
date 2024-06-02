@@ -44,6 +44,7 @@ protected:
 	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	TArray<AActor*> EVDoors;
+	TArray<AActor*> Window;
 
 	UPROPERTY(EditAnyWhere)
 	FTimeline Timeline;				// Timeline 생성
@@ -52,6 +53,9 @@ protected:
 	UCurveFloat* CurveFloat;			// Timeline 커브
 
 	bool bIsOpened = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Box)
+	bool bIsEv = true;
 public:
 	UFUNCTION()
 	void OpenDoor(float Alpha);

@@ -7,6 +7,7 @@
 #include "UI/WMAItemInteractionWidget.h"
 #include "Character/WMACharacterPlayer.h"
 #include "DoorEVActor.h"
+#include "WMA15FWindow.h"
 #include "kismet/GameplayStatics.h"
 #include "Components/SceneComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -50,6 +51,7 @@ void AEV_ButtonActor::BeginPlay()
 	}
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADoorEVActor::StaticClass(), EVDoors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWMA15FWindow::StaticClass(), Window);
 
 	//Timeline
 	Timeline.SetTimelineLength(1.0f);
@@ -106,10 +108,21 @@ void AEV_ButtonActor::OpenDoor(float Alpha)
 {
 	float tmp = FMathf::Lerp(0.0f, 70.0f, Alpha);
 
-	for (auto& EV : EVDoors)
+	if (bIsEv)
 	{
-		UStaticMeshComponent* DoorMesh = EV->FindComponentByClass<UStaticMeshComponent>();
-		DoorMesh->SetRelativeLocation(FVector(tmp, 0.0f, 0.0f));
+		for (auto& EV : EVDoors)
+		{
+			UStaticMeshComponent* DoorMesh = EV->FindComponentByClass<UStaticMeshComponent>();
+			DoorMesh->SetRelativeLocation(FVector(tmp, 0.0f, 0.0f));
+		}
+	}
+	else
+	{
+		for (auto& Win : Window)
+		{
+			UStaticMeshComponent* DoorMesh = Win->FindComponentByClass<UStaticMeshComponent>();
+			DoorMesh->SetRelativeLocation(FVector(tmp, 0.0f, 0.0f));
+		}
 	}
 }
 

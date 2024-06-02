@@ -30,5 +30,4 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* EmptyScene;
-
 };

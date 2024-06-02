@@ -29,4 +29,5 @@ class WMA_API AWMAGameModeBase : public AGameModeBase
 	bool ShouldSpawnAtStartSpot(AController* Player) override { return false; };
 
 	void TravelNewMap();
+	void Travel15F();
 };

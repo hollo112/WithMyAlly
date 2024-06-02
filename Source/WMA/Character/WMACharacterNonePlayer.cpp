@@ -117,7 +117,7 @@ float AWMACharacterNonePlayer::GetAIPatrolRadius()
 
 float AWMACharacterNonePlayer::GetAIDetectRange()
 {
-	return 400.0f;
+	return 1200.0f;
 }
 
 float AWMACharacterNonePlayer::GetAIAttackRange()
