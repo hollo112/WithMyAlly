@@ -101,6 +101,5 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         // 플레이어가 감지 범위 밖으로 이동했으므로, 타겟을 리셋하고 속도를 원래대로 조정합니다.
         OwnerComp.GetBlackboardComponent()->ClearValue(BBKEY_TARGET);
         AIPawn->ResetMovementSpeed();
-        DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
     }
 }
