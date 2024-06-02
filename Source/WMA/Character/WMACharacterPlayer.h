@@ -165,4 +165,8 @@ protected:
 	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCMovingSound();
+
+	//Stabbing Montage
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> StabbingMontage;
 };

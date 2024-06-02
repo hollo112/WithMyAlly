@@ -47,7 +47,7 @@ protected:
     AActor* PlayerActor;
 
     bool bIsHolding = false;
-
+    bool bIsHoldOnce = false;
     void MakeSound();
 
 public:
