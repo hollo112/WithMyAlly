@@ -30,4 +30,8 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	int count = 0;
+
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> LoadingWidget;
+	UUserWidget* Widget;
 };
