@@ -212,13 +212,6 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
-	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
-
-	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
-
-	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
-
-	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
@@ -326,7 +319,7 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
 			const float SoundStrength = 120.0f;
 			if (SoundStrength >= MinSoundThreshold) {
-				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("RunStep"));
+				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
 			}
 		}
 	}
@@ -643,7 +636,7 @@ void AWMACharacterPlayer::InteractHold()
 	}
 	class AWMACardRead* CardRead;
 	CardRead = Cast<AWMACardRead>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMACardRead::StaticClass()));
-	if (EVButton)
+	if (CardRead)
 	{
 		CardRead->OnInteract();
 	}
