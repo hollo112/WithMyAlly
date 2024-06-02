@@ -110,6 +110,13 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		ESCMenuWidgetClass = ESCWid.Class;
 	}
 
+
+	//Stabbing Montage
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> StabbingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_MaleStabbing.AM_MaleStabbing'"));
+	if (StabbingMontageRef.Object)
+	{
+		StabbingMontage = StabbingMontageRef.Object;
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -399,7 +406,16 @@ void AWMACharacterPlayer::PlayCloseAttackAnimation()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->StopAllMontages(0.0f);
-	AnimInstance->Montage_Play(ComboActionMontage);
+
+	if (WeaponNow == EItemType::ShortWeapon)
+	{
+		AnimInstance->Montage_Play(ComboActionMontage);
+	}
+	else if (WeaponNow == EItemType::DisposableWeapon)
+	{
+		AnimInstance->Montage_Play(StabbingMontage);
+	}
+
 }
 
 void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
@@ -702,6 +718,12 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			Bat->OnInteract();
 			Bat->Destroy();
 		}
+
+		if (TmpActor->IsA(AABDoor::StaticClass()))
+		{
+			AABDoor* Door = Cast<AABDoor>(TmpActor);
+			Door->OnInteract();
+		}
 	}
 
 	//Siren
@@ -712,13 +734,13 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 		Siren->OnInteract();
 	}
 
-	//ABDoor
-	class AABDoor* ABDoor;
-	ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
-	if (ABDoor)
-	{
-		ABDoor->OnInteract();
-	}
+	////ABDoor
+	//class AABDoor* ABDoor;
+	//ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
+	//if (ABDoor)
+	//{
+	//	ABDoor->OnInteract();
+	//}
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)

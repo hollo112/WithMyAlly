@@ -54,10 +54,7 @@ void AABItemSiren::BeginPlay()
         }
     }
 
-    FTimerHandle TimerHandle;
-    float SoundTime = 1;
-    GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
-
+  
     //
     bIsVisible = false;
 }
@@ -96,8 +93,17 @@ void AABItemSiren::OnInteract()
     //}
     if (HasAuthority())
     {
+        if (!bIsHoldOnce)
+        {
+            
+            FTimerHandle TimerHandle;
+            float SoundTime = 1;
+            GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
+
+        }
         ATDTSiren();
     }
+    bIsHoldOnce = true;
 }
 
 void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
