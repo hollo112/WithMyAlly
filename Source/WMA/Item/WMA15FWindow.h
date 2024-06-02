@@ -4,24 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "DoorEVActor.generated.h"
+#include "WMA15FWindow.generated.h"
 
 UCLASS()
-class WMA_API ADoorEVActor : public AActor
+class WMA_API AWMA15FWindow : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ADoorEVActor();
+	AWMA15FWindow();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Mesh")
@@ -30,4 +26,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* EmptyScene;
+
 };
