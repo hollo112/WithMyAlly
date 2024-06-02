@@ -7,6 +7,7 @@
 #include "Engine/Engine.h"
 #include "Game/WMAGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "HAL/PlatformProcess.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values

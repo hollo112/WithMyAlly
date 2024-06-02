@@ -133,6 +133,13 @@ void AWMACharacterPlayer::BeginPlay()
 	{
 		ESCWidget->AddToViewport();
 	}
+
+	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(this);
+
+	if(CurrentLevelName == "NewMap")
+		SetActorScale3D(FVector(1.7, 1.7, 1.7));
+	else if(CurrentLevelName == "WithMyAlly15f")
+		SetActorScale3D(FVector(1.2, 1.2, 1.2));
 }
 
 void AWMACharacterPlayer::SetDead()
