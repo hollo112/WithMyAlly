@@ -121,7 +121,7 @@ void AEV_ButtonActor::OpenDoor(float Alpha)
 		for (auto& Win : Window)
 		{
 			UStaticMeshComponent* DoorMesh = Win->FindComponentByClass<UStaticMeshComponent>();
-			DoorMesh->SetRelativeLocation(FVector(tmp, 0.0f, 0.0f));
+			DoorMesh->SetRelativeLocation(FVector(tmp*1.4, 0.0f, 0.0f));
 		}
 	}
 }

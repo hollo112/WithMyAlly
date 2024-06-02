@@ -432,7 +432,7 @@ void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector 
 	float CapsuleHalfHeight = AttackRange * 0.5f;
 	// 충돌하면 녹색, 아니면 적색
 
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(Forward).ToQuat(), DrawColor, false, 5.0f); // 5초동안 그리기
+	//DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(Forward).ToQuat(), DrawColor, false, 5.0f); // 5초동안 그리기
 #endif
 }
 
@@ -702,6 +702,12 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			Bat->OnInteract();
 			Bat->Destroy();
 		}
+
+		if (TmpActor->IsA(AABDoor::StaticClass()))
+		{
+			AABDoor* Door = Cast<AABDoor>(TmpActor);
+			Door->OnInteract();
+		}
 	}
 
 	//Siren
@@ -713,12 +719,7 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 	}
 
 	//ABDoor
-	class AABDoor* ABDoor;
-	ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
-	if (ABDoor)
-	{
-		ABDoor->OnInteract();
-	}
+	
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)

@@ -75,10 +75,10 @@ void AABItemSiren::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 void AABItemSiren::MakeSound()
 {
     const float MinSoundThreshold = 10.0f; // 예시 임계값
-    const float SoundStrength = 80.0f;
+    const float SoundStrength = 500.0f;
 
     if (SoundStrength >= MinSoundThreshold) {
-        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 1200.0f, FName("Siren"));
+        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.0f, FName("Siren"));
     }
 }
 
