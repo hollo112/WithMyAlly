@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Physics/WMACollsion.h"
 #include "Engine/Engine.h"
+#include "UI/WMAItemInteractionWidget.h"
 #include "Game/WMAGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -21,6 +22,12 @@ AWMANextLevelActor::AWMANextLevelActor()
    
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AWMANextLevelActor::OnOverlapBegin);
     CollisionBox->OnComponentEndOverlap.AddDynamic(this, &AWMANextLevelActor::OnOverlapEnd);
+    //Widget
+    static ConstructorHelpers::FClassFinder<UUserWidget>LoadingUI(TEXT("/Game/UI/WB_Loading.WB_Loading_C"));
+    if (LoadingUI.Succeeded())
+    {
+        LoadingWidget = LoadingUI.Class;
+    }
 }
 
 // Called when the game starts or when spawned
@@ -35,10 +42,20 @@ void AWMANextLevelActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent
     ++count;
     if (count == 2)
     {
+        if (LoadingWidget)
+        {
+            Widget = CreateWidget<UUserWidget>(GetWorld(), LoadingWidget);
+
+            if (LoadingWidget)
+            {
+                Widget->AddToViewport();
+            }
+        }
         AWMAGameModeBase* GameMode = Cast<AWMAGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
         if (GameMode)
         {
             UE_LOG(LogTemp, Log, TEXT("Log Travel"));
+            //GameMode->bUseSeamlessTravel = true;
             GameMode->TravelNewMap();
         }
     }

@@ -61,6 +61,18 @@ protected:
     void MulticastRPCInteract();
 
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
+    uint8 bIsVisible : 1;
 
     void ATDTSiren();
+
+    UFUNCTION(Client, Reliable)
+    void ServerRPCOverlap(AActor* OtherActor);
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastRPCOverlap(AActor* OtherActor);
+
+    UFUNCTION(Client, Reliable)
+    void ServerRPCOverlapEnd(AActor* OtherActor);
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastRPCOverlapEnd(AActor* OtherActor);
 };

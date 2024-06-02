@@ -140,6 +140,8 @@ void AABDoor::BeginPlay()
 		TimelineProgress.BindDynamic(this, &AABDoor::OpenDoor);
 		Timeline.AddInterpFloat(CurveFloat, TimelineProgress);
 	}
+
+	bIsOpened = false;
 }
 
 void AABDoor::PostInitializeComponents()
@@ -158,6 +160,7 @@ void AABDoor::Tick(float DeltaTime)
 
 void AABDoor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
+	PlayerActor = OtherActor;
 	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
 	if (player && player->IsLocallyControlled() && !bIsOpened)
 	{
@@ -170,6 +173,7 @@ void AABDoor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 
 void AABDoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	PlayerActor = NULL;
 	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(OtherActor);
 
 	if (player && player->IsLocallyControlled())
@@ -179,6 +183,13 @@ void AABDoor::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 			ButtonWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+}
+
+void AABDoor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AABDoor, bIsOpened);
 }
 
 void AABDoor::OpenDoor(float Alpha)
@@ -192,7 +203,7 @@ void AABDoor::OpenDoor(float Alpha)
 
 void AABDoor::OnInteract()
 {
-	if (ButtonWidget->IsVisible())
+	if (!bIsOpened && PlayerActor && HasAuthority())
 	{
 		ButtonWidget->SetVisibility(ESlateVisibility::Hidden);
 		bIsOpened = true;

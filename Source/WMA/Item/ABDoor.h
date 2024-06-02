@@ -39,6 +39,8 @@ protected:
 	UFUNCTION()
 	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	AActor* PlayerActor;
+
 public:	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 	TObjectPtr<class UStaticMeshComponent> Door;
@@ -94,7 +96,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* CurveFloat;			// Timeline Ä¿ºê
 
-	bool bIsOpened = false;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
+	uint8 bIsOpened : 1;
 public:
 	UFUNCTION()
 	void OpenDoor(float Alpha);

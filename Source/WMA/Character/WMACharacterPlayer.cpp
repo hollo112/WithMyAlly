@@ -28,6 +28,7 @@
 #include "Item/ABDoor.h"	
 #include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
+#include "Item/WMACardRead.h"
 #include "Item/ABItemSiren.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -40,7 +41,7 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 150.0f;
+	//CameraBoom->TargetArmLength = 150.0f;
 	CameraBoom->TargetOffset = FVector(0.0, 0.0, 70.0);
 	CameraBoom->bUsePawnControlRotation = true;
 
@@ -133,6 +134,21 @@ void AWMACharacterPlayer::BeginPlay()
 	{
 		ESCWidget->AddToViewport();
 	}
+//
+	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(this);
+
+	if (CurrentLevelName == "NewMap")
+	{
+		SetActorScale3D(FVector(1.7, 1.7, 1.7));
+		CameraBoom->TargetArmLength = 200.0f;
+		CameraBoom->TargetOffset = FVector(0.0, 0.0, 85.0);
+		GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed * 1.7;
+	}
+	else if (CurrentLevelName == "WithMyAlly15f")
+	{
+		CameraBoom->TargetArmLength = 150.0f;
+		SetActorScale3D(FVector(1.2, 1.2, 1.2));
+	}
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -196,6 +212,13 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
+	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
+
+	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
+
+	PlayerInputComponent->BindAction("Siren", IE_Pressed, this, &AWMACharacterPlayer::PlaySirenSound);
+
+	PlayerInputComponent->BindAction("Mute", IE_Pressed, this, &AWMACharacterPlayer::StopSirenSound);
 
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AWMACharacterPlayer::InteractHold);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AWMACharacterPlayer::InteractRelease);
@@ -287,7 +310,32 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
 
-	ServerRPCMovingSound();
+	//Sound
+	if (HasAuthority())
+	{
+		const float MinSoundThreshold = 50.0f; // 예시 임계값
+
+		if (!bIsHoldingSprintButton) {
+			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+			const float SoundStrength = 40.0f;
+			if (SoundStrength >= MinSoundThreshold) {
+				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 20.0f, FName("WalkStep"));
+			}
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+			const float SoundStrength = 120.0f;
+			if (SoundStrength >= MinSoundThreshold) {
+				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("RunStep"));
+			}
+		}
+	}
+	
+	if (!HasAuthority())
+	{
+		FVector ClientPosition = GetActorLocation();
+		ServerRPCMovingSound(ClientPosition, bIsHoldingSprintButton);
+	}
 }
 
 void AWMACharacterPlayer::Look(const FInputActionValue& Value)
@@ -593,13 +641,13 @@ void AWMACharacterPlayer::InteractHold()
 	{
 		EVButton->OnInteract();
 	}
-
-	class AABDoor* ABDoor;
-	ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
-	if (ABDoor)
+	class AWMACardRead* CardRead;
+	CardRead = Cast<AWMACardRead>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMACardRead::StaticClass()));
+	if (EVButton)
 	{
-		ABDoor->OnInteract();
+		CardRead->OnInteract();
 	}
+	
 
 	ServerRPCPickUp();
 }
@@ -643,6 +691,14 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 	{
 		Siren->OnInteract();
 	}
+
+	//ABDoor
+	class AABDoor* ABDoor;
+	ABDoor = Cast<AABDoor>(UGameplayStatics::GetActorOfClass(GetWorld(), AABDoor::StaticClass()));
+	if (ABDoor)
+	{
+		ABDoor->OnInteract();
+	}
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)
@@ -680,9 +736,26 @@ float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return DamageAmount;
 }
 
-void AWMACharacterPlayer::ServerRPCMovingSound_Implementation()
+void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding)
 {
-	MulticastRPCMovingSound();
+	//MulticastRPCMovingSound();
+	const float MinSoundThreshold = 50.0f; // 예시 임계값
+	UE_LOG(LogTemp, Warning, TEXT("soundClient In"));
+
+	if (!bClientHolding) {
+		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+		const float SoundStrength = 40.0f;
+		if (SoundStrength >= MinSoundThreshold) {
+			AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 20.0f, FName("WalkStep"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+		const float SoundStrength = 120.0f;
+		if (SoundStrength >= MinSoundThreshold) {
+			AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
+		}
+	}
 }
 
 void AWMACharacterPlayer::MulticastRPCMovingSound_Implementation()
