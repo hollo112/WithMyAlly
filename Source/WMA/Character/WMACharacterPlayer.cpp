@@ -342,7 +342,7 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	{
 		const float MinSoundThreshold = 50.0f; // 예시 임계값
 
-		if (!bIsHoldingSprintButton) {
+		if (!bIsHoldingSprintButton & !bIsHoldingCrouchButton) {
 			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 			const float SoundStrength = 40.0f;
 			if (SoundStrength >= MinSoundThreshold) {
@@ -350,18 +350,21 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 			}
 		}
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-			const float SoundStrength = 120.0f;
-			if (SoundStrength >= MinSoundThreshold) {
-				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
-			}
+			if (!bIsHoldingCrouchButton)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+				const float SoundStrength = 120.0f;
+				if (SoundStrength >= MinSoundThreshold) {
+					AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
+				}
+			}		
 		}
 	}
 	
 	if (!HasAuthority())
 	{
 		FVector ClientPosition = GetActorLocation();
-		ServerRPCMovingSound(ClientPosition, bIsHoldingSprintButton);
+		ServerRPCMovingSound(ClientPosition, bIsHoldingSprintButton, bIsHoldingCrouchButton);
 	}
 }
 
@@ -375,11 +378,13 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 
 void AWMACharacterPlayer::StartCrouch()
 {
+	bIsHoldingCrouchButton = true;
 	Crouch();
 }
 
 void AWMACharacterPlayer::StopCrouch()
 {
+	bIsHoldingCrouchButton = false;
 	UnCrouch();
 }
 
@@ -797,13 +802,13 @@ float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return DamageAmount;
 }
 
-void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding)
+void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding, bool bClientCrouch)
 {
 	//MulticastRPCMovingSound();
 	const float MinSoundThreshold = 50.0f; // 예시 임계값
 	UE_LOG(LogTemp, Warning, TEXT("soundClient In"));
 
-	if (!bClientHolding) {
+	if (!bClientHolding && !bClientCrouch) {
 		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 		const float SoundStrength = 40.0f;
 		if (SoundStrength >= MinSoundThreshold) {
@@ -811,10 +816,13 @@ void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLoca
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-		const float SoundStrength = 120.0f;
-		if (SoundStrength >= MinSoundThreshold) {
-			AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
+		if (!bClientCrouch)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+			const float SoundStrength = 120.0f;
+			if (SoundStrength >= MinSoundThreshold) {
+				AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
+			}
 		}
 	}
 }

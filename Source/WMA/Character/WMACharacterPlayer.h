@@ -135,6 +135,7 @@ protected:
 	void MulticastSprint(bool isSprinting);
 
 	bool bIsHoldingSprintButton;
+	bool bIsHoldingCrouchButton = false;
 
 	void SprintHold();
 	void SprintRelease();
@@ -167,7 +168,7 @@ public:
 	UAISense_Hearing* AISenseHearing;
 protected:
 	UFUNCTION(Server, Reliable)
-	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding);
+	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding, bool bClientCrouch);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCMovingSound();
 
