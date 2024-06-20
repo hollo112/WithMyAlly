@@ -85,6 +85,11 @@ void AWMAGameModeBase::Travel15F()
 	GetWorld()->ServerTravel(TEXT("/Game/Map/WithMyAlly15F?listen"));
 }
 
+void AWMAGameModeBase::TravelTrain1F()
+{
+	GetWorld()->ServerTravel(TEXT("/Game/Map/WithMyAllyTrain1F?listen"));
+}
+
 
 APlayerController* AWMAGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {

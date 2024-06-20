@@ -57,7 +57,14 @@ void AWMANextLevelActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent
         {
             UE_LOG(LogTemp, Log, TEXT("Log Travel"));
             //GameMode->bUseSeamlessTravel = true;
-            GameMode->TravelNewMap();
+            if (Stage == 1)
+            {
+                GameMode->TravelNewMap();
+            }
+            if (Stage == 2)
+            {
+                GameMode->TravelTrain1F();
+            }
         }
     }
 }
