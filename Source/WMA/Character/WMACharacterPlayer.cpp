@@ -87,6 +87,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		ESCAction = InputActionESCRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Crouch.IA_Crouch'"));
+	if (nullptr != InputActionCrouchRef.Object)
+	{
+		CrouchAction = InputActionCrouchRef.Object;
+	}
+
 	bCanAttack = true;
 
 	//Female Hair
@@ -157,6 +163,9 @@ void AWMACharacterPlayer::BeginPlay()
 		CameraBoom->TargetArmLength = 150.0f;
 		SetActorScale3D(FVector(1.2, 1.2, 1.2));
 	}
+
+// Crouch
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 }
 
 void AWMACharacterPlayer::SetDead()
@@ -230,6 +239,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
 	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
+	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartCrouch);
+	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopCrouch);
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
@@ -273,6 +284,8 @@ void AWMACharacterPlayer::SetCharacterControlData(const UWMACharacterControlData
 	CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
 	CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
 	CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->CameraLagSpeed = 25.f;
 }
 
 void AWMACharacterPlayer::ESCInput()
@@ -329,7 +342,7 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	{
 		const float MinSoundThreshold = 50.0f; // 예시 임계값
 
-		if (!bIsHoldingSprintButton) {
+		if (!bIsHoldingSprintButton & !bIsHoldingCrouchButton) {
 			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 			const float SoundStrength = 40.0f;
 			if (SoundStrength >= MinSoundThreshold) {
@@ -337,18 +350,21 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 			}
 		}
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-			const float SoundStrength = 120.0f;
-			if (SoundStrength >= MinSoundThreshold) {
-				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
-			}
+			if (!bIsHoldingCrouchButton)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+				const float SoundStrength = 120.0f;
+				if (SoundStrength >= MinSoundThreshold) {
+					AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
+				}
+			}		
 		}
 	}
 	
 	if (!HasAuthority())
 	{
 		FVector ClientPosition = GetActorLocation();
-		ServerRPCMovingSound(ClientPosition, bIsHoldingSprintButton);
+		ServerRPCMovingSound(ClientPosition, bIsHoldingSprintButton, bIsHoldingCrouchButton);
 	}
 }
 
@@ -360,9 +376,17 @@ void AWMACharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(LookAxisVector.Y);
 }
 
+void AWMACharacterPlayer::StartCrouch()
+{
+	bIsHoldingCrouchButton = true;
+	Crouch();
+}
 
-
-
+void AWMACharacterPlayer::StopCrouch()
+{
+	bIsHoldingCrouchButton = false;
+	UnCrouch();
+}
 
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -773,13 +797,13 @@ float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	return DamageAmount;
 }
 
-void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding)
+void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding, bool bClientCrouch)
 {
 	//MulticastRPCMovingSound();
 	const float MinSoundThreshold = 50.0f; // 예시 임계값
 	UE_LOG(LogTemp, Warning, TEXT("soundClient In"));
 
-	if (!bClientHolding) {
+	if (!bClientHolding && !bClientCrouch) {
 		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 		const float SoundStrength = 40.0f;
 		if (SoundStrength >= MinSoundThreshold) {
@@ -787,10 +811,13 @@ void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLoca
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-		const float SoundStrength = 120.0f;
-		if (SoundStrength >= MinSoundThreshold) {
-			AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
+		if (!bClientCrouch)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+			const float SoundStrength = 120.0f;
+			if (SoundStrength >= MinSoundThreshold) {
+				AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
+			}
 		}
 	}
 }
