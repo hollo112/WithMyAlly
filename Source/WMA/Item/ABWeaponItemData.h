@@ -24,4 +24,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = LongWeapon)
 	TObjectPtr<UStaticMesh> LongWeaponMesh;
+
+	UPROPERTY(EditAnywhere,Category = ThrowItem)
+	TObjectPtr<UStaticMesh> ThrowItemMesh;
+
+	UPROPERTY(EditAnywhere,Category = Gun)
+	TObjectPtr<UStaticMesh> GunMesh;
 };
