@@ -31,6 +31,9 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	int count = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	int Stage;
+
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> LoadingWidget;
 	UUserWidget* Widget;

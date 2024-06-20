@@ -30,4 +30,5 @@ class WMA_API AWMAGameModeBase : public AGameModeBase
 
 	void TravelNewMap();
 	void Travel15F();
+	void TravelTrain1F();
 };
