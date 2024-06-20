@@ -63,9 +63,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ESCAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> CrouchAction;
-
 	void ESCInput();
 	TSubclassOf<UUserWidget> ESCMenuWidgetClass;
 	UUserWidget* ESCWidget;
@@ -76,8 +73,6 @@ protected:
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	void StartCrouch();
-	void StopCrouch();
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -135,7 +130,6 @@ protected:
 	void MulticastSprint(bool isSprinting);
 
 	bool bIsHoldingSprintButton;
-	bool bIsHoldingCrouchButton = false;
 
 	void SprintHold();
 	void SprintRelease();
@@ -168,7 +162,7 @@ public:
 	UAISense_Hearing* AISenseHearing;
 protected:
 	UFUNCTION(Server, Reliable)
-	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding, bool bClientCrouch);
+	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCMovingSound();
 
