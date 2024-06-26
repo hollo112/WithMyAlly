@@ -104,6 +104,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> LongWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> ThrowItem;
+
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
 
@@ -111,6 +114,7 @@ protected:
 	virtual void EquipShort(class UABItemData* InItemData);
 	virtual void EquipDisposable(class UABItemData* InItemData);
 	virtual void EquipLong(class UABItemData* InItemData);
+	virtual void EquipThrow(class UABItemData* InitemData);
 	
 	UPROPERTY(VisibleAnywhere, Category = Equipment)
 	EItemType WeaponNow;			// 어떤 무기를 들고 있는지 확인
