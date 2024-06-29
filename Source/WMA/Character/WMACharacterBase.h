@@ -38,6 +38,7 @@ public:
 
 	virtual void SetCharacterControlData(const class UWMACharacterControlData* CharacterControlData);
 
+
 //
 //protected:
 //	// Called when the game starts or when spawned

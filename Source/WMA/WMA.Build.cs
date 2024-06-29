@@ -10,6 +10,6 @@ public class WMA : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "WMA" });
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks" ,"UMG"});
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks" ,"UMG", "Niagara" });
 	}
 }
