@@ -72,6 +72,12 @@ AWMACharacterBase::AWMACharacterBase()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_Zombie_Reaction_Hit_Montage.AM_Zombie_Reaction_Hit_Montage'"));
+	if (AttackedMontageRef.Object) {
+		AttackedMontage = AttackedMontageRef.Object;
+	}
+
+
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_ComboAttack.AM_ComboAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
@@ -83,8 +89,6 @@ AWMACharacterBase::AWMACharacterBase()
 	{
 		ComboActionData = ComboActionDataRef.Object;
 	}
-
-
 
 	// Item Actions
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipShort)));
@@ -168,6 +172,7 @@ AWMACharacterBase::AWMACharacterBase()
 
 
 }
+
 
 
 void AWMACharacterBase::PostInitializeComponents()
@@ -338,7 +343,7 @@ float AWMACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			}
 		}
 	}
-
+	SetAttacked();
 	//SetDead();
 
 	return DamageAmount;
@@ -357,6 +362,22 @@ void AWMACharacterBase::PlayDeadAnimation()
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
 }
+
+void AWMACharacterBase::SetAttacked()
+{	
+	PlayAttackedAnimation();
+
+}
+
+void AWMACharacterBase::PlayAttackedAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+
+	AnimInstance->Montage_Play(AttackedMontage, 1.0f);
+
+}
+
 
 int32 AWMACharacterBase::GetName()
 {

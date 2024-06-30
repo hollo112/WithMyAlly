@@ -11,6 +11,7 @@
 #include "Engine/StreamableManager.h"
 #include "WMACharacterBase.generated.h"
 
+
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData* /*InItemData*/);
@@ -81,9 +82,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
-
 	virtual void SetDead();
 	void PlayDeadAnimation();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> AttackedMontage;
+
+	virtual void SetAttacked();
+	void PlayAttackedAnimation();
+
+	void EnableMovement();
 
 
 

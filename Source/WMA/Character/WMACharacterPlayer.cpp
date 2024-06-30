@@ -445,9 +445,14 @@ void AWMACharacterPlayer::StopThrow()
 		FVector ForwardVector = GetActorForwardVector();
 		FVector Impulse = ForwardVector * 500.0f + FVector(0.0f, 0.0f, 300.0f);
 		ThrowItem->AddImpulse(Impulse, "ThrowItem", true);
-		
-
+	
 		SetActorEnableCollision(true);
+
+	}
+
+	if (bIsHoldingThrowButton == false)
+	{
+		WeaponNow = EItemType::NoWeapon;
 	}
 
 }

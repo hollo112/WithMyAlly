@@ -81,10 +81,10 @@ void AABThorwItem::BeginPlay()
 
 void AABThorwItem::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-    if (ImpactSound)
-    {
-        UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-    }
+    //if (ImpactSound)
+    //{
+    //    UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+    //}
 }
 
 void AABThorwItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
