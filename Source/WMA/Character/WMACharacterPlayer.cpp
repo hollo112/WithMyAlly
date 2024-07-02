@@ -30,6 +30,7 @@
 #include "Item/EV_ButtonActor.h"	
 #include "Item/WMACardRead.h"
 #include "Item/ABItemSiren.h"
+#include "Item/ABThorwItem.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
@@ -93,6 +94,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		CrouchAction = InputActionCrouchRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionThrowRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Throw.IA_Throw'"));
+	if (nullptr != InputActionCrouchRef.Object)
+	{
+		ThrowAction = InputActionThrowRef.Object;
+	}
+
 	bCanAttack = true;
 
 	//Female Hair
@@ -123,6 +130,19 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	{
 		StabbingMontage = StabbingMontageRef.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> PreThrowMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_PreThrow_Montage.AM_Male_PreThrow_Montage'"));
+	if (PreThrowMontageRef.Object)
+	{
+		PreThrowMontage = PreThrowMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> PostThrowMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_PostThrow_Montage.AM_Male_PostThrow_Montage'"));
+	if (PostThrowMontageRef.Object)
+	{
+		PostThrowMontage = PostThrowMontageRef.Object;
+	}
+
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -241,6 +261,9 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartCrouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopCrouch);
+	EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartThrow);
+	EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopThrow);
+
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
@@ -342,7 +365,7 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	{
 		const float MinSoundThreshold = 50.0f; // 예시 임계값
 
-		if (!bIsHoldingSprintButton & !bIsHoldingCrouchButton) {
+		if (!bIsHoldingSprintButton && !bIsHoldingCrouchButton) {
 			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 			const float SoundStrength = 40.0f;
 			if (SoundStrength >= MinSoundThreshold) {
@@ -387,6 +410,53 @@ void AWMACharacterPlayer::StopCrouch()
 	bIsHoldingCrouchButton = false;
 	UnCrouch();
 }
+
+void AWMACharacterPlayer::StartThrow()
+{	
+	if (WeaponNow == EItemType::ThrowItem)
+	{
+		if (bIsHoldingThrowButton == false)
+		{
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			AnimInstance->StopAllMontages(0.0f);
+
+
+			AnimInstance->Montage_Play(PreThrowMontage);
+
+
+			bIsHoldingThrowButton = true;
+		}
+	}
+}
+
+void AWMACharacterPlayer::StopThrow()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	bIsHoldingThrowButton = false;
+
+
+	if (WeaponNow == EItemType::ThrowItem)
+	{
+		AnimInstance->Montage_Play(PostThrowMontage);
+
+		ThrowItem->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		ThrowItem->SetSimulatePhysics(true);
+		FVector ForwardVector = GetActorForwardVector();
+		FVector Impulse = ForwardVector * 500.0f + FVector(0.0f, 0.0f, 300.0f);
+		ThrowItem->AddImpulse(Impulse, "ThrowItem", true);
+	
+		SetActorEnableCollision(true);
+
+	}
+
+	if (bIsHoldingThrowButton == false)
+	{
+		WeaponNow = EItemType::NoWeapon;
+	}
+
+}
+
 
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -583,6 +653,7 @@ void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemDa
 		ShortWeapon->SetHiddenInGame(true);
 		DisposableWeapon->SetHiddenInGame(false);
 		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
 
 		WeaponNow = EItemType::DisposableWeapon;
 	}
@@ -592,8 +663,20 @@ void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemDa
 		ShortWeapon->SetHiddenInGame(false);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
 
 		WeaponNow = EItemType::ShortWeapon;								// 현재 들고 있는 무기 변경
+	}
+
+	if (InItemData == EItemType::ThrowItem)
+	{
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(false);
+
+
+		WeaponNow = EItemType::ThrowItem;
 	}
 }
 
@@ -748,6 +831,15 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			AABDoor* Door = Cast<AABDoor>(TmpActor);
 			Door->OnInteract();
 		}
+
+		if (TmpActor->IsA(AABThorwItem::StaticClass()))
+		{
+			AABThorwItem* Samdasoo = Cast<AABThorwItem>(TmpActor);
+			Samdasoo->OnInteract();
+			Samdasoo->Destroy();
+		}
+
+
 	}
 
 	//Siren
@@ -757,6 +849,9 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 	{
 		Siren->OnInteract();
 	}
+
+
+
 
 	//ABDoor
 	

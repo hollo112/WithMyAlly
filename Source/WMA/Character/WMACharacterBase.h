@@ -11,6 +11,7 @@
 #include "Engine/StreamableManager.h"
 #include "WMACharacterBase.generated.h"
 
+
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData* /*InItemData*/);
@@ -37,6 +38,7 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	virtual void SetCharacterControlData(const class UWMACharacterControlData* CharacterControlData);
+
 
 //
 //protected:
@@ -80,9 +82,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
-
 	virtual void SetDead();
 	void PlayDeadAnimation();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> AttackedMontage;
+
+	virtual void SetAttacked();
+	void PlayAttackedAnimation();
+
+	void EnableMovement();
 
 
 
@@ -104,6 +113,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStaticMeshComponent> LongWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UStaticMeshComponent> ThrowItem;
+
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
 
@@ -111,6 +123,7 @@ protected:
 	virtual void EquipShort(class UABItemData* InItemData);
 	virtual void EquipDisposable(class UABItemData* InItemData);
 	virtual void EquipLong(class UABItemData* InItemData);
+	virtual void EquipThrow(class UABItemData* InitemData);
 	
 	UPROPERTY(VisibleAnywhere, Category = Equipment)
 	EItemType WeaponNow;			// 어떤 무기를 들고 있는지 확인

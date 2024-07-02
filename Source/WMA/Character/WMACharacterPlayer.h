@@ -31,6 +31,7 @@ public:
 
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsESCOpened = false;
+
 	// Character Control Section
 protected:
 	void SetCharacterControl();
@@ -66,6 +67,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> CrouchAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ThrowAction;
+
+
 	void ESCInput();
 	TSubclassOf<UUserWidget> ESCMenuWidgetClass;
 	UUserWidget* ESCWidget;
@@ -78,6 +83,9 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void StartCrouch();
 	void StopCrouch();
+	void StartThrow();
+	void StopThrow();
+
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -136,6 +144,7 @@ protected:
 
 	bool bIsHoldingSprintButton;
 	bool bIsHoldingCrouchButton = false;
+	bool bIsHoldingThrowButton = false;
 
 	void SprintHold();
 	void SprintRelease();
@@ -166,6 +175,8 @@ protected:
 	// AI Hearing
 public:
 	UAISense_Hearing* AISenseHearing;
+
+
 protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCMovingSound(FVector ClientLocation, bool bClientHolding, bool bClientCrouch);
@@ -175,4 +186,10 @@ protected:
 	//Stabbing Montage
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<class UAnimMontage> StabbingMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> PreThrowMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> PostThrowMontage;
 };

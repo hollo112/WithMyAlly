@@ -72,6 +72,12 @@ AWMACharacterBase::AWMACharacterBase()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_Zombie_Reaction_Hit_Montage.AM_Zombie_Reaction_Hit_Montage'"));
+	if (AttackedMontageRef.Object) {
+		AttackedMontage = AttackedMontageRef.Object;
+	}
+
+
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_ComboAttack.AM_ComboAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
@@ -84,12 +90,12 @@ AWMACharacterBase::AWMACharacterBase()
 		ComboActionData = ComboActionDataRef.Object;
 	}
 
-
-
 	// Item Actions
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipShort)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipDisposable)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipLong)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipThrow)));
+
 
 	// Weapon Component
 	ShortWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShortWeapon"));
@@ -100,6 +106,9 @@ AWMACharacterBase::AWMACharacterBase()
 
 	LongWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LongWeapon"));
 	LongWeapon->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+
+	ThrowItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ThrowItem"));
+	ThrowItem->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 
@@ -163,6 +172,7 @@ AWMACharacterBase::AWMACharacterBase()
 
 
 }
+
 
 
 void AWMACharacterBase::PostInitializeComponents()
@@ -333,7 +343,7 @@ float AWMACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 			}
 		}
 	}
-
+	SetAttacked();
 	//SetDead();
 
 	return DamageAmount;
@@ -352,6 +362,22 @@ void AWMACharacterBase::PlayDeadAnimation()
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
 }
+
+void AWMACharacterBase::SetAttacked()
+{	
+	PlayAttackedAnimation();
+
+}
+
+void AWMACharacterBase::PlayAttackedAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+
+	AnimInstance->Montage_Play(AttackedMontage, 1.0f);
+
+}
+
 
 int32 AWMACharacterBase::GetName()
 {
@@ -378,6 +404,7 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 		ShortWeapon->SetHiddenInGame(false);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
 
 		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
 
@@ -394,6 +421,7 @@ void AWMACharacterBase::EquipDisposable(UABItemData* InItemData)
 		ShortWeapon->SetHiddenInGame(true);
 		DisposableWeapon->SetHiddenInGame(false);
 		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
 
 		DisposableWeapon->SetStaticMesh(WeaponItemData->DisposableWeaponMesh);
 
@@ -412,6 +440,7 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 		ShortWeapon->SetHiddenInGame(true);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(false);
+		ThrowItem->SetHiddenInGame(true);
 
 		LongWeapon->SetStaticMesh(WeaponItemData->LongWeaponMesh);
 
@@ -421,6 +450,22 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
 	//UE_LOG(LogTemplateCharacter, Log, TEXT("EQUIP LONG"));
+}
+
+void AWMACharacterBase::EquipThrow(UABItemData* InitemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InitemData);
+
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(false);
+
+		ThrowItem->SetStaticMesh(WeaponItemData->ThrowItemMesh);
+
+		WeaponNow = EItemType::ThrowItem;								// 현재 들고 있는 무기 변경
+	}
 }
 
 void AWMACharacterBase::MeshLoadCompleted()
