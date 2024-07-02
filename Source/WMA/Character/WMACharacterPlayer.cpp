@@ -365,7 +365,7 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	{
 		const float MinSoundThreshold = 50.0f; // 예시 임계값
 
-		if (!bIsHoldingSprintButton & !bIsHoldingCrouchButton) {
+		if (!bIsHoldingSprintButton && !bIsHoldingCrouchButton) {
 			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 			const float SoundStrength = 40.0f;
 			if (SoundStrength >= MinSoundThreshold) {
