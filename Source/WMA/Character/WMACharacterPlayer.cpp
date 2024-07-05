@@ -30,10 +30,12 @@
 #include "Item/EV_ButtonActor.h"	
 #include "Item/WMACardRead.h"
 #include "Item/ABItemSiren.h"
+#include "Item/WMAFireExtinguisher.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
 #include "Game/WMAGameModeBase.h"
+#include "Animation/WMAAnimInstance.h"
 #include <Blueprint/WidgetLayoutLibrary.h>
 
 
@@ -91,6 +93,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	if (nullptr != InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLMouseRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_LMouse.IA_LMouse'"));
+	if (nullptr != InputActionLMouseRef.Object)
+	{
+		LMouseAction = InputActionLMouseRef.Object;
 	}
 
 	bCanAttack = true;
@@ -241,6 +249,7 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartCrouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopCrouch);
+	EnhancedInputComponent->BindAction(LMouseAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::LMouseClick);
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWMACharacterPlayer::SprintRelease);
@@ -386,6 +395,23 @@ void AWMACharacterPlayer::StopCrouch()
 {
 	bIsHoldingCrouchButton = false;
 	UnCrouch();
+}
+
+void AWMACharacterPlayer::LMouseClick()
+{
+	//FireExtinguisher
+	class AWMAFireExtinguisher* FireExt;
+	FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
+	if (FireExt)
+	{
+		if (FireExt->bIsHolding)
+		{
+			FireExt->TurnOnFireExt();
+			bIsHoldingRifle = true;	// 임시
+			UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+			AnimInstance->bIsHoldingRifle = true; // 임시
+		}
+	}
 }
 
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -758,8 +784,13 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 		Siren->OnInteract();
 	}
 
-	//ABDoor
-	
+	//FireExtinguisher
+	class AWMAFireExtinguisher* FireExt;
+	FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
+	if (FireExt)
+	{
+		FireExt->OnInteract();
+	}
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)

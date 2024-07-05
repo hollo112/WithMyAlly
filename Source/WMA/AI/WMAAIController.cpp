@@ -10,6 +10,7 @@
 #include <Perception/AIPerceptionComponent.h>
 #include <Perception/AISenseConfig_Sight.h>
 #include <Perception/AISenseConfig_Hearing.h>
+#include "AI/BTService_Detect.h"
 
 
 AWMAAIController::AWMAAIController()
@@ -97,11 +98,17 @@ void AWMAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stim
 	auto SensedClass = UAIPerceptionSystem::GetSenseClassForStimulus(AISenseConfigHearing, Stimulus);
 	UBlackboardComponent* BlackboardPtr = GetBlackboardComponent();
 
-	if (SensedClass)
+	if (Stimulus.WasSuccessfullySensed())
 	{
-
-		BlackboardPtr->SetValueAsObject(BBKEY_TARGET, Actor);
-		UE_LOG(LogTemp, Log, TEXT("Hearing"));
+		if (Stimulus.Type == UAISense::GetSenseID<UAISenseConfig_Hearing>())
+		{
+			const float Distance = FVector::Dist(Stimulus.ReceiverLocation, Stimulus.StimulusLocation);
+			if (Distance < AISenseConfigHearing->HearingRange)
+			{
+				BlackboardPtr->SetValueAsObject(BBKEY_TARGET, Actor);
+				//UE_LOG(LogTemp, Log, TEXT("Log Message : %f"), Distance);
+			}
+		}
 	}
 }
 
@@ -111,8 +118,6 @@ void AWMAAIController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	RunAI();
-
-
 }
 
 void AWMAAIController::HandleLostSight()
@@ -132,6 +137,7 @@ void AWMAAIController::SetPerceptionSystem()
 	AISenseConfigSight = CreateDefaultSubobject<UAISenseConfig_Sight>("AI Sight config");
 	AISenseConfigHearing = CreateDefaultSubobject<UAISenseConfig_Hearing>("AI Hearing config");
 
+	SetPerceptionComponent(*CreateOptionalDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception")));//
 
 	AISenseConfigSight->SightRadius = 1200.0f;
 	AISenseConfigSight->LoseSightRadius = 1700.0f;
@@ -142,7 +148,7 @@ void AWMAAIController::SetPerceptionSystem()
 
 	//range 변경시 고쳐야함
 	AISenseConfigHearing->HearingRange = 1200.0f;
-	AISenseConfigHearing->LoSHearingRange = 1500.0f;
+	AISenseConfigHearing->LoSHearingRange = 1200.0f;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectNeutrals = true;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectFriendlies = true;

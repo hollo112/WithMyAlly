@@ -95,11 +95,9 @@ void AABItemSiren::OnInteract()
     {
         if (!bIsHoldOnce)
         {
-            
             FTimerHandle TimerHandle;
             float SoundTime = 1;
             GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
-
         }
         ATDTSiren();
     }
