@@ -16,6 +16,7 @@ class WMA_API UBTService_Detect : public UBTService
 	
 public:
 	UBTService_Detect();
+	bool bResult;
 
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;

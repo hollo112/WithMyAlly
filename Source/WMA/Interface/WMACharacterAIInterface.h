@@ -32,7 +32,6 @@ public:
 	virtual void SetGrowlSound() = 0;
 	virtual void StopGrowlSound() = 0;
 
-
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) = 0;
 	virtual void AttackByAI() = 0;
 	virtual float GetPeripheralVisionAngleDegrees() const = 0;

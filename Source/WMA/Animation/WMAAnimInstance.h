@@ -9,6 +9,8 @@
 /**
  * 
  */
+class AWMACharacterPlayer;
+
 UCLASS()
 class WMA_API UWMAAnimInstance : public UAnimInstance
 {
@@ -17,6 +19,9 @@ class WMA_API UWMAAnimInstance : public UAnimInstance
 public:
 	UWMAAnimInstance();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	uint8 bIsHoldingRifle : 1;												// 총 들고있는지 확인
+
 protected:
 	virtual void NativeInitializeAnimation() override;					//처음한번
 
@@ -24,6 +29,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	TObjectPtr<class ACharacter> Owner;									// 캐릭터 정보 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	TObjectPtr<AWMACharacterPlayer> Player;									// 캐릭터 정보 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	TObjectPtr<class UCharacterMovementComponent> Movement;				// 캐릭터 무브먼트

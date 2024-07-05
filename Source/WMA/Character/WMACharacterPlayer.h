@@ -31,6 +31,7 @@ public:
 
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsESCOpened = false;
+	bool bIsHoldingRifle = false;
 
 	// Character Control Section
 protected:
@@ -70,6 +71,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ThrowAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> LMouseAction;
+
 
 	void ESCInput();
 	TSubclassOf<UUserWidget> ESCMenuWidgetClass;
@@ -85,7 +89,7 @@ protected:
 	void StopCrouch();
 	void StartThrow();
 	void StopThrow();
-
+	void LMouseClick();
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
