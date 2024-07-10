@@ -112,7 +112,7 @@ AWMACharacterBase::AWMACharacterBase()
 	ThrowItem->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	Gun = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("Gun"));
-	Gun->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+	Gun->SetupAttachment(GetMesh(), TEXT("GunSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 

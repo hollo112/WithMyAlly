@@ -152,12 +152,18 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		PostThrowMontage = PostThrowMontageRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> GunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
-	if (GunShootingMontageRef.Object)
+	
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> MGunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
+	if (MGunShootingMontageRef.Object)
 	{
-		ShootingMontage = GunShootingMontageRef.Object;
+		MShootingMontage = MGunShootingMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> FGunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_Female_Firing_Rifle_Montage.AM_Female_Firing_Rifle_Montage'"));
+	if (FGunShootingMontageRef.Object)
+	{
+		FShootingMontage = FGunShootingMontageRef.Object;
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -531,18 +537,22 @@ void AWMACharacterPlayer::Attack()
 		{
 			if (bCanAttack) {
 
-				bCanAttack = false;
+				if (!HasAuthority())				// 클라에서 동작
+				{
+					bCanAttack = false;
 
-				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-				FTimerHandle Handle;
-				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
-					{
-						bCanAttack = true;
-						GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-					}
-				), CloseShootAttackTime, false, -1.0f);
+					GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+					FTimerHandle Handle;
+					GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+						{
+							bCanAttack = true;
+							GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+						}
+					), CloseShootAttackTime, false, -1.0f);
 
-				PlayCloseAttackAnimation();
+					PlayGunShootingAnimation();
+				}
+				ServerRPCGunShooting(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());			// 서버의 시간 클라에게 넘겨주기
 			}
 		}
 
@@ -563,9 +573,22 @@ void AWMACharacterPlayer::PlayCloseAttackAnimation()
 	{
 		AnimInstance->Montage_Play(StabbingMontage);
 	}
-	else if (WeaponNow == EItemType::Gun)
+}
+
+void AWMACharacterPlayer::PlayGunShootingAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	if (WeaponNow == EItemType::Gun)
 	{
-		AnimInstance->Montage_Play(ShootingMontage);
+		if (HasAuthority())
+		{
+			AnimInstance->Montage_Play(FShootingMontage);
+		}
+		else
+		{
+			AnimInstance->Montage_Play(MShootingMontage);
+		}
 	}
 }
 
@@ -636,11 +659,52 @@ void AWMACharacterPlayer::ServerRPCCloseAttack_Implementation(float AttackStartT
 	MulticastRPCCloseAttack();
 }
 
+bool AWMACharacterPlayer::ServerRPCGunShooting_Validate(float AttackStartTime)
+{
+	if (LastCloseAttackStartTime == 0.0f)
+	{
+		return true;
+	}
+
+	return (AttackStartTime - LastCloseAttackStartTime) > (CloseShootAttackTime);
+}
+
+void AWMACharacterPlayer::ServerRPCGunShooting_Implementation(float AttackStartTime)
+{
+	bCanAttack = false;
+	OnRep_CanCloseAttack();
+
+	float AttackTimeDifference = GetWorld()->GetTimeSeconds() - AttackStartTime;		// 서버의 시간에서 클라가 보낸시간을 뺀다
+	AttackTimeDifference = FMath::Clamp(AttackTimeDifference, 0.0f, CloseShootAttackTime - 0.01f);
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+		{
+			bCanAttack = true;
+			OnRep_CanCloseAttack();
+		}
+	), CloseShootAttackTime - AttackTimeDifference, false, -1.0f);
+
+	LastCloseAttackStartTime = AttackStartTime;
+
+	PlayGunShootingAnimation();
+
+	MulticastRPCGunShooting();
+}
+
 void AWMACharacterPlayer::MulticastRPCCloseAttack_Implementation()
 {
 	if (!IsLocallyControlled())
 	{
 		PlayCloseAttackAnimation();
+	}
+}
+
+void AWMACharacterPlayer::MulticastRPCGunShooting_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		PlayGunShootingAnimation();
 	}
 }
 
@@ -901,6 +965,8 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			AABItemGun* M16 = Cast<AABItemGun>(TmpActor);
 			M16->OnInteract();
 			M16->Destroy();
+			UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+			AnimInstance->bIsHoldingRifle = true; // 임시
 		}
 
 
