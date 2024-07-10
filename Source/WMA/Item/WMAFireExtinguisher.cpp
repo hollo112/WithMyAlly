@@ -3,6 +3,7 @@
 
 #include "Item/WMAFireExtinguisher.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Physics/WMACollsion.h"
 #include "Interface/ABCharacterItemInterface.h"
@@ -23,6 +24,10 @@ AWMAFireExtinguisher::AWMAFireExtinguisher()
 
     CollisionBox->SetCollisionProfileName(CPROFILE_WMATRIGGER);
     CollisionBox->SetBoxExtent(FVector(110.0f, 100.0f, 110.0f));
+
+    CollisionCapsule = CreateDefaultSubobject<UCapsuleComponent>(FName("CollisionCapsule"));
+    CollisionCapsule->SetCollisionProfileName(CPROFILE_WMATRIGGER);
+    CollisionCapsule->InitCapsuleSize(90, 170);
     FireExt = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FireExt"));
     FireExt->SetCollisionProfileName("NoCollision");
     //RootComponent = Siren;
@@ -34,6 +39,8 @@ AWMAFireExtinguisher::AWMAFireExtinguisher()
     NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Smoke"));
     NiagaraComp->SetAsset(SmokeSystem);
     NiagaraComp->SetupAttachment(FireExt);
+
+    CollisionCapsule->SetupAttachment(NiagaraComp);
 
     //Widget
     static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
@@ -65,6 +72,7 @@ void AWMAFireExtinguisher::BeginPlay()
     NiagaraComp->Deactivate();
     //
     bIsVisible = false;
+    CollisionCapsule->SetGenerateOverlapEvents(false);
 }
 
 void AWMAFireExtinguisher::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
@@ -103,12 +111,14 @@ void AWMAFireExtinguisher::TurnOnFireExt()
         bTurnOn = true;
         NiagaraComp->Activate();
         UE_LOG(LogTemp, Log, TEXT("Log click"));
+        CollisionCapsule->SetGenerateOverlapEvents(true);
     }
     else
     {
         UE_LOG(LogTemp, Log, TEXT("Log false"));
         bTurnOn = false;
         NiagaraComp->Deactivate();
+        CollisionCapsule->SetGenerateOverlapEvents(false);
     }
 }
 
@@ -140,7 +150,8 @@ void AWMAFireExtinguisher::ATDTFireExt()
                 UE_LOG(LogTemp, Log, TEXT("Log attach"));
                 bIsHolding = true;
                 FireExt->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
-                SetActorEnableCollision(false);
+                //SetActorEnableCollision(false);
+                CollisionBox->SetGenerateOverlapEvents(false);
             }
         }
 
@@ -160,7 +171,8 @@ void AWMAFireExtinguisher::ATDTFireExt()
                 //DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
                 FireExt->SetSimulatePhysics(true);
                 PlayerActor = NULL;
-                SetActorEnableCollision(true);
+                //SetActorEnableCollision(true);
+                CollisionBox->SetGenerateOverlapEvents(true);
             }
         }
 

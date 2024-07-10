@@ -21,6 +21,9 @@ protected:
     UPROPERTY(VisibleAnywhere, Replicated, Category = Box)
     TObjectPtr<class UBoxComponent> CollisionBox;
 
+    UPROPERTY(VisibleAnywhere, Replicated, Category = Capsule)
+    TObjectPtr<class UCapsuleComponent> CollisionCapsule;
+
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
     class UStaticMeshComponent* FireExt;
 
