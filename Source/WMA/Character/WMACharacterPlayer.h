@@ -112,6 +112,7 @@ protected:
 	void OnRep_CanCloseAttack();
 
 	float CloseAttackTime = 2.2f;					// 공격 끝나는 시간
+	float CloseShootAttackTime = 0.57f;
 	float LastCloseAttackStartTime = 0.0f;
 	float CloseAttackTimeDifference = 0.0f;			// 서버와 클라의 시간 차이
 	float AcceptCheckDistance = 300.0f;				// 공격액터와 피격액터 사이가 3미터 이내면 공격 성공으로 인식
@@ -196,4 +197,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
 	TObjectPtr<class UAnimMontage> PostThrowMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
+	TObjectPtr<class UAnimMontage> ShootingMontage;
 };

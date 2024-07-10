@@ -31,6 +31,7 @@
 #include "Item/WMACardRead.h"
 #include "Item/ABItemSiren.h"
 #include "Item/ABThorwItem.h"
+#include "Item/ABItemGun.h"
 #include "Item/WMAFireExtinguisher.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -149,6 +150,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	if (PostThrowMontageRef.Object)
 	{
 		PostThrowMontage = PostThrowMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> GunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
+	if (GunShootingMontageRef.Object)
+	{
+		ShootingMontage = GunShootingMontageRef.Object;
 	}
 
 }
@@ -495,7 +502,7 @@ void AWMACharacterPlayer::Attack()
 {
 	if (!GetMovementComponent()->IsFalling())
 	{
-		if (WeaponNow != EItemType::NoWeapon)
+		if (WeaponNow == EItemType::DisposableWeapon || WeaponNow == EItemType::ShortWeapon)
 		{
 			//ProcessComboCommand();
 			if (bCanAttack)
@@ -519,7 +526,28 @@ void AWMACharacterPlayer::Attack()
 				
 			}
 		}
+
+		else if (WeaponNow == EItemType::Gun)
+		{
+			if (bCanAttack) {
+
+				bCanAttack = false;
+
+				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+				FTimerHandle Handle;
+				GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateLambda([&]
+					{
+						bCanAttack = true;
+						GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+					}
+				), CloseShootAttackTime, false, -1.0f);
+
+				PlayCloseAttackAnimation();
+			}
+		}
+
 	}
+
 }
 
 void AWMACharacterPlayer::PlayCloseAttackAnimation()
@@ -535,7 +563,10 @@ void AWMACharacterPlayer::PlayCloseAttackAnimation()
 	{
 		AnimInstance->Montage_Play(StabbingMontage);
 	}
-
+	else if (WeaponNow == EItemType::Gun)
+	{
+		AnimInstance->Montage_Play(ShootingMontage);
+	}
 }
 
 void AWMACharacterPlayer::DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward)
@@ -863,6 +894,13 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			AABThorwItem* Samdasoo = Cast<AABThorwItem>(TmpActor);
 			Samdasoo->OnInteract();
 			Samdasoo->Destroy();
+		}
+
+		if (TmpActor->IsA(AABItemGun::StaticClass()))
+		{
+			AABItemGun* M16 = Cast<AABItemGun>(TmpActor);
+			M16->OnInteract();
+			M16->Destroy();
 		}
 
 

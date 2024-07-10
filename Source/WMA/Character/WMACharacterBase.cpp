@@ -95,6 +95,7 @@ AWMACharacterBase::AWMACharacterBase()
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipDisposable)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipLong)));
 	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipThrow)));
+	TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AWMACharacterBase::EquipGun)));
 
 
 	// Weapon Component
@@ -109,6 +110,9 @@ AWMACharacterBase::AWMACharacterBase()
 
 	ThrowItem = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ThrowItem"));
 	ThrowItem->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
+
+	Gun = CreateDefaultSubobject< UStaticMeshComponent>(TEXT("Gun"));
+	Gun->SetupAttachment(GetMesh(), TEXT("RightHandSocket"));
 
 	WeaponNow = EItemType::NoWeapon;//
 
@@ -405,6 +409,7 @@ void AWMACharacterBase::EquipShort(UABItemData* InItemData)
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
 
 		ShortWeapon->SetStaticMesh(WeaponItemData->ShortWeaponMesh);
 
@@ -422,6 +427,8 @@ void AWMACharacterBase::EquipDisposable(UABItemData* InItemData)
 		DisposableWeapon->SetHiddenInGame(false);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
+
 
 		DisposableWeapon->SetStaticMesh(WeaponItemData->DisposableWeaponMesh);
 
@@ -441,6 +448,8 @@ void AWMACharacterBase::EquipLong(UABItemData* InItemData)
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(false);
 		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
+
 
 		LongWeapon->SetStaticMesh(WeaponItemData->LongWeaponMesh);
 
@@ -461,11 +470,32 @@ void AWMACharacterBase::EquipThrow(UABItemData* InitemData)
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(false);
+		Gun->SetHiddenInGame(true);
+
 
 		ThrowItem->SetStaticMesh(WeaponItemData->ThrowItemMesh);
 
 		WeaponNow = EItemType::ThrowItem;								// 현재 들고 있는 무기 변경
 	}
+}
+
+void AWMACharacterBase::EquipGun(UABItemData* InitemData)
+{
+	UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InitemData);
+
+	if (WeaponItemData) {
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(false);
+
+		Gun->SetStaticMesh(WeaponItemData->GunMesh);
+
+		WeaponNow = EItemType::Gun;								// 현재 들고 있는 무기 변경
+	}
+
+
 }
 
 void AWMACharacterBase::MeshLoadCompleted()
