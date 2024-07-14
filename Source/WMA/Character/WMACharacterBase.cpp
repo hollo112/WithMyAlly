@@ -548,6 +548,11 @@ void AWMACharacterBase::UpdateAttackedIMG() const
 
 }
 
+void AWMACharacterBase::HideThrowItem()
+{
+	ThrowItem->SetHiddenInGame(true);
+}
+
 void AWMACharacterBase::StepCheck()
 {
 	float Loudness = 1.0f;

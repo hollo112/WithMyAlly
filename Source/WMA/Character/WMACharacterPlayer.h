@@ -30,7 +30,10 @@ public:
 
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsESCOpened = false;
+	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsHoldingRifle = false;
+	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	bool bIsHoldingFireExt = false;
 
 	// Character Control Section
 protected:
@@ -174,6 +177,12 @@ protected:
 	void ServerRPCTakeItem(UABItemData* InItemData);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCTakeItem(UABItemData* InItemData);
+
+	//FireExt
+	UFUNCTION(Server, Reliable)
+	void ServerRPCFireExt(AActor* FireExt);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCFireExt(AActor* FireExt);
 
 	virtual void TakeItem(class UABItemData* InItemData) override;
 

@@ -437,26 +437,14 @@ void AWMACharacterPlayer::StopCrouch()
 
 void AWMACharacterPlayer::StartThrow()
 {	
-	//if (WeaponNow == EItemType::ThrowItem)
-	//{
-	//	if (bIsHoldingThrowButton == false)
-	//	{
-	//		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	//		AnimInstance->StopAllMontages(0.0f);
+	if (WeaponNow == EItemType::ThrowItem)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
+		AnimInstance->Montage_Play(PreThrowMontage);
 
-
-	//		AnimInstance->Montage_Play(PreThrowMontage);
-
-
-	//		bIsHoldingThrowButton = true;
-	//	}
-	//}
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->StopAllMontages(0.0f);
-	AnimInstance->Montage_Play(PreThrowMontage);
-
-
+		WeaponNow = EItemType::NoWeapon;
+	}
 }
 
 void AWMACharacterPlayer::StopThrow()
@@ -495,12 +483,10 @@ void AWMACharacterPlayer::LMouseClick()
 	FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
 	if (FireExt)
 	{
-		if (FireExt->bIsHolding)
+		UE_LOG(LogTemp, Warning, TEXT("FireClient"));
+		if (bIsHoldingFireExt)
 		{
-			FireExt->TurnOnFireExt();
-			bIsHoldingRifle = true;	// 임시
-			UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
-			AnimInstance->bIsHoldingRifle = true; // 임시
+			ServerRPCFireExt(FireExt);
 		}
 	}
 }
@@ -998,8 +984,29 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 	FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
 	if (FireExt)
 	{
+		if (bIsHoldingFireExt)
+		{
+			bIsHoldingFireExt = false;
+		}
+		else
+		{
+			bIsHoldingFireExt = true;
+		}
+		UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+		AnimInstance->bIsHoldingRifle = true; // 임시
 		FireExt->OnInteract();
 	}
+}
+
+void AWMACharacterPlayer::ServerRPCFireExt_Implementation(AActor* FireExt)
+{
+	MulticastRPCFireExt(FireExt);
+}
+
+void AWMACharacterPlayer::MulticastRPCFireExt_Implementation(AActor* FireExt)
+{
+	AWMAFireExtinguisher* Object = Cast<AWMAFireExtinguisher>(FireExt);
+	Object->TurnOnFireExt();
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)
