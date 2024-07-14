@@ -34,11 +34,16 @@ AWMAFireExtinguisher::AWMAFireExtinguisher()
     FireExt->SetupAttachment(RootComponent);
     CollisionBox->SetupAttachment(FireExt);
 
+    FireExtBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FireExtBody"));
+    FireExtSmoke = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FireExtSmoke"));
+    FireExtBody->SetupAttachment(FireExt);
+    FireExtSmoke->SetupAttachment(FireExt);
+
     //Niagara
     SmokeSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Niagara/NewNiagaraSystem.NewNiagaraSystem"));
     NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Smoke"));
     NiagaraComp->SetAsset(SmokeSystem);
-    NiagaraComp->SetupAttachment(FireExt);
+    NiagaraComp->SetupAttachment(FireExtSmoke);
 
     CollisionCapsule->SetupAttachment(NiagaraComp);
 
@@ -149,7 +154,7 @@ void AWMAFireExtinguisher::ATDTFireExt()
 
                 UE_LOG(LogTemp, Log, TEXT("Log attach"));
                 bIsHolding = true;
-                FireExt->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
+                FireExt->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("FireExSocket"));
                 //SetActorEnableCollision(false);
                 CollisionBox->SetGenerateOverlapEvents(false);
             }
