@@ -129,7 +129,7 @@ protected:
 	virtual void EquipThrow(class UABItemData* InitemData);
 	virtual void EquipGun(class UABItemData* InitemData);
 	
-	UPROPERTY(VisibleAnywhere, Category = Equipment)
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = Equipment)
 	EItemType WeaponNow;			// 어떤 무기를 들고 있는지 확인
 
 public:

@@ -278,7 +278,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Look);
-	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::Attack);
+	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartAttack);
+	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopAttack);
 	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartCrouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopCrouch);
@@ -497,6 +498,7 @@ void AWMACharacterPlayer::LMouseClick()
 	}
 }
 
+
 void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -504,7 +506,7 @@ void AWMACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AWMACharacterPlayer, bCanAttack);
 }
 
-void AWMACharacterPlayer::Attack()
+void AWMACharacterPlayer::StartAttack()
 {
 	if (!GetMovementComponent()->IsFalling())
 	{
@@ -558,6 +560,10 @@ void AWMACharacterPlayer::Attack()
 
 	}
 
+}
+
+void AWMACharacterPlayer::StopAttack()
+{
 }
 
 void AWMACharacterPlayer::PlayCloseAttackAnimation()

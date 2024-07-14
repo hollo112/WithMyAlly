@@ -55,4 +55,5 @@ protected:
     AActor* PlayerActor;
 public:
     void OnInteract();
+
 };

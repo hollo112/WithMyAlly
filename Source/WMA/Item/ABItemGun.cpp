@@ -14,6 +14,7 @@
 #include "Interface/ABCharacterItemInterface.h"
 #include "Character/WMACharacterPlayer.h"
 #include <Kismet/GameplayStatics.h>
+#include "Item/ABItemBullet.h"
 
 
 // Sets default values
@@ -52,6 +53,7 @@ AABItemGun::AABItemGun()
 
 
     Mesh->SetIsReplicated(true);
+
 
 
 }
@@ -138,5 +140,3 @@ void AABItemGun::OnInteract()
     }
 
 }
-
-

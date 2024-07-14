@@ -7,7 +7,6 @@
 #include "Perception/AISense_Hearing.h"
 #include "InputActionValue.h"
 #include "WMACharacterPlayer.generated.h"
-
 /**
  *
  */
@@ -91,10 +90,12 @@ protected:
 	void StopThrow();
 	void LMouseClick();
 
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void Attack();
+	void StartAttack();
+	void StopAttack();
 	void PlayCloseAttackAnimation();
 	void PlayGunShootingAnimation();
 	void DrawDebugAttackRange(const FColor& DrawColor, FVector TraceStart, FVector TraceEnd, FVector Forward);
