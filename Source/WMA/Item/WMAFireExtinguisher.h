@@ -27,6 +27,12 @@ protected:
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
     class UStaticMeshComponent* FireExt;
 
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
+    class UStaticMeshComponent* FireExtBody;
+
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
+    class UStaticMeshComponent* FireExtSmoke;
+
     UPROPERTY(EditAnywhere, Replicated, Category = Item)
     TObjectPtr<class UABItemData>Item;
 

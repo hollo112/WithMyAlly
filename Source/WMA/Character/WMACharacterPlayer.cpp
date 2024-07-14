@@ -140,7 +140,8 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		StabbingMontage = StabbingMontageRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> PreThrowMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_PreThrow_Montage.AM_Male_PreThrow_Montage'"));
+	//static ConstructorHelpers::FObjectFinder<UAnimMontage> PreThrowMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_PreThrow_Montage.AM_Male_PreThrow_Montage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> PreThrowMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_Throwing.AM_Throwing'"));
 	if (PreThrowMontageRef.Object)
 	{
 		PreThrowMontage = PreThrowMontageRef.Object;
@@ -436,25 +437,31 @@ void AWMACharacterPlayer::StopCrouch()
 
 void AWMACharacterPlayer::StartThrow()
 {	
-	if (WeaponNow == EItemType::ThrowItem)
-	{
-		if (bIsHoldingThrowButton == false)
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			AnimInstance->StopAllMontages(0.0f);
+	//if (WeaponNow == EItemType::ThrowItem)
+	//{
+	//	if (bIsHoldingThrowButton == false)
+	//	{
+	//		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	//		AnimInstance->StopAllMontages(0.0f);
 
 
-			AnimInstance->Montage_Play(PreThrowMontage);
+	//		AnimInstance->Montage_Play(PreThrowMontage);
 
 
-			bIsHoldingThrowButton = true;
-		}
-	}
+	//		bIsHoldingThrowButton = true;
+	//	}
+	//}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(PreThrowMontage);
+
+
 }
 
 void AWMACharacterPlayer::StopThrow()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	/*UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->StopAllMontages(0.0f);
 	bIsHoldingThrowButton = false;
 
@@ -476,7 +483,7 @@ void AWMACharacterPlayer::StopThrow()
 	if (bIsHoldingThrowButton == false)
 	{
 		WeaponNow = EItemType::NoWeapon;
-	}
+	}*/
 
 }
 
