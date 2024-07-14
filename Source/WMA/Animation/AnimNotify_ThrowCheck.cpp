@@ -3,6 +3,7 @@
 
 #include "Animation/AnimNotify_ThrowCheck.h"
 #include "Item/WMAThrowingObject.h"
+#include "Character/WMACharacterPlayer.h"
 
 void UAnimNotify_ThrowCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
@@ -21,4 +22,7 @@ void UAnimNotify_ThrowCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 	FVector spawnLocation = MeshComp->GetSocketLocation(TEXT("RightHandSocket"));
 	world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
 	//world->SpawnActor<AWMAThrowingObject>(spawnLocation, rotator);
+
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(MeshComp->GetOwner());
+	player->HideThrowItem();
 }

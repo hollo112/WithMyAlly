@@ -169,6 +169,8 @@ public:
 	UINT8 StartAttack2 = 0;
 	UINT8 StartAttack3 = 0;
 
+	void HideThrowItem();
+
 protected:
 	virtual void StepCheck() override;
 };

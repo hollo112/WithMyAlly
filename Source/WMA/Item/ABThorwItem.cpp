@@ -141,7 +141,8 @@ void AABThorwItem::OnInteract()
         }
         Mesh->SetHiddenInGame(true);
         SetActorEnableCollision(false);
-        Effect->OnSystemFinished.AddDynamic(this, &AABThorwItem::OnEffectFinished);
+        Destroy();
+        //Effect->OnSystemFinished.AddDynamic(this, &AABThorwItem::OnEffectFinished);
     }
     else
     {
