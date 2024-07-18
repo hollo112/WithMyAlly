@@ -91,6 +91,12 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		ESCAction = InputActionESCRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInvenRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Inventory.IA_Inventory'"));
+	if (nullptr != InputActionInvenRef.Object)
+	{
+		InvenAction = InputActionInvenRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Crouch.IA_Crouch'"));
 	if (nullptr != InputActionCrouchRef.Object)
 	{
@@ -130,6 +136,13 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	if (ESCWid.Succeeded())
 	{
 		ESCMenuWidgetClass = ESCWid.Class;
+	}
+
+	//Inventory Widget
+	static ConstructorHelpers::FClassFinder<UUserWidget> InvenWid(TEXT("/Game/UI/Invetory/Inventory.Inventory_C"));
+	if (InvenWid.Succeeded())
+	{
+		InventoryWidgetClass = InvenWid.Class;
 	}
 
 
@@ -182,6 +195,12 @@ void AWMACharacterPlayer::BeginPlay()
 	if (ESCWidget)
 	{
 		ESCWidget->AddToViewport();
+	}
+// InventoryUI
+	InventoryWidget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
+	if (InventoryWidget)
+	{
+		InventoryWidget->AddToViewport();
 	}
 //
 	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(this);
@@ -275,6 +294,7 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartAttack);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopAttack);
 	EnhancedInputComponent->BindAction(ESCAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::ESCInput);
+	EnhancedInputComponent->BindAction(InvenAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::InvenInput);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartCrouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopCrouch);
 	EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartThrow);
@@ -350,11 +370,45 @@ void AWMACharacterPlayer::MulticastESC_Implementation()
 			if (IsLocallyControlled())
 			{
 				UE_LOG(LogTemp, Log, TEXT("Log Message"));
-				bIsESCOpened = true;
+				bIsInvenOpened = true;
 				ESCWidget->SetVisibility(ESlateVisibility::Visible);
 				APlayerController* PlayerController = Cast<APlayerController>(GetController());
 				if (PlayerController)
 				{
+					PlayerController->SetInputMode(FInputModeGameAndUI());
+					PlayerController->bShowMouseCursor = true;
+				}
+			}
+		}
+	}
+}
+
+void AWMACharacterPlayer::InvenInput()
+{
+	UE_LOG(LogTemp, Log, TEXT("Log Message"));
+	ServerInven();
+}
+
+void AWMACharacterPlayer::ServerInven_Implementation()
+{
+	MulticastInven();
+}
+
+void AWMACharacterPlayer::MulticastInven_Implementation()
+{
+	if (!bIsInvenOpened)
+	{
+		if (InventoryWidget)
+		{
+			if (IsLocallyControlled())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Log Message"));
+				bIsInvenOpened = true;
+				InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+				APlayerController* PlayerController = Cast<APlayerController>(GetController());
+				if (PlayerController)
+				{
+					PlayerController->SetInputMode(FInputModeGameAndUI());
 					PlayerController->bShowMouseCursor = true;
 				}
 			}
