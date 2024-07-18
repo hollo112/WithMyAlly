@@ -65,7 +65,9 @@ protected:
 public:
     void OnInteract();
     void TurnOnFireExt();
-    bool bIsHolding = false;
+
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
+    uint8 bIsHolding : 1;
 
 protected:
     UFUNCTION(Client, Reliable)

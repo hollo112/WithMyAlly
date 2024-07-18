@@ -65,6 +65,13 @@ void AWMAThrowingObject::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
       
         AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.0f, FName("Throw"));
         UE_LOG(LogTemp, Log, TEXT("Character Location :: %s"), *GetActorLocation().ToString());
+
+        FTimerHandle myTimerHandle;
+        GetWorld()->GetTimerManager().SetTimer(myTimerHandle, FTimerDelegate::CreateLambda([&]()
+        {
+            Destroy();
+
+        }), 5.0f, false);
     }
 }
 

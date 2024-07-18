@@ -153,17 +153,10 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 		PostThrowMontage = PostThrowMontageRef.Object;
 	}
 
-	
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> MGunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
-	if (MGunShootingMontageRef.Object)
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> GunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_Female_Firing_Rifle_Montage.AM_Female_Firing_Rifle_Montage'"));
+	if (GunShootingMontageRef.Object)
 	{
-		MShootingMontage = MGunShootingMontageRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> FGunShootingMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_Female_Firing_Rifle_Montage.AM_Female_Firing_Rifle_Montage'"));
-	if (FGunShootingMontageRef.Object)
-	{
-		FShootingMontage = FGunShootingMontageRef.Object;
+		ShootingMontage = GunShootingMontageRef.Object;
 	}
 }
 
@@ -287,6 +280,7 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::StartThrow);
 	EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::StopThrow);
 	EnhancedInputComponent->BindAction(LMouseAction, ETriggerEvent::Triggered, this, &AWMACharacterPlayer::LMouseClick);
+	EnhancedInputComponent->BindAction(LMouseAction, ETriggerEvent::Completed, this, &AWMACharacterPlayer::LMouseClickEnd);
 
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWMACharacterPlayer::SprintHold);
@@ -301,6 +295,8 @@ void AWMACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	InputComponent->BindAction("ChangeWeapon_Disposable_2", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Disposable);
 
 	InputComponent->BindAction("ChangeWeapon_Long_3", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Long);
+	InputComponent->BindAction("ChangeWeapon_Gun_3", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_Gun);
+	InputComponent->BindAction("ChangeWeapon_None_3", EInputEvent::IE_Released, this, &AWMACharacterPlayer::ChangeWeapon_None);
 }
 
 
@@ -437,14 +433,15 @@ void AWMACharacterPlayer::StopCrouch()
 
 void AWMACharacterPlayer::StartThrow()
 {	
-	if (WeaponNow == EItemType::ThrowItem)
+	/*if (WeaponNow == EItemType::ThrowItem)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		AnimInstance->StopAllMontages(0.0f);
 		AnimInstance->Montage_Play(PreThrowMontage);
 
 		WeaponNow = EItemType::NoWeapon;
-	}
+	}*/
+	ServerRPCThrowStart();
 }
 
 void AWMACharacterPlayer::StopThrow()
@@ -489,6 +486,11 @@ void AWMACharacterPlayer::LMouseClick()
 			ServerRPCFireExt(FireExt);
 		}
 	}
+}
+
+void AWMACharacterPlayer::LMouseClickEnd()
+{
+	ServerRPCFireExtEnd();
 }
 
 
@@ -580,14 +582,7 @@ void AWMACharacterPlayer::PlayGunShootingAnimation()
 	AnimInstance->StopAllMontages(0.0f);
 	if (WeaponNow == EItemType::Gun)
 	{
-		if (HasAuthority())
-		{
-			AnimInstance->Montage_Play(FShootingMontage);
-		}
-		else
-		{
-			AnimInstance->Montage_Play(MShootingMontage);
-		}
+		AnimInstance->Montage_Play(ShootingMontage);
 	}
 }
 
@@ -757,6 +752,16 @@ void AWMACharacterPlayer::ChangeWeapon_Long()
 	WeaponNow = EItemType::LongWeapon;									// 현재 들고 있는 무기 변경
 }
 
+void AWMACharacterPlayer::ChangeWeapon_Gun()
+{
+	ServerRPCChangeWP(EItemType::Gun);
+}
+
+void AWMACharacterPlayer::ChangeWeapon_None()
+{
+	ServerRPCChangeWP(EItemType::NoWeapon);
+}
+
 void AWMACharacterPlayer::ServerRPCChangeWP_Implementation(EItemType InItemData)
 {
 	MulticastRPCChangeWP(InItemData);
@@ -764,39 +769,70 @@ void AWMACharacterPlayer::ServerRPCChangeWP_Implementation(EItemType InItemData)
 
 void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemData)
 {
+	UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());
+	
 	if (WeaponNow == EItemType::NoWeapon) {
 		return;
 	}
 
 	if (InItemData == EItemType::DisposableWeapon)
 	{
+		AnimInstance->bIsHoldingRifle = false; 
 		ShortWeapon->SetHiddenInGame(true);
 		DisposableWeapon->SetHiddenInGame(false);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
 
 		WeaponNow = EItemType::DisposableWeapon;
 	}
 
 	if (InItemData == EItemType::ShortWeapon)
 	{
+		AnimInstance->bIsHoldingRifle = false;
 		ShortWeapon->SetHiddenInGame(false);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
 
 		WeaponNow = EItemType::ShortWeapon;								// 현재 들고 있는 무기 변경
 	}
 
 	if (InItemData == EItemType::ThrowItem)
 	{
+		AnimInstance->bIsHoldingRifle = false;
 		ShortWeapon->SetHiddenInGame(true);
 		DisposableWeapon->SetHiddenInGame(true);
 		LongWeapon->SetHiddenInGame(true);
 		ThrowItem->SetHiddenInGame(false);
-
+		Gun->SetHiddenInGame(true);
 
 		WeaponNow = EItemType::ThrowItem;
+	}
+
+	if (InItemData == EItemType::Gun)
+	{
+		AnimInstance->bIsHoldingRifle = true;
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(false);
+
+		WeaponNow = EItemType::Gun;
+	}
+
+	if (InItemData == EItemType::NoWeapon)
+	{
+		AnimInstance->bIsHoldingRifle = false;
+		ShortWeapon->SetHiddenInGame(true);
+		DisposableWeapon->SetHiddenInGame(true);
+		LongWeapon->SetHiddenInGame(true);
+		ThrowItem->SetHiddenInGame(true);
+		Gun->SetHiddenInGame(true);
+
+		WeaponNow = EItemType::NoWeapon;
 	}
 }
 
@@ -823,6 +859,18 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 				ComboActionMontage = AMClass;
 			}
 
+			auto AMThrowClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Throwing.AM_Throwing'"));
+			if (AMClass)
+			{
+				PreThrowMontage = AMThrowClass;
+			}
+
+			auto AMShootClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
+			if (AMShootClass)
+			{
+				ShootingMontage = AMShootClass;
+			}
+			
 			Hair->SetHiddenInGame(true);
 		}
 	}
@@ -845,6 +893,18 @@ void AWMACharacterPlayer::UpdateAnimInstance()
 		if (AMClass)
 		{
 			ComboActionMontage = AMClass;
+		}
+
+		auto AMThrowClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Throwing.AM_Throwing'"));
+		if (AMClass)
+		{
+			PreThrowMontage = AMThrowClass;
+		}
+
+		auto AMShootClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/AM_Male_Firing_Rifle_Montage.AM_Male_Firing_Rifle_Montage'"));
+		if (AMShootClass)
+		{
+			ShootingMontage = AMShootClass;
 		}
 
 		Hair->SetHiddenInGame(true);
@@ -929,11 +989,13 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 {
 	TArray<AActor*> Result;
 	GetOverlappingActors(Result, AActor::StaticClass());
+	UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
 
 	for (auto* TmpActor : Result)
 	{
 		if (TmpActor->IsA(AABItemBat::StaticClass()))
 		{
+			AnimInstance->bIsHoldingRifle = false; // 임시
 			AABItemBat* Bat = Cast<AABItemBat>(TmpActor);
 			Bat->OnInteract();
 			Bat->Destroy();
@@ -941,6 +1003,7 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 
 		if (TmpActor->IsA(AABItemFruitSwd::StaticClass()))
 		{
+			AnimInstance->bIsHoldingRifle = false;
 			AABItemFruitSwd* Bat = Cast<AABItemFruitSwd>(TmpActor);
 			Bat->OnInteract();
 			Bat->Destroy();
@@ -954,6 +1017,7 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 
 		if (TmpActor->IsA(AABThorwItem::StaticClass()))
 		{
+			AnimInstance->bIsHoldingRifle = false;
 			AABThorwItem* Samdasoo = Cast<AABThorwItem>(TmpActor);
 			Samdasoo->OnInteract();
 			Samdasoo->Destroy();
@@ -964,11 +1028,23 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			AABItemGun* M16 = Cast<AABItemGun>(TmpActor);
 			M16->OnInteract();
 			M16->Destroy();
-			UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+			//UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
 			AnimInstance->bIsHoldingRifle = true; // 임시
 		}
 
-
+		//if (TmpActor->IsA(AWMAFireExtinguisher::StaticClass()))
+		//{
+		//	if (bIsHoldingFireExt)
+		//	{
+		//		bIsHoldingFireExt = false;
+		//		AnimInstance->bIsHoldingRifle = false; // 임시
+		//	}
+		//	else
+		//	{
+		//		bIsHoldingFireExt = true;
+		//		AnimInstance->bIsHoldingRifle = true; // 임시
+		//	}
+		//}
 	}
 
 	//Siren
@@ -980,21 +1056,36 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 	}
 
 	//FireExtinguisher
+	//UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
 	class AWMAFireExtinguisher* FireExt;
 	FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
 	if (FireExt)
 	{
-		if (bIsHoldingFireExt)
+		FireExt->OnInteract();
+		if (FireExt->bIsHolding)
 		{
-			bIsHoldingFireExt = false;
+			if (HasAuthority())
+			{
+				bIsHoldingFireExt = true;
+			}
+			else
+			{
+				bIsHoldingFireExt = false;
+			}
+			//AnimInstance->bIsHoldingRifle = false; // 임시
 		}
 		else
 		{
-			bIsHoldingFireExt = true;
+			if (HasAuthority())
+			{
+				bIsHoldingFireExt = false;
+			}
+			else
+			{
+				bIsHoldingFireExt = true;
+			}
+			//AnimInstance->bIsHoldingRifle = true; // 임시
 		}
-		UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
-		AnimInstance->bIsHoldingRifle = true; // 임시
-		FireExt->OnInteract();
 	}
 }
 
@@ -1005,8 +1096,41 @@ void AWMACharacterPlayer::ServerRPCFireExt_Implementation(AActor* FireExt)
 
 void AWMACharacterPlayer::MulticastRPCFireExt_Implementation(AActor* FireExt)
 {
+	UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+	//FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
+	AnimInstance->bIsHoldingFIreExt = true; // 임시
+
 	AWMAFireExtinguisher* Object = Cast<AWMAFireExtinguisher>(FireExt);
 	Object->TurnOnFireExt();
+}
+
+void AWMACharacterPlayer::ServerRPCFireExtEnd_Implementation()
+{
+	MulticastRPCFireExtEnd();
+}
+
+void AWMACharacterPlayer::MulticastRPCFireExtEnd_Implementation()
+{
+	UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+	//FireExt = Cast<AWMAFireExtinguisher>(UGameplayStatics::GetActorOfClass(GetWorld(), AWMAFireExtinguisher::StaticClass()));
+	AnimInstance->bIsHoldingFIreExt = false; // 임시
+}
+
+void AWMACharacterPlayer::ServerRPCThrowStart_Implementation()
+{
+	MulticastRPCThrowStart();
+}
+
+void AWMACharacterPlayer::MulticastRPCThrowStart_Implementation()
+{
+	if (WeaponNow == EItemType::ThrowItem)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
+		AnimInstance->Montage_Play(PreThrowMontage);
+
+		WeaponNow = EItemType::NoWeapon;
+	}
 }
 
 void AWMACharacterPlayer::TakeItem(UABItemData* InItemData)

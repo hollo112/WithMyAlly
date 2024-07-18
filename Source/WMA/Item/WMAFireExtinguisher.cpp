@@ -15,6 +15,7 @@
 #include "Character/WMACharacterPlayer.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Animation/WMAAnimInstance.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -77,6 +78,7 @@ void AWMAFireExtinguisher::BeginPlay()
     NiagaraComp->Deactivate();
     //
     bIsVisible = false;
+    bIsHolding = false;
     CollisionCapsule->SetGenerateOverlapEvents(false);
 }
 
@@ -135,6 +137,7 @@ void AWMAFireExtinguisher::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
     DOREPLIFETIME(AWMAFireExtinguisher, CollisionBox);
     DOREPLIFETIME(AWMAFireExtinguisher, Item);
     DOREPLIFETIME(AWMAFireExtinguisher, bIsVisible);
+    DOREPLIFETIME(AWMAFireExtinguisher, bIsHolding);
 }
 
 void AWMAFireExtinguisher::ATDTFireExt()
@@ -268,7 +271,7 @@ void AWMAFireExtinguisher::MulticastRPCInteract_Implementation()
                 FireExt->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
                 //DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
                 FireExt->SetSimulatePhysics(true);
-                PlayerActor = NULL;
+                PlayerActor = NULL;           
             }
         }
         SetActorEnableCollision(true);
