@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
 	uint8 bIsHoldingRifle : 1;												// 총 들고있는지 확인
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Character)
+	uint8 bIsHoldingFIreExt : 1;												// 총 들고있는지 확인
+
 protected:
 	virtual void NativeInitializeAnimation() override;					//처음한번
 

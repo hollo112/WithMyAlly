@@ -30,7 +30,12 @@ AABItemBullet::AABItemBullet()
 void AABItemBullet::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	FTimerHandle myTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(myTimerHandle, FTimerDelegate::CreateLambda([&]()
+	{
+		Destroy();
+
+	}), 3.0f, false);
 }
 
 // Called every frame
