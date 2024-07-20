@@ -86,4 +86,8 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCSetMesh();
+
+public:
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void GunAttackHitCheck();
 };

@@ -92,6 +92,7 @@ protected:
 	void StartThrow();
 	void StopThrow();
 	void LMouseClick();
+	void LMouseClickEnd();
 
 
 protected:
@@ -133,6 +134,8 @@ protected:
 	void ChangeWeapon_Short();
 	void ChangeWeapon_Disposable();
 	void ChangeWeapon_Long();
+	void ChangeWeapon_Gun();
+	void ChangeWeapon_None();
 	UFUNCTION(Server, Reliable)
 	void ServerRPCChangeWP(EItemType InItemData);
 	UFUNCTION(NetMulticast, Reliable)
@@ -183,6 +186,17 @@ protected:
 	void ServerRPCFireExt(AActor* FireExt);
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCFireExt(AActor* FireExt);
+	UFUNCTION(Server, Reliable)
+	void ServerRPCFireExtEnd();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCFireExtEnd();
+	
+	//ThrowingObject
+	UFUNCTION(Server, Reliable)
+	void ServerRPCThrowStart();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCThrowStart();
+
 
 	virtual void TakeItem(class UABItemData* InItemData) override;
 
@@ -215,8 +229,5 @@ protected:
 	TObjectPtr<class UAnimMontage> PostThrowMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
-	TObjectPtr<class UAnimMontage> MShootingMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation)
-	TObjectPtr<class UAnimMontage> FShootingMontage;
+	TObjectPtr<class UAnimMontage> ShootingMontage;
 };

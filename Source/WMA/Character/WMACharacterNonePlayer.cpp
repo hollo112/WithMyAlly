@@ -13,6 +13,7 @@
 #include "EngineUtils.h"
 #include "Engine/AssetManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Engine/DamageEvents.h"
 
 void AWMACharacterNonePlayer::BeginPlay()
 {
@@ -210,6 +211,13 @@ void AWMACharacterNonePlayer::PostInitializeComponents()
 void AWMACharacterNonePlayer::NPCMeshLoadCompleted()
 {
 	ServerRPCSetMesh();
+}
+
+void AWMACharacterNonePlayer::GunAttackHitCheck()
+{
+
+	FDamageEvent DamageEvent;
+	TakeDamage(10.f, DamageEvent, GetController(), this);
 }
 
 void AWMACharacterNonePlayer::MulticastRPCAttack_Implementation()

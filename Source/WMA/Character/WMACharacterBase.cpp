@@ -375,11 +375,13 @@ void AWMACharacterBase::SetAttacked()
 
 void AWMACharacterBase::PlayAttackedAnimation()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->StopAllMontages(0.0f);
+	if (Stat->GetCurrentHp() > 0)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
 
-	AnimInstance->Montage_Play(AttackedMontage, 1.0f);
-
+		AnimInstance->Montage_Play(AttackedMontage, 1.0f);
+	}
 }
 
 

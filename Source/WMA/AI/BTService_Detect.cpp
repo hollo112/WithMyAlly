@@ -13,6 +13,7 @@
 #include "Physics/WMACollsion.h"
 #include "DrawDebugHelpers.h"
 #include "Item/ABItemSiren.h"
+#include "Item/WMAThrowingObject.h"
 
 UBTService_Detect::UBTService_Detect()
 {
@@ -118,6 +119,32 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     bFoundPlayer = true;
                 }
             }
+            //else if (OverlapResult.GetActor()->IsA(AWMAThrowingObject::StaticClass()))
+            //{
+            //    UE_LOG(LogTemp, Log, TEXT("Log Find"));
+            //    FVector Direction = OverlapResult.GetActor()->GetActorLocation() - Center;
+            //    Direction.Normalize();
+            //    float DotProduct = FVector::DotProduct(ControllingPawn->GetActorForwardVector(), Direction);
+            //    float Angle = FMath::Acos(DotProduct);
+            //    float AngleDegrees = FMath::RadiansToDegrees(Angle);
+
+            //    if (AngleDegrees <= PeripheralVisionAngle / 2)
+            //    {
+            //        // Å¸°Ù ¹ß°ß
+            //        UE_LOG(LogTemp, Log, TEXT("Log Find"));
+            //        OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, OverlapResult.GetActor());
+            //        bFoundPlayer = true;
+            //        AIPawn->SetMovementSpeed();
+            //        break;
+
+            //    }
+            //    else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
+            //    {
+            //        OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
+            //        AIPawn->SetMovementSpeed();
+            //        bFoundPlayer = true;
+            //    }
+            //}
         }
     }
 
