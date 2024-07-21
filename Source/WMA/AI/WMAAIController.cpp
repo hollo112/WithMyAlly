@@ -46,6 +46,7 @@ void AWMAAIController::RunAI()
 		bool RunResult = RunBehaviorTree(BTAsset);
 		ensure(RunResult);
 	}
+
 }
 
 void AWMAAIController::StopAI()
