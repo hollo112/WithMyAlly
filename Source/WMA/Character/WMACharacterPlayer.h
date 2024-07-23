@@ -31,6 +31,8 @@ public:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsESCOpened = false;
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	bool bIsInvenOpened = false;
+	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsHoldingRifle = false;
 	UPROPERTY(VisibleAnyWhere, BlueprintReadWrite, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	bool bIsHoldingFireExt = false;
@@ -68,6 +70,9 @@ protected:
 	TObjectPtr<class UInputAction> ESCAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> InvenAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> CrouchAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
@@ -76,7 +81,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> LMouseAction;
 
-
+	//UI
 	void ESCInput();
 	TSubclassOf<UUserWidget> ESCMenuWidgetClass;
 	UUserWidget* ESCWidget;
@@ -85,6 +90,15 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastESC();
 
+	void InvenInput();
+	TSubclassOf<UUserWidget> InventoryWidgetClass;
+	UUserWidget* InventoryWidget;
+	UFUNCTION(Server, Reliable)
+	void ServerInven();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastInven();
+
+	//Input
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void StartCrouch();
@@ -130,12 +144,18 @@ protected:
 	float AcceptMinCheckTime = 0.15f;
 
 	// 무기 교체
-protected:
+public:
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ChangeWeapon_Short();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ChangeWeapon_Disposable();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ChangeWeapon_Long();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ChangeWeapon_Gun();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void ChangeWeapon_None();
+protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCChangeWP(EItemType InItemData);
 	UFUNCTION(NetMulticast, Reliable)
