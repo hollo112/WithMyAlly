@@ -171,6 +171,11 @@ AWMACharacterPlayer::AWMACharacterPlayer()
 	{
 		ShootingMontage = GunShootingMontageRef.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/NewFemale/Animation/AM_Female_Reaction_Hit_Montage.AM_Female_Reaction_Hit_Montage'"));
+	if (AttackedMontageRef.Object) {
+		AttackedMontage = AttackedMontageRef.Object;
+	}
 }
 
 void AWMACharacterPlayer::BeginPlay()
@@ -825,9 +830,9 @@ void AWMACharacterPlayer::MulticastRPCChangeWP_Implementation(EItemType InItemDa
 {
 	UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());
 	
-	if (WeaponNow == EItemType::NoWeapon) {
+	/*if (WeaponNow == EItemType::NoWeapon) {
 		return;
-	}
+	}*/
 
 	if (InItemData == EItemType::DisposableWeapon)
 	{
@@ -924,7 +929,11 @@ void AWMACharacterPlayer::OnRep_PlayerState()
 			{
 				ShootingMontage = AMShootClass;
 			}
-			
+			auto AMAttackedClass = LoadObject<UAnimMontage>(NULL, TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Male/Animation/Male_Reaction_Hit_Montage.Male_Reaction_Hit_Montage'"));
+			if (AMAttackedClass)
+			{
+				AttackedMontage = AMAttackedClass;
+			}
 			Hair->SetHiddenInGame(true);
 		}
 	}

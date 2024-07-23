@@ -200,6 +200,59 @@ void AWMACharacterNonePlayer::OnRep_CanCloseAttack()
 	}
 }
 
+void AWMACharacterNonePlayer::ServerRPCGunDamaged_Implementation()
+{
+	bIsDamaging = true;
+	FDamageEvent DamageEvent;
+	TakeDamage(10.f, DamageEvent, GetController(), this);
+
+	FTimerHandle DamageTimerHandle;
+	float DamageTime = 2.0f;
+
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	GetWorld()->GetTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			bIsDamaging = false;
+			OnRep_GunShoot();
+		}
+	), DamageTime, false);
+
+	MulticastRPCGunDamaged();
+}
+
+bool AWMACharacterNonePlayer::ServerRPCGunDamaged_Validate()
+{
+	return true;
+}
+
+void AWMACharacterNonePlayer::MulticastRPCGunDamaged_Implementation()
+{
+	/*if (Stat->GetCurrentHp() > 0)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
+		AnimInstance->Montage_Play(AttackedMontage);
+	}
+	else
+	{
+		PlayDeadAnimation();
+	}*/
+	PlayDeadAnimation();
+}
+
+void AWMACharacterNonePlayer::OnRep_GunShoot()
+{
+	if (bIsDamaging)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+}
+
 void AWMACharacterNonePlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -215,9 +268,7 @@ void AWMACharacterNonePlayer::NPCMeshLoadCompleted()
 
 void AWMACharacterNonePlayer::GunAttackHitCheck()
 {
-
-	FDamageEvent DamageEvent;
-	TakeDamage(10.f, DamageEvent, GetController(), this);
+	ServerRPCGunDamaged();
 }
 
 void AWMACharacterNonePlayer::MulticastRPCAttack_Implementation()

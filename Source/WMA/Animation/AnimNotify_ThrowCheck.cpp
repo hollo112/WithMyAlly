@@ -23,6 +23,6 @@ void UAnimNotify_ThrowCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 	world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
 	//world->SpawnActor<AWMAThrowingObject>(spawnLocation, rotator);
 
-	//AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(MeshComp->GetOwner());
-	//player->HideThrowItem();
+	AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(MeshComp->GetOwner());
+	player->HideThrowItem();
 }

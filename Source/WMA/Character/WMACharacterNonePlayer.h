@@ -72,6 +72,18 @@ protected:
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCGunDamaged();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCGunDamaged();
+
+	UPROPERTY(ReplicatedUsing = OnRep_GunShoot)
+	uint8 bIsDamaging : 1;
+
+	UFUNCTION()
+	void OnRep_GunShoot();
+
 	//Zombie Mesh
 	virtual void PostInitializeComponents() override;
 	void NPCMeshLoadCompleted();
