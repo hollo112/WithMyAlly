@@ -35,4 +35,5 @@ public:
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) = 0;
 	virtual void AttackByAI() = 0;
 	virtual float GetPeripheralVisionAngleDegrees() const = 0;
+	virtual void NotifyComboActionEnd() = 0;
 };

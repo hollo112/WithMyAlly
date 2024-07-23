@@ -3,7 +3,7 @@
 
 #include "Character/WMACharacterBoss.h"
 #include "WMACharacterBoss.h"
-#include "AI/WMAAIController.h"
+#include "AI/WMABossAIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnvironmentQuery/EnvQuery.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
@@ -28,7 +28,7 @@ void AWMACharacterBoss::BeginPlay()
 
 AWMACharacterBoss::AWMACharacterBoss()
 {
-	AIControllerClass = AWMAAIController::StaticClass();
+	AIControllerClass = AWMABossAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	//mesh & animations
@@ -60,7 +60,7 @@ AWMACharacterBoss::AWMACharacterBoss()
 
 float AWMACharacterBoss::GetPeripheralVisionAngleDegrees() const
 {
-	return 180.0f;
+	return 360.0f;
 }
 
 void AWMACharacterBoss::SetDead()
@@ -77,7 +77,7 @@ void AWMACharacterBoss::ServerRPCSetDead_Implementation()
 
 	MulticastServerRPCSetDead();
 
-	AWMAAIController* AIController = Cast<AWMAAIController>(GetController());
+	AWMABossAIController* AIController = Cast<AWMABossAIController>(GetController());
 	if (AIController)
 	{
 		AIController->StopAI();
@@ -105,12 +105,12 @@ float AWMACharacterBoss::GetAIPatrolRadius()
 
 float AWMACharacterBoss::GetAIDetectRange()
 {
-	return 1200.0f;
+	return 2000.0f;
 }
 
 float AWMACharacterBoss::GetAIAttackRange()
 {
-	return Stat->GetCharacterStat().ShortWPRange;
+	return 1200.0f;
 }
 
 float AWMACharacterBoss::GetAITurnSpeed()

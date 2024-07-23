@@ -93,6 +93,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
                     AIPawn->SetMovementSpeed();
                     bFoundPlayer = true;
+                    break;
                 }
             }
             else if (OverlapResult.GetActor()->IsA(AABItemSiren::StaticClass()))
@@ -117,6 +118,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
                     AIPawn->SetMovementSpeed();
                     bFoundPlayer = true;
+                    break;
                 }
             }
             //else if (OverlapResult.GetActor()->IsA(AWMAThrowingObject::StaticClass()))
