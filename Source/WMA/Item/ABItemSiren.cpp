@@ -44,7 +44,7 @@ void AABItemSiren::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (InteractionButtonWidgetClass)
+  /*  if (InteractionButtonWidgetClass)
     {
         ItemWidget = CreateWidget<UUserWidget>(GetWorld(), InteractionButtonWidgetClass);
 
@@ -52,21 +52,23 @@ void AABItemSiren::BeginPlay()
         {
             ItemWidget->AddToViewport();
         }
-    }
-
+    }*/
+    FTimerHandle TimerHandle;
+    float SoundTime = 1;
+    GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
   
     //
-    bIsVisible = false;
+    //bIsVisible = false;
 }
 
 void AABItemSiren::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
-    ServerRPCOverlap(OtherActor);
+    //ServerRPCOverlap(OtherActor);
 }
 
 void AABItemSiren::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    ServerRPCOverlapEnd(OtherActor);
+    //ServerRPCOverlapEnd(OtherActor);
 }
 
 void AABItemSiren::MakeSound()
@@ -75,8 +77,7 @@ void AABItemSiren::MakeSound()
     const float SoundStrength = 500.0f;
 
     if (SoundStrength >= MinSoundThreshold) {
-
-        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.0f, FName("Siren"));
+        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.f, FName("Siren"));
     }
 }
 
@@ -100,9 +101,9 @@ void AABItemSiren::OnInteract()
             float SoundTime = 1;
             GetWorldTimerManager().SetTimer(TimerHandle, this, &AABItemSiren::MakeSound, SoundTime, true);
         }
-        ATDTSiren();
+        //ATDTSiren();
     }
-    bIsHoldOnce = true;
+   // bIsHoldOnce = true;
 }
 
 void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

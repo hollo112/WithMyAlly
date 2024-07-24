@@ -148,7 +148,7 @@ void AWMAAIController::SetPerceptionSystem()
 	AISenseConfigSight->DetectionByAffiliation.bDetectFriendlies = true;
 
 	//range 변경시 고쳐야함
-	AISenseConfigHearing->HearingRange = 1200.0f;
+	AISenseConfigHearing->HearingRange = 5000.f;
 	AISenseConfigHearing->LoSHearingRange = 1200.0f;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectEnemies = true;
 	AISenseConfigHearing->DetectionByAffiliation.bDetectNeutrals = true;

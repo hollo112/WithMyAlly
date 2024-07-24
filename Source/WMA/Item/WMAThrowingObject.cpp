@@ -63,7 +63,7 @@ void AWMAThrowingObject::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
         UE_LOG(LogTemp, Log, TEXT("Log Thorwing Hit"));
         const float SoundStrength = 120.0f;
       
-        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.0f, FName("Throw"));
+        AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 300.0f, FName("Throw"));
         UE_LOG(LogTemp, Log, TEXT("Character Location :: %s"), *GetActorLocation().ToString());
 
         FTimerHandle myTimerHandle;

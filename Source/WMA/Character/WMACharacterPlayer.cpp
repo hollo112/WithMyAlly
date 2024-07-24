@@ -29,10 +29,10 @@
 #include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Item/WMACardRead.h"
-#include "Item/ABItemSiren.h"
 #include "Item/ABThorwItem.h"
 #include "Item/ABItemGun.h"
 #include "Item/WMAFireExtinguisher.h"
+#include "Trigger/WMASirenSpawner.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/WMAWidgetAttacked1.h"
@@ -442,10 +442,10 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 	//Sound
 	if (HasAuthority())
 	{
-		const float MinSoundThreshold = 50.0f; // 예시 임계값
+		const float MinSoundThreshold = 30.0f; // 예시 임계값
 
 		if (!bIsHoldingSprintButton && !bIsHoldingCrouchButton) {
-			UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+			//UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 			const float SoundStrength = 40.0f;
 			if (SoundStrength >= MinSoundThreshold) {
 				AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 20.0f, FName("WalkStep"));
@@ -454,10 +454,10 @@ void AWMACharacterPlayer::Move(const FInputActionValue& Value)
 		else {
 			if (!bIsHoldingCrouchButton)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-				const float SoundStrength = 120.0f;
+				//UE_LOG(LogTemp, Warning, TEXT("dB 50"));
+				const float SoundStrength = 50.0f;
 				if (SoundStrength >= MinSoundThreshold) {
-					AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 600.0f, FName("RunStep"));
+					AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("RunStep"));
 				}
 			}		
 		}
@@ -1095,28 +1095,22 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			AnimInstance->bIsHoldingRifle = true; // 임시
 		}
 
-		//if (TmpActor->IsA(AWMAFireExtinguisher::StaticClass()))
-		//{
-		//	if (bIsHoldingFireExt)
-		//	{
-		//		bIsHoldingFireExt = false;
-		//		AnimInstance->bIsHoldingRifle = false; // 임시
-		//	}
-		//	else
-		//	{
-		//		bIsHoldingFireExt = true;
-		//		AnimInstance->bIsHoldingRifle = true; // 임시
-		//	}
-		//}
+		if (TmpActor->IsA(AWMASirenSpawner::StaticClass()))
+		{
+			AWMASirenSpawner* Siren = Cast<AWMASirenSpawner>(TmpActor);
+			Siren->OnInteract();
+			//UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
+			//AnimInstance->bIsHoldingRifle = true; // 임시
+		}
 	}
 
 	//Siren
-	class AABItemSiren* Siren;
+	/*class AABItemSiren* Siren;
 	Siren = Cast<AABItemSiren>(UGameplayStatics::GetActorOfClass(GetWorld(), AABItemSiren::StaticClass()));
 	if (Siren)
 	{
 		Siren->OnInteract();
-	}
+	}*/
 
 	//FireExtinguisher
 	//UWMAAnimInstance* AnimInstance = Cast<UWMAAnimInstance>(GetMesh()->GetAnimInstance());// 임시
@@ -1234,11 +1228,11 @@ float AWMACharacterPlayer::TakeDamage(float DamageAmount, FDamageEvent const& Da
 void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLocation, bool bClientHolding, bool bClientCrouch)
 {
 	//MulticastRPCMovingSound();
-	const float MinSoundThreshold = 50.0f; // 예시 임계값
-	UE_LOG(LogTemp, Warning, TEXT("soundClient In"));
+	const float MinSoundThreshold = 30.0f; // 예시 임계값
+	//UE_LOG(LogTemp, Warning, TEXT("soundClient In"));
 
 	if (!bClientHolding && !bClientCrouch) {
-		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+		//UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 		const float SoundStrength = 40.0f;
 		if (SoundStrength >= MinSoundThreshold) {
 			AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 20.0f, FName("WalkStep"));
@@ -1247,8 +1241,8 @@ void AWMACharacterPlayer::ServerRPCMovingSound_Implementation(FVector ClientLoca
 	else {
 		if (!bClientCrouch)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-			const float SoundStrength = 120.0f;
+			//UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+			const float SoundStrength = 50.0f;
 			if (SoundStrength >= MinSoundThreshold) {
 				AISenseHearing->ReportNoiseEvent(this, ClientLocation, SoundStrength, this, 30.0f, FName("RunStep"));
 			}
@@ -1261,15 +1255,15 @@ void AWMACharacterPlayer::MulticastRPCMovingSound_Implementation()
 	const float MinSoundThreshold = 50.0f; // 예시 임계값
 
 	if (!bIsHoldingSprintButton) {
-		UE_LOG(LogTemp, Warning, TEXT("dB 70"));
+		//UE_LOG(LogTemp, Warning, TEXT("dB 70"));
 		const float SoundStrength = 40.0f;
 		if (SoundStrength >= MinSoundThreshold) {
 			AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 20.0f, FName("WalkStep"));
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("dB 120"));
-		const float SoundStrength = 120.0f;
+		//UE_LOG(LogTemp, Warning, TEXT("dB 120"));
+		const float SoundStrength = 50.0f;
 		if (SoundStrength >= MinSoundThreshold) {
 			AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 30.0f, FName("RunStep"));
 		}
