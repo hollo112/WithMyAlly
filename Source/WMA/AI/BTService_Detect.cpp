@@ -60,7 +60,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
         Center,
         FQuat::Identity,
         CCHANNEL_WMAACTION,
-        FCollisionShape::MakeSphere(DetectRadius),
+        FCollisionShape::MakeSphere(5000.f),
         CollisionQueryParam
     );
     APawn* InstigatorPawn = nullptr;
@@ -81,20 +81,28 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
                 if (AngleDegrees <= PeripheralVisionAngle / 2)
                 {
-                    // Å¸°Ù ¹ß°ß
-                    OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);
-                    bFoundPlayer = true;
-                   AIPawn->SetMovementSpeed();
-                    break;
+                    if (FVector::Dist(Center, Pawn->GetActorLocation()) <= DetectRadius)
+                    {
+                       
+                        OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);
+                        AIPawn->SetMovementSpeed();
+                        bFoundPlayer = true;
+                        break;
+                    }
+                   // // Å¸°Ù ¹ß°ß
+                   // OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);
+                   // bFoundPlayer = true;
+                   //AIPawn->SetMovementSpeed();
+                   // break;
 
                 }
-                else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
+                /*else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
                 {
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
                     AIPawn->SetMovementSpeed();
                     bFoundPlayer = true;
                     break;
-                }
+                }*/
             }
             else if (OverlapResult.GetActor()->IsA(AABItemSiren::StaticClass()))
             {
@@ -107,13 +115,14 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                 if (AngleDegrees <= PeripheralVisionAngle / 2)
                 {
                     // Å¸°Ù ¹ß°ß
+                    UE_LOG(LogTemp, Log, TEXT("Log FInd"));
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, OverlapResult.GetActor());
                     bFoundPlayer = true;
                     AIPawn->SetMovementSpeed();
                     break;
 
                 }
-                else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
+                else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= 3000.f)
                 {
                     OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
                     AIPawn->SetMovementSpeed();
@@ -121,32 +130,6 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     break;
                 }
             }
-            //else if (OverlapResult.GetActor()->IsA(AWMAThrowingObject::StaticClass()))
-            //{
-            //    UE_LOG(LogTemp, Log, TEXT("Log Find"));
-            //    FVector Direction = OverlapResult.GetActor()->GetActorLocation() - Center;
-            //    Direction.Normalize();
-            //    float DotProduct = FVector::DotProduct(ControllingPawn->GetActorForwardVector(), Direction);
-            //    float Angle = FMath::Acos(DotProduct);
-            //    float AngleDegrees = FMath::RadiansToDegrees(Angle);
-
-            //    if (AngleDegrees <= PeripheralVisionAngle / 2)
-            //    {
-            //        // Å¸°Ù ¹ß°ß
-            //        UE_LOG(LogTemp, Log, TEXT("Log Find"));
-            //        OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, OverlapResult.GetActor());
-            //        bFoundPlayer = true;
-            //        AIPawn->SetMovementSpeed();
-            //        break;
-
-            //    }
-            //    else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= DetectRadius)
-            //    {
-            //        OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
-            //        AIPawn->SetMovementSpeed();
-            //        bFoundPlayer = true;
-            //    }
-            //}
         }
     }
 
