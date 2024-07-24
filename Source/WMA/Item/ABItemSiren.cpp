@@ -75,6 +75,7 @@ void AABItemSiren::MakeSound()
     const float SoundStrength = 500.0f;
 
     if (SoundStrength >= MinSoundThreshold) {
+
         AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.0f, FName("Siren"));
     }
 }

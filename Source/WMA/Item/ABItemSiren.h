@@ -7,6 +7,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "ABItemSiren.generated.h"
 
+
 UCLASS()
 class WMA_API AABItemSiren : public AActor
 {
@@ -75,4 +76,5 @@ protected:
     void ServerRPCOverlapEnd(AActor* OtherActor);
     UFUNCTION(NetMulticast, Reliable)
     void MulticastRPCOverlapEnd(AActor* OtherActor);
+
 };
