@@ -16,6 +16,7 @@ AWMAThrowingObject::AWMAThrowingObject()
     CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
     CollisionSphere->SetCollisionProfileName(CPROFILE_WMATRIGGER);
     CollisionSphere->InitSphereRadius(20.f);
+    CollisionSphere->SetCollisionProfileName(TEXT("WMACapsule"));
     //CollisionSphere->SetupAttachment(DefaultScene);
     RootComponent = CollisionSphere;
     Mesh->SetupAttachment(CollisionSphere);
