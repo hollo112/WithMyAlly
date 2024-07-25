@@ -20,8 +20,8 @@ void UAnimNotify_ThrowCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 	rotator.Pitch = rotator.Pitch - 140;
 	rotator.Roll = rotator.Roll;
 	FVector spawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowSocket"));
-	world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
-	//world->SpawnActor<AWMAThrowingObject>(spawnLocation, rotator);
+	//world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
+	world->SpawnActor<AWMAThrowingObject>(spawnLocation, rotator);
 
 	/*AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(MeshComp->GetOwner());
 	player->HideThrowItem();*/

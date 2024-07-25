@@ -9,6 +9,7 @@
 #include "UI/WMAItemInteractionWidget.h"
 #include "Character/WMACharacterPlayer.h"
 #include "Net/UnrealNetwork.h"
+#include "Item/ABItemSiren.h"
 
 // Sets default values
 AWMASirenSpawner::AWMASirenSpawner()
@@ -91,11 +92,11 @@ void AWMASirenSpawner::OnInteract()
             //ServerRPCSpawn();
             UWorld* world = GetWorld();
 
-            FName path = TEXT("/Script/Engine.Blueprint'/Game/Blueprint/BP_ItemSiren.BP_ItemSiren'");
-            UBlueprint* ObjectToSpawn = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), NULL, *path.ToString()));
-            FActorSpawnParameters spawnParams;
-            world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, GetActorLocation(), GetActorRotation(), spawnParams);
-            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
+            //FName path = TEXT("/Script/Engine.Blueprint'/Game/Blueprint/BP_ItemSiren.BP_ItemSiren'");
+            //UBlueprint* ObjectToSpawn = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), NULL, *path.ToString()));
+            //FActorSpawnParameters spawnParams;
+            //world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, GetActorLocation(), GetActorRotation(), spawnParams);
+            world->SpawnActor<AABItemSiren>(GetActorLocation(), GetActorRotation());
             ItemWidget->SetVisibility(ESlateVisibility::Hidden);
         }
     }
