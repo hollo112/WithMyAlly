@@ -1124,6 +1124,7 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			if (HasAuthority())
 			{
 				bIsHoldingFireExt = true;
+				ChangeWeapon_None();
 			}
 			else
 			{
@@ -1140,6 +1141,7 @@ void AWMACharacterPlayer::MulticastRPCPickUp_Implementation()
 			else
 			{
 				bIsHoldingFireExt = true;
+				//ChangeWeapon_None();
 			}
 			//AnimInstance->bIsHoldingRifle = true; // юс╫ц
 		}
@@ -1187,6 +1189,17 @@ void AWMACharacterPlayer::MulticastRPCThrowStart_Implementation()
 		AnimInstance->Montage_Play(PreThrowMontage);
 
 		WeaponNow = EItemType::NoWeapon;
+		
+		FTimerHandle TimerHandle;
+		float DeadTime = 0.68f;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([&]()
+		{
+			AWMAGameModeBase* GameMode = Cast<AWMAGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (GameMode)
+			{
+				HideThrowItem();
+			}
+		}), DeadTime, false);
 	}
 }
 

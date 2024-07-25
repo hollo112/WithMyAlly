@@ -25,7 +25,7 @@ protected:
     TObjectPtr<class UBoxComponent> CollisionBox;
 
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
-    class UStaticMeshComponent* Siren;
+    class UStaticMeshComponent* SirenMesh;
 
     UPROPERTY(EditAnywhere, Replicated, Category = Item)
     TObjectPtr<class UABItemData>Item;

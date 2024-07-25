@@ -21,11 +21,11 @@ AABItemSiren::AABItemSiren()
   
     CollisionBox->SetCollisionProfileName(CPROFILE_WMATRIGGER);
     CollisionBox->SetBoxExtent(FVector(110.0f, 100.0f, 110.0f));
-    Siren = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Siren"));
-    Siren->SetCollisionProfileName("NoCollision");
+    SirenMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Siren"));
+    SirenMesh->SetCollisionProfileName("NoCollision");
     //RootComponent = Siren;
-    Siren->SetupAttachment(RootComponent);
-    CollisionBox->SetupAttachment(Siren);
+    SirenMesh->SetupAttachment(RootComponent);
+    CollisionBox->SetupAttachment(SirenMesh);
     //Widget
     static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
     if (InputE.Succeeded())
@@ -110,7 +110,7 @@ void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    DOREPLIFETIME(AABItemSiren, Siren);
+    DOREPLIFETIME(AABItemSiren, SirenMesh);
     DOREPLIFETIME(AABItemSiren, CollisionBox);
     DOREPLIFETIME(AABItemSiren, Item);
     DOREPLIFETIME(AABItemSiren, bIsVisible);
@@ -129,11 +129,11 @@ void AABItemSiren::ATDTSiren()
             if (player)
             {
                 //AttachToComponent(player->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
-                Siren->SetSimulatePhysics(false);
+                SirenMesh->SetSimulatePhysics(false);
 
                 UE_LOG(LogTemp, Log, TEXT("Log attach"));
                 bIsHolding = true;
-                Siren->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
+                SirenMesh->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
                 SetActorEnableCollision(false);
             }
         }
@@ -150,9 +150,9 @@ void AABItemSiren::ATDTSiren()
             if (player)
             {
                 UE_LOG(LogTemp, Log, TEXT("Log detatch"));
-                Siren->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+                SirenMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
                 //DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-                Siren->SetSimulatePhysics(true);
+                SirenMesh->SetSimulatePhysics(true);
                 PlayerActor = NULL;
                 SetActorEnableCollision(true);
             }
@@ -223,11 +223,11 @@ void AABItemSiren::MulticastRPCInteract_Implementation()
             if (player)
             {
                 //AttachToComponent(player->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("RightHandSocket"));
-                Siren->SetSimulatePhysics(false);
+                SirenMesh->SetSimulatePhysics(false);
 
                 UE_LOG(LogTemp, Log, TEXT("Log server attach"));
                 bIsHolding = true;
-                Siren->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
+                SirenMesh->AttachToComponent(player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RightHandSocket"));
             }
         }
         SetActorEnableCollision(false);
@@ -242,9 +242,9 @@ void AABItemSiren::MulticastRPCInteract_Implementation()
             if (player)
             {
                 UE_LOG(LogTemp, Log, TEXT("Log detatch"));
-                Siren->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+                SirenMesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
                 //DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-                Siren->SetSimulatePhysics(true);
+                SirenMesh->SetSimulatePhysics(true);
                 PlayerActor = NULL;
             }
         }
