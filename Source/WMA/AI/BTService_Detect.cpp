@@ -130,6 +130,32 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
                     break;
                 }
             }
+            else if (OverlapResult.GetActor()->IsA(AWMAThrowingObject::StaticClass()))
+            {
+                FVector Direction = OverlapResult.GetActor()->GetActorLocation() - Center;
+                Direction.Normalize();
+                float DotProduct = FVector::DotProduct(ControllingPawn->GetActorForwardVector(), Direction);
+                float Angle = FMath::Acos(DotProduct);
+                float AngleDegrees = FMath::RadiansToDegrees(Angle);
+
+                if (AngleDegrees <= PeripheralVisionAngle / 2)
+                {
+                    // Å¸°Ù ¹ß°ß
+                    UE_LOG(LogTemp, Log, TEXT("Log FInd"));
+                    OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, OverlapResult.GetActor());
+                    bFoundPlayer = true;
+                    AIPawn->SetMovementSpeed();
+                    break;
+
+                }
+                else if (InstigatorPawn && FVector::Dist(Center, InstigatorPawn->GetActorLocation()) <= 1500.f)
+                {
+                    OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, InstigatorPawn);
+                    AIPawn->SetMovementSpeed();
+                    bFoundPlayer = true;
+                    break;
+                }
+            }
         }
     }
 
