@@ -24,10 +24,16 @@ AABItemSiren::AABItemSiren()
     CollisionBox->SetCollisionProfileName(CPROFILE_WMATRIGGER);
     CollisionBox->SetBoxExtent(FVector(110.0f, 100.0f, 110.0f));
     SirenMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Siren"));
-    SirenMesh->SetCollisionProfileName("NoCollision");
+    SirenMesh->SetCollisionProfileName(TEXT("WMACapsule"));
     //RootComponent = Siren;
     SirenMesh->SetupAttachment(RootComponent);
     CollisionBox->SetupAttachment(SirenMesh);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef1(TEXT("/Script/Engine.StaticMesh'/Game/Item/bullet/bullet_Object001.bullet_Object001'"));
+    if (MeshRef1.Succeeded())
+    {
+        SirenMesh->SetStaticMesh(MeshRef1.Object);
+    }
+
     //Widget
     static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
     if (InputE.Succeeded())

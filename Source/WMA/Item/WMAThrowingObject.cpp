@@ -30,6 +30,7 @@ AWMAThrowingObject::AWMAThrowingObject()
     Mesh->SetCollisionProfileName(TEXT("BlockAllDynamic"));
     Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
     Mesh->SetIsReplicated(true);
+    CollisionSphere->SetCollisionProfileName(TEXT("WMACapsule"));
 
     ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
     ProjectileMovementComponent->SetUpdatedComponent(CollisionSphere);

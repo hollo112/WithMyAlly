@@ -25,7 +25,7 @@
 #include "GameData/WMAGameInstance.h"
 #include "Interface/WMAGameInterface.h"
 #include "Item/ABItemBat.h"	
-#include "Item/ABDoor.h"	
+#include "Item/ABDoor.h"
 #include "Item/ABItemFruitSwd.h"
 #include "Item/EV_ButtonActor.h"	
 #include "Item/WMACardRead.h"

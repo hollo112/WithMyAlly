@@ -2,6 +2,8 @@
 
 
 #include "Animation/AnimNotify_FiringRifleCheck.h"
+#include "Item/ABItemBullet.h"
+#include "Character/WMACharacterPlayer.h"
 
 void UAnimNotify_FiringRifleCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
@@ -18,9 +20,9 @@ void UAnimNotify_FiringRifleCheck::Notify(USkeletalMeshComponent* MeshComp, UAni
 	rotator.Pitch = rotator.Pitch;
 	rotator.Roll = rotator.Roll;
 	FVector spawnLocation = MeshComp->GetSocketLocation(TEXT("BulletSocket"));
-	world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
+	//world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, spawnLocation, rotator, spawnParams);
 	//world->SpawnActor<AWMAThrowingObject>(spawnLocation, rotator);
-
+	world->SpawnActor<AABItemBullet>(spawnLocation, rotator);
 	//AWMACharacterPlayer* player = Cast<AWMACharacterPlayer>(MeshComp->GetOwner());
 	//player->HideThrowItem();
 }
