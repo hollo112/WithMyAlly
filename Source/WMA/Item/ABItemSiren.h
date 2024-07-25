@@ -77,4 +77,12 @@ protected:
     UFUNCTION(NetMulticast, Reliable)
     void MulticastRPCOverlapEnd(AActor* OtherActor);
 
+
+    UPROPERTY(EditAnywhere, Category = "Sound");
+    class USoundBase* Clarksion;
+
+    UPROPERTY(EditAnywhere, Category = "Sound")
+    class USoundAttenuation* ClarksionAtt;
+
+    int cnt;
 };

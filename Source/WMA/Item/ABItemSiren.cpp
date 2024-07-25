@@ -13,6 +13,8 @@
 #include "Interface/ABCharacterItemInterface.h"
 #include "Character/WMACharacterPlayer.h"
 #include "Net/UnrealNetwork.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AABItemSiren::AABItemSiren()
@@ -37,6 +39,8 @@ AABItemSiren::AABItemSiren()
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AABItemSiren::OnOverlapBegin);
     CollisionBox->OnComponentEndOverlap.AddDynamic(this, &AABItemSiren::OnOverlapEnd);
 
+
+    cnt = 0;
 }
 
 // Called when the game starts or when spawned
@@ -78,6 +82,12 @@ void AABItemSiren::MakeSound()
 
     if (SoundStrength >= MinSoundThreshold) {
         AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.f, FName("Siren"));
+
+
+        if (cnt < 10) {
+            UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+            cnt++;
+        }
     }
 }
 

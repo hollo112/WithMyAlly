@@ -105,12 +105,12 @@ float AWMACharacterBoss::GetAIPatrolRadius()
 
 float AWMACharacterBoss::GetAIDetectRange()
 {
-	return 2000.0f;
+	return 1200.0f;
 }
 
 float AWMACharacterBoss::GetAIAttackRange()
 {
-	return 1200.0f;
+	return 600.0f;
 }
 
 float AWMACharacterBoss::GetAITurnSpeed()
@@ -120,12 +120,12 @@ float AWMACharacterBoss::GetAITurnSpeed()
 
 float AWMACharacterBoss::SetMovementSpeed()
 {
-	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed * 7;
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed * 13;
 }
 
 float AWMACharacterBoss::ResetMovementSpeed()
 {
-	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed*3;
 }
 
 void AWMACharacterBoss::SetGrowlSound()
