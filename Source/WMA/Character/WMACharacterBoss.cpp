@@ -65,7 +65,7 @@ AWMACharacterBoss::AWMACharacterBoss()
 		JumpAttackMontage = JumpAttackMontageRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_Zombie_Reaction_Hit_Montage.AM_Zombie_Reaction_Hit_Montage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/BossZombie/Animation/AM_Boss_Reaction_Hit2_Montage.AM_Boss_Reaction_Hit2_Montage'"));
 	if (AttackedMontageRef.Object) {
 		AttackedMontage = AttackedMontageRef.Object;
 	}
@@ -321,7 +321,7 @@ void AWMACharacterBoss::ServerRPCGunDamaged_Implementation()
 
 void AWMACharacterBoss::MulticastRPCGunDamaged_Implementation()
 {
-
+	PlayAttackedAnimation();
 }
 
 void AWMACharacterBoss::PostInitializeComponents()
