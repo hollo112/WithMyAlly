@@ -19,24 +19,22 @@
 // Sets default values
 AABItemSiren::AABItemSiren()
 {
+    SetReplicates(true);
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(FName("CollisionBox"));
   
     CollisionBox->SetCollisionProfileName(CPROFILE_WMATRIGGER);
     CollisionBox->SetBoxExtent(FVector(110.0f, 100.0f, 110.0f));
     SirenMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Siren"));
     SirenMesh->SetCollisionProfileName(TEXT("WMACapsule"));
-    //RootComponent = Siren;
-    SirenMesh->SetupAttachment(RootComponent);
+    RootComponent = SirenMesh;
+    //SirenMesh->SetupAttachment(RootComponent); 
     CollisionBox->SetupAttachment(SirenMesh);
+   
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef1(TEXT("/Script/Engine.StaticMesh'/Game/Item/bullet/bullet_Object001.bullet_Object001'"));
+    //static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef1(TEXT("/Script/Engine.StaticMesh'/Game/Item/Bed/bedfbx_Box004.bedfbx_Box004'"));
     if (MeshRef1.Succeeded())
     {
         SirenMesh->SetStaticMesh(MeshRef1.Object);
-    }
-
-    ConstructorHelpers::FObjectFinder<USoundBase> tempSound(TEXT("/Game/Sound/993FF73C5D0D195402_1.993FF73C5D0D195402_1"));
-    if (tempSound.Succeeded()) {
-        Clarksion = tempSound.Object;
     }
 
     //Widget
@@ -47,9 +45,13 @@ AABItemSiren::AABItemSiren()
         InteractionButtonWidgetClass = InputE.Class;
     }
 
+    ConstructorHelpers::FObjectFinder<USoundBase> tempSound(TEXT("/Game/Sound/993FF73C5D0D195402_1.993FF73C5D0D195402_1"));
+    if (tempSound.Succeeded()) {
+        Clarksion = tempSound.Object;
+    }
+
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AABItemSiren::OnOverlapBegin);
     CollisionBox->OnComponentEndOverlap.AddDynamic(this, &AABItemSiren::OnOverlapEnd);
-
 
     cnt = 0;
 }
@@ -93,12 +95,15 @@ void AABItemSiren::MakeSound()
 
     if (SoundStrength >= MinSoundThreshold) {
         AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.f, FName("Siren"));
+        ServerRPCClarksion();
+    }
+}
 
-
-        if (cnt < 15) {
-            MulticastPlaySoundAtLocation();
-            cnt++;
-        }
+void AABItemSiren::ClarksionOn()
+{
+    if (cnt < 10) {
+        UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+        cnt++;
     }
 }
 
@@ -124,6 +129,7 @@ void AABItemSiren::OnInteract()
         }
         //ATDTSiren();
     }
+  
    // bIsHoldOnce = true;
 }
 
@@ -135,7 +141,6 @@ void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(AABItemSiren, CollisionBox);
     DOREPLIFETIME(AABItemSiren, Item);
     DOREPLIFETIME(AABItemSiren, bIsVisible);
-    DOREPLIFETIME(AABItemSiren, Clarksion);
 }
 
 void AABItemSiren::ATDTSiren()
@@ -183,10 +188,17 @@ void AABItemSiren::ATDTSiren()
     }
 }
 
-void AABItemSiren::MulticastPlaySoundAtLocation_Implementation()
+void AABItemSiren::ServerRPCClarksion_Implementation()
 {
-    UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+    MulticastRPCClarksion();
+}
 
+void AABItemSiren::MulticastRPCClarksion_Implementation()
+{
+    if (cnt < 10) {
+        UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+        cnt++;
+    }
 }
 
 void AABItemSiren::ServerRPCOverlapEnd_Implementation(AActor* OtherActor)

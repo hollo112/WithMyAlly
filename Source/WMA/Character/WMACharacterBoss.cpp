@@ -15,7 +15,7 @@
 #include "Engine/AssetManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/DamageEvents.h"
-
+#include "GameFramework/ProjectileMovementComponent.h"
 
 void AWMACharacterBoss::BeginPlay()
 {
@@ -32,35 +32,42 @@ AWMACharacterBoss::AWMACharacterBoss()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	//mesh & animations
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Game/MyCharacters/Zombie/Zombie_Idle.Zombie_Idle"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/MyCharacters/BossZombie/BossZombie.BossZombie'"));
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/Zombie/Animation/ABP_Zombie.ABP_Zombie_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/MyCharacters/BossZombie/Animation/ABP_Boss.ABP_Boss_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_ZomDead.AM_ZomDead'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/BossZombie/Animation/AM_BossDead.AM_BossDead'"));
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_ZomAttack.AM_ZomAttack'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/BossZombie/Animation/AM_BossAttack.AM_BossAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> JumpAttackMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/BossZombie/Animation/AM_JumpAttack.AM_JumpAttack'"));
+	if (JumpAttackMontageRef.Object)
+	{
+		JumpAttackMontage = JumpAttackMontageRef.Object;
+	}
+
+	GetCharacterMovement()->BrakingDecelerationFalling = 0.0f;
 }
 
 float AWMACharacterBoss::GetPeripheralVisionAngleDegrees() const
 {
-	return 360.0f;
+	return 180.0f;
 }
 
 void AWMACharacterBoss::SetDead()
@@ -105,12 +112,12 @@ float AWMACharacterBoss::GetAIPatrolRadius()
 
 float AWMACharacterBoss::GetAIDetectRange()
 {
-	return 1200.0f;
+	return 2000.0f;
 }
 
 float AWMACharacterBoss::GetAIAttackRange()
 {
-	return 600.0f;
+	return Stat->GetCharacterStat().ShortWPRange;
 }
 
 float AWMACharacterBoss::GetAITurnSpeed()
@@ -120,12 +127,12 @@ float AWMACharacterBoss::GetAITurnSpeed()
 
 float AWMACharacterBoss::SetMovementSpeed()
 {
-	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed * 13;
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed * 7;
 }
 
 float AWMACharacterBoss::ResetMovementSpeed()
 {
-	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed*3;
+	return GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
 void AWMACharacterBoss::SetGrowlSound()
@@ -148,7 +155,38 @@ void AWMACharacterBoss::AttackByAI()
 	if (!bIsAttacking)
 	{
 
-		ServerRPCAttack();
+		ServerRPCAttack(false);
+	}
+}
+
+void AWMACharacterBoss::BossJumpCheck()
+{
+	FVector OutVelocity = FVector::ZeroVector;
+	FVector EndPos = FVector(PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z + 100.0f);
+	UGameplayStatics::SuggestProjectileVelocity_CustomArc(this, OutVelocity, GetActorLocation(), EndPos);
+	UE_LOG(LogTemp, Log, TEXT("Character Location :: %s"), *GetActorLocation().ToString());
+	UE_LOG(LogTemp, Log, TEXT("Player Location :: %s"), *EndPos.ToString());
+	UE_LOG(LogTemp, Log, TEXT("OutVelocity Location :: %s"), *OutVelocity.ToString());
+	LaunchCharacter(OutVelocity, false, true);
+	UE_LOG(LogTemp, Log, TEXT("Boss Jump3"));
+
+	FTimerHandle AttackTimerHandle;
+	float AttackTime = 2.0f;
+
+	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		}
+	), AttackTime, false);
+	
+}
+
+void AWMACharacterBoss::JumpAttack()
+{
+	if (!bIsAttacking)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Boss Jump1"));
+		ServerRPCAttack(true);
 	}
 }
 
@@ -165,25 +203,40 @@ void AWMACharacterBoss::PlayAttackAnimation()
 	AnimInstance->Montage_Play(ComboActionMontage);
 }
 
+void AWMACharacterBoss::PlayJumpAttackAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(JumpAttackMontage);
+}
+
 void AWMACharacterBoss::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWMACharacterBoss, bIsAttacking);
+	DOREPLIFETIME(AWMACharacterBoss, bIsJumpAttacking);
 }
 
-bool AWMACharacterBoss::ServerRPCAttack_Validate()
+bool AWMACharacterBoss::ServerRPCAttack_Validate(bool isJumpAttack)
 {
 	return true;
 }
 
-void AWMACharacterBoss::ServerRPCAttack_Implementation()
+void AWMACharacterBoss::ServerRPCAttack_Implementation(bool isJumpAttack)
 {
 	//ProcessComboCommand();
 
 	bIsAttacking = true;
+	if (!isJumpAttack)
+	{		
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+	else
+	{
+		bIsJumpAttacking = true;
+	}
 	OnRep_CanCloseAttack();
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	FTimerHandle AttackTimerHandle;
 	float AttackTime = 4.6;
@@ -191,22 +244,37 @@ void AWMACharacterBoss::ServerRPCAttack_Implementation()
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, FTimerDelegate::CreateLambda([&]
 		{
 			bIsAttacking = false;
+			bIsJumpAttacking = false;
 			OnRep_CanCloseAttack();
 		}
 	), AttackTime, false);
 
-	PlayAttackAnimation();
-	MulticastRPCAttack();
+	if (isJumpAttack)
+	{
+		PlayJumpAttackAnimation();
+	}
+	else
+	{
+		PlayAttackAnimation();
+	}
+	MulticastRPCAttack(isJumpAttack);
 }
 
-void AWMACharacterBoss::MulticastRPCAttack_Implementation()
+void AWMACharacterBoss::MulticastRPCAttack_Implementation(bool isJumpAttack)
 {
-	PlayAttackAnimation();
+	if (isJumpAttack)
+	{
+		PlayJumpAttackAnimation();
+	}
+	else
+	{
+		PlayAttackAnimation();
+	}
 }
 
 void AWMACharacterBoss::OnRep_CanCloseAttack()
 {
-	if (bIsAttacking)
+	if (bIsAttacking && !bIsJumpAttacking)
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
@@ -254,4 +322,9 @@ void AWMACharacterBoss::MulticastRPCSetMesh_Implementation()
 
 void AWMACharacterBoss::GunAttackHitCheck()
 {
+}
+
+void AWMACharacterBoss::SetPlayerLoc(FVector Loc)
+{
+	PlayerLoc = Loc;
 }

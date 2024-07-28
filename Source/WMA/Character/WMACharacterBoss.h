@@ -7,13 +7,14 @@
 #include "Sound/SoundAttenuation.h"
 #include "Character/WMACharacterBase.h"
 #include "Interface/WMACharacterAIInterface.h"
+#include "Interface/WMAAnimationJumpCheckInterface.h"
 #include "WMACharacterBoss.generated.h"
 
 /**
  * 
  */
 UCLASS(config = WMA)
-class WMA_API AWMACharacterBoss : public AWMACharacterBase , public IWMACharacterAIInterface
+class WMA_API AWMACharacterBoss : public AWMACharacterBase , public IWMACharacterAIInterface, public IWMAAnimationJumpCheckInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +50,9 @@ protected:
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;
+	virtual void BossJumpCheck() override;
+
+	TObjectPtr<class UAnimMontage> JumpAttackMontage;
 
 	FAICharacterAttackFinished OnAttackFinished;
 
@@ -56,17 +60,21 @@ protected:
 
 	// Actor Replication
 	void PlayAttackAnimation();
+	void PlayJumpAttackAnimation();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCAttack();
+	void ServerRPCAttack(bool isJumpAttack);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCAttack();
+	void MulticastRPCAttack(bool isJumpAttack);
 
 	UPROPERTY(ReplicatedUsing = OnRep_CanCloseAttack)
 	uint8 bIsAttacking : 1;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CanCloseAttack)
+	uint8 bIsJumpAttacking : 1;
 
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
@@ -90,5 +98,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void GunAttackHitCheck();
 
-
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly)
+	FVector PlayerLoc;
+	void SetPlayerLoc(FVector Loc);
+	void JumpAttack();
 };
