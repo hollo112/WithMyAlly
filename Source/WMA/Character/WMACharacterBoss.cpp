@@ -321,7 +321,7 @@ void AWMACharacterBoss::ServerRPCGunDamaged_Implementation()
 
 void AWMACharacterBoss::MulticastRPCGunDamaged_Implementation()
 {
-
+	PlayAttackedAnimation();
 }
 
 void AWMACharacterBoss::PostInitializeComponents()
