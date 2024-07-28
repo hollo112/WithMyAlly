@@ -8,6 +8,7 @@
 #include "Interface/ABCharacterItemInterface.h"
 #include "Interface/ABCharacterItemInterface.h"
 #include "Character/WMACharacterNonePlayer.h"
+#include "Character/WMACharacterBoss.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -83,6 +84,13 @@ void AABItemBullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAc
         if (HasAuthority() && NPC)
         {
             NPC->GunAttackHitCheck();
+            Destroy();
+        }
+
+        AWMACharacterBoss* Boss = Cast<AWMACharacterBoss>(OtherActor);
+        if (HasAuthority() && Boss)
+        {
+            Boss->GunAttackHitCheck();
             Destroy();
         }
     }

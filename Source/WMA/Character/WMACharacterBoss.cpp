@@ -16,13 +16,16 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "AIController.h"
+#include <AI/WMAAI.h>
 
 void AWMACharacterBoss::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetName(2);	// CharacterStatTable의 2번째 행, NPC의 스탯으로 바꾼다
-	Stat->SetCurrentHp(Stat->GetCharacterStat().MaxHp);
+	Stat->SetCurrentHp(100.0f);
 	GetCharacterMovement()->MaxWalkSpeed = Stat->GetCharacterStat().MovementSpeed;
 }
 
@@ -62,6 +65,11 @@ AWMACharacterBoss::AWMACharacterBoss()
 		JumpAttackMontage = JumpAttackMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackedMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/MyCharacters/Zombie/Animation/AM_Zombie_Reaction_Hit_Montage.AM_Zombie_Reaction_Hit_Montage'"));
+	if (AttackedMontageRef.Object) {
+		AttackedMontage = AttackedMontageRef.Object;
+	}
+
 	GetCharacterMovement()->BrakingDecelerationFalling = 0.0f;
 }
 
@@ -96,7 +104,7 @@ void AWMACharacterBoss::ServerRPCSetDead_Implementation()
 		{
 			Destroy();
 		}
-	), DeadEventDelayTime, false);
+	), 4.5f, false);
 }
 
 void AWMACharacterBoss::MulticastServerRPCSetDead_Implementation()
@@ -117,7 +125,7 @@ float AWMACharacterBoss::GetAIDetectRange()
 
 float AWMACharacterBoss::GetAIAttackRange()
 {
-	return Stat->GetCharacterStat().ShortWPRange;
+	return 200.0f;
 }
 
 float AWMACharacterBoss::GetAITurnSpeed()
@@ -284,6 +292,24 @@ void AWMACharacterBoss::OnRep_CanCloseAttack()
 	}
 }
 
+bool AWMACharacterBoss::ServerRPCGunDamaged_Validate()
+{
+	return true;
+}
+
+void AWMACharacterBoss::ServerRPCGunDamaged_Implementation()
+{
+	FDamageEvent DamageEvent;
+	TakeDamage(1.f, DamageEvent, GetController(), this);
+
+	MulticastRPCGunDamaged();
+}
+
+void AWMACharacterBoss::MulticastRPCGunDamaged_Implementation()
+{
+
+}
+
 void AWMACharacterBoss::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -320,8 +346,20 @@ void AWMACharacterBoss::MulticastRPCSetMesh_Implementation()
 	NPCMeshHandle->ReleaseHandle();
 }
 
+void AWMACharacterBoss::PlayAttackedAnimation()
+{
+	if (Stat->GetCurrentHp() > 0)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->StopAllMontages(0.0f);
+
+		AnimInstance->Montage_Play(AttackedMontage, 1.0f);
+	}
+}
+
 void AWMACharacterBoss::GunAttackHitCheck()
 {
+	ServerRPCGunDamaged();
 }
 
 void AWMACharacterBoss::SetPlayerLoc(FVector Loc)
