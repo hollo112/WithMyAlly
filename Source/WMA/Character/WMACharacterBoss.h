@@ -101,6 +101,13 @@ protected:
 	void MulticastRPCSetMesh();
 
 	virtual void PlayAttackedAnimation();
+
+	UPROPERTY(ReplicatedUsing = OnRep_GunShoot)
+	uint8 bIsDamaging : 1;
+
+	UFUNCTION()
+	void OnRep_GunShoot();
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void GunAttackHitCheck();
