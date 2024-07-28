@@ -84,22 +84,27 @@ void AWMASirenSpawner::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
 
 void AWMASirenSpawner::OnInteract()
 {
-   
-    if (HasAuthority())
+    if (!bIsHoldOnce)
     {
-        if (!bIsHoldOnce)
-        {
-            //ServerRPCSpawn();
-            UWorld* world = GetWorld();
+        ServerRPCSpawn();
 
-            //FName path = TEXT("/Script/Engine.Blueprint'/Game/Blueprint/BP_ItemSiren.BP_ItemSiren'");
-            //UBlueprint* ObjectToSpawn = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), NULL, *path.ToString()));
-            //FActorSpawnParameters spawnParams;
-            //world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, GetActorLocation(), GetActorRotation(), spawnParams);
-            world->SpawnActor<AABItemSiren>(GetActorLocation(), GetActorRotation());
-            ItemWidget->SetVisibility(ESlateVisibility::Hidden);
-        }
+
+        //UWorld* world = GetWorld();
+        //world->SpawnActor<AABItemSiren>(GetActorLocation(), GetActorRotation());
+        //ItemWidget->SetVisibility(ESlateVisibility::Hidden);
     }
+    //if (HasAuthority())
+    //{
+    //    if (!bIsHoldOnce)
+    //    {
+    //        ServerRPCSpawn();
+    //       
+
+    //        //UWorld* world = GetWorld();
+    //        //world->SpawnActor<AABItemSiren>(GetActorLocation(), GetActorRotation());
+    //        //ItemWidget->SetVisibility(ESlateVisibility::Hidden);
+    //    }
+    //}
     bIsHoldOnce = true;
 }
 
@@ -119,11 +124,7 @@ void AWMASirenSpawner::ServerRPCSpawn_Implementation()
 void AWMASirenSpawner::MulticastRPCSpawn_Implementation()
 {
     UWorld* world = GetWorld();
-
-    FName path = TEXT("/Script/Engine.Blueprint'/Game/Blueprint/BP_ItemSiren.BP_ItemSiren'");
-    UBlueprint* ObjectToSpawn = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), NULL, *path.ToString()));
-    FActorSpawnParameters spawnParams;
-    world->SpawnActor<AActor>(ObjectToSpawn->GeneratedClass, GetActorLocation(), GetActorRotation(), spawnParams);
+    world->SpawnActor<AABItemSiren>(GetActorLocation(), GetActorRotation());
     ItemWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
