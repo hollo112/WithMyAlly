@@ -6,7 +6,13 @@
 /NAME:"UnrealEditor-AdvancedSteamSessions.dll"
 /IGNORE:4221
 /NODEFAULTLIB
-"C:\Users\morde\Documents\Unreal Projects\PluginExpProject\Intermediate\Build\Win64\x64\VRExpPluginExampleEditor\Development\Engine\SharedPCH.Engine.Cpp17.h.obj"
-"C:\Users\morde\Documents\Unreal Projects\PluginExpProject\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\Module.AdvancedSteamSessions.cpp.obj"
-"C:\Users\morde\Documents\Unreal Projects\PluginExpProject\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\Default.rc2.res"
-/OUT:"C:\Users\morde\Documents\Unreal Projects\PluginExpProject\Plugins\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\UnrealEditor-AdvancedSteamSessions.lib"
+"G:\WithMyAlly_Mid\Intermediate\Build\Win64\x64\WMAEditor\Development\Engine\SharedPCH.Engine.Cpp20.h.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\Module.AdvancedSteamSessions.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\AdvancedSteamFriendsLibrary.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\AdvancedSteamSessions.init.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\AdvancedSteamWorkshopLibrary.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\SteamNotificationsSubsystem.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\SteamRequestGroupOfficersCallbackProxy.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\SteamWSRequestUGCDetailsCallbackProxy.gen.cpp.obj"
+"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\Default.rc2.res"
+/OUT:"G:\WithMyAlly_Mid\Plugins\AdvancedSessionsPlugin\AdvancedSessions\AdvancedSteamSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\AdvancedSteamSessions\UnrealEditor-AdvancedSteamSessions.lib"
