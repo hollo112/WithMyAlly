@@ -79,6 +79,12 @@ protected:
 	UFUNCTION()
 	void OnRep_CanCloseAttack();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCGunDamaged();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCGunDamaged();
+
 	//Zombie Mesh
 	virtual void PostInitializeComponents() override;
 	void NPCMeshLoadCompleted();
@@ -94,6 +100,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCSetMesh();
 
+	virtual void PlayAttackedAnimation();
 public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void GunAttackHitCheck();
