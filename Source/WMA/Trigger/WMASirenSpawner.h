@@ -53,7 +53,7 @@ protected:
     UPROPERTY(VisibleAnywhere, Replicated, Category = "Mesh")
     uint8 bIsVisible : 1;
 
-    UFUNCTION(Client, Reliable)
+    UFUNCTION(Server, Reliable)
     void ServerRPCSpawn();
     UFUNCTION(NetMulticast, Reliable)
     void MulticastRPCSpawn();

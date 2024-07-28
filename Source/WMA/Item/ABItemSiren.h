@@ -50,6 +50,7 @@ protected:
     bool bIsHolding = false;
     bool bIsHoldOnce = false;
     void MakeSound();
+    void ClarksionOn();
 
 public:
     void OnInteract();
@@ -77,15 +78,16 @@ protected:
     UFUNCTION(NetMulticast, Reliable)
     void MulticastRPCOverlapEnd(AActor* OtherActor);
 
+    UFUNCTION(Server, Reliable)
+    void ServerRPCClarksion();
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastRPCClarksion();
 
-    UPROPERTY(Replicated,EditAnywhere, Category = "Sound");
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Sound");
     class USoundBase* Clarksion;
 
-    UPROPERTY(EditAnywhere, Category = "Sound")
+    UPROPERTY(VisibleAnywhere, Replicated, Category = "Sound")
     class USoundAttenuation* ClarksionAtt;
-
-    UFUNCTION(NetMulticast, Reliable)
-    void MulticastPlaySoundAtLocation();
 
     int cnt;
 };
