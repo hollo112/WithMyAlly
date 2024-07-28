@@ -224,6 +224,7 @@ void AWMACharacterBoss::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AWMACharacterBoss, bIsAttacking);
 	DOREPLIFETIME(AWMACharacterBoss, bIsJumpAttacking);
+	DOREPLIFETIME(AWMACharacterBoss, bIsDamaging);
 }
 
 bool AWMACharacterBoss::ServerRPCAttack_Validate(bool isJumpAttack)
@@ -299,8 +300,21 @@ bool AWMACharacterBoss::ServerRPCGunDamaged_Validate()
 
 void AWMACharacterBoss::ServerRPCGunDamaged_Implementation()
 {
+	bIsDamaging = true;
 	FDamageEvent DamageEvent;
 	TakeDamage(1.f, DamageEvent, GetController(), this);
+
+	FTimerHandle DamageTimerHandle;
+	float DamageTime = 1.0f;
+
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	GetWorld()->GetTimerManager().SetTimer(DamageTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			bIsDamaging = false;
+			OnRep_GunShoot();
+		}
+	), DamageTime, false);
 
 	MulticastRPCGunDamaged();
 }
@@ -354,6 +368,18 @@ void AWMACharacterBoss::PlayAttackedAnimation()
 		AnimInstance->StopAllMontages(0.0f);
 
 		AnimInstance->Montage_Play(AttackedMontage, 1.0f);
+	}
+}
+
+void AWMACharacterBoss::OnRep_GunShoot()
+{
+	if (bIsDamaging)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	}
 }
 
