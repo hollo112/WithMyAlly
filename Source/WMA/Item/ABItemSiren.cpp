@@ -34,6 +34,11 @@ AABItemSiren::AABItemSiren()
         SirenMesh->SetStaticMesh(MeshRef1.Object);
     }
 
+    ConstructorHelpers::FObjectFinder<USoundBase> tempSound(TEXT("/Game/Sound/993FF73C5D0D195402_1.993FF73C5D0D195402_1"));
+    if (tempSound.Succeeded()) {
+        Clarksion = tempSound.Object;
+    }
+
     //Widget
     static ConstructorHelpers::FClassFinder<UUserWidget>InputE(TEXT("/Game/UI/WBP_ItemInteraction.WBP_ItemInteraction_C"));
     if (InputE.Succeeded())
@@ -90,8 +95,8 @@ void AABItemSiren::MakeSound()
         AISenseHearing->ReportNoiseEvent(this, GetActorLocation(), SoundStrength, this, 3000.f, FName("Siren"));
 
 
-        if (cnt < 10) {
-            UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+        if (cnt < 15) {
+            MulticastPlaySoundAtLocation();
             cnt++;
         }
     }
@@ -130,6 +135,7 @@ void AABItemSiren::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
     DOREPLIFETIME(AABItemSiren, CollisionBox);
     DOREPLIFETIME(AABItemSiren, Item);
     DOREPLIFETIME(AABItemSiren, bIsVisible);
+    DOREPLIFETIME(AABItemSiren, Clarksion);
 }
 
 void AABItemSiren::ATDTSiren()
@@ -175,6 +181,12 @@ void AABItemSiren::ATDTSiren()
         }
         
     }
+}
+
+void AABItemSiren::MulticastPlaySoundAtLocation_Implementation()
+{
+    UGameplayStatics::SpawnSoundAtLocation(this, Clarksion, GetActorLocation());
+
 }
 
 void AABItemSiren::ServerRPCOverlapEnd_Implementation(AActor* OtherActor)
